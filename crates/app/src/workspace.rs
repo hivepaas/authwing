@@ -9,7 +9,7 @@ use gpui::{
     anchored, deferred, div, prelude::*, px, relative, rgb, svg,
 };
 
-use authwing_config::{EditFile, Hotkey};
+use authwing_config::Hotkey;
 use authwing_context::{Code, Context as Where, Page, Ranking, Reason, Warning};
 use authwing_i18n::{tr, tr_n};
 use authwing_totp::Kind;
@@ -23,6 +23,7 @@ use crate::colors::colors;
 use crate::input::{Changed, TextInput, said};
 use crate::look::{self, Live, ui};
 use crate::notice::{self, Notice};
+use crate::settings::{SettingsEvent, SettingsView};
 use crate::sync_panel::{PanelEvent, SyncPanel};
 use crate::syncing::{SyncEvent, SyncWorker};
 use crate::vault_slot::VaultSlot;
@@ -64,6 +65,7 @@ pub struct Workspace {
     group: Option<String>,
     adding: Option<Entity<AddCode>>,
     panel: Option<Entity<SyncPanel>>,
+    settings: Option<Entity<SettingsView>>,
     /// Devices asking to join, as the sync thread last saw them.
     requests: Vec<Request>,
     passphrase_joins: bool,
@@ -148,6 +150,7 @@ impl Workspace {
             group: None,
             adding: None,
             panel: None,
+            settings: None,
             requests: vec![],
             passphrase_joins: false,
             elsewhere: None,
@@ -339,6 +342,10 @@ impl Workspace {
                     p.update(cx, |p, cx| p.set_passphrase_joins(joins, cx));
                 }
             }
+        }
+        if let Some(s) = &self.settings {
+            let status = self.sync_status();
+            s.update(cx, |s, cx| s.set_sync_status(status, cx));
         }
         if let Some(p) = &self.panel {
             let (status, synced) = (self.sync_status(), self.synced());
@@ -678,17 +685,43 @@ impl Workspace {
         .detach();
     }
 
-    fn open_settings(&mut self, cx: &mut Context<Self>) {
-        let Some(store) = self.live.store() else {
+    /// Opens Settings over the window, or closes it.
+    fn toggle_settings(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.settings.take().is_some() {
+            window.focus(&self.focus, cx);
+            cx.notify();
+            return;
+        }
+        let Some(sync) = self.sync.clone() else {
             return;
         };
-        match store.file_for_editing(EditFile::Settings) {
-            Ok(path) => cx.open_with_system(&path),
-            Err(e) => self.say(Notice::bad(tr!(
-                "Cannot open config.toml: {e}",
-                e = e.to_string()
-            ))),
-        }
+        let store = self.live.store().cloned();
+        let view = cx.new(|cx| SettingsView::new(store, self.vault.clone(), sync, cx));
+        let status = self.sync_status();
+        view.update(cx, |v, cx| v.set_sync_status(status, cx));
+        cx.subscribe_in(&view, window, |ws, _, event: &SettingsEvent, window, cx| {
+            match event {
+                SettingsEvent::Close => {
+                    ws.settings = None;
+                    window.focus(&ws.focus, cx);
+                }
+                SettingsEvent::Changed => ws.poll_config(cx),
+                SettingsEvent::Say(n) => ws.say(n.clone()),
+                SettingsEvent::Lock => {
+                    ws.lock(cx);
+                    if ws.vault.ready().is_none() {
+                        ws.settings = None;
+                    }
+                }
+            }
+            cx.notify();
+        })
+        .detach();
+        window.focus(&view.focus_handle(cx), cx);
+        self.adding = None;
+        self.panel = None;
+        self.settings = Some(view);
+        cx.notify();
     }
 
     /// The window's shortcuts, before the field with the focus sees the key.
@@ -702,6 +735,10 @@ impl Workspace {
         let Some((hotkey, place)) = self.live.keymap().find(&chord) else {
             return;
         };
+        // Over Settings, only Settings (to close it) and Quit.
+        if self.settings.is_some() && !matches!(hotkey, Hotkey::Settings | Hotkey::Quit) {
+            return;
+        }
         match hotkey {
             Hotkey::Find => window.focus(&self.filter.focus_handle(cx), cx),
             Hotkey::AddCode => self.open_adding(window, cx),
@@ -712,7 +749,7 @@ impl Workspace {
                 }
             }
             Hotkey::Lock => self.lock(cx),
-            Hotkey::Settings => self.open_settings(cx),
+            Hotkey::Settings => self.toggle_settings(window, cx),
             Hotkey::Quit => {
                 // The last edits go out first, if a sync is quick.
                 if let Some(s) = &self.sync
@@ -839,10 +876,8 @@ impl Workspace {
             })
             .child(
                 icon_button("settings", "icons/settings.svg", c.soft)
-                    .when(tips, |b| {
-                        b.tooltip(|_, cx| tip(tr!("Settings (config.toml)"), cx))
-                    })
-                    .on_click(cx.listener(|ws, _, _, cx| ws.open_settings(cx))),
+                    .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Settings"), cx)))
+                    .on_click(cx.listener(|ws, _, window, cx| ws.toggle_settings(window, cx))),
             )
     }
 
@@ -1413,7 +1448,11 @@ impl Render for Workspace {
             cx.set_global(bottom);
         }
         let c = colors();
-        let main: AnyElement = if self.vault.ready().is_some() {
+        let main: AnyElement = if let Some(settings) = &self.settings {
+            bottom
+                .round(div().size_full().child(settings.clone()))
+                .into_any_element()
+        } else if self.vault.ready().is_some() {
             div()
                 .size_full()
                 .flex()

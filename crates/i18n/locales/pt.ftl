@@ -91,23 +91,356 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` foi atribuído a { $kept } e a 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 # t87e7ceec =
 
-# XXXX-XXXX-…, 13 groups
-# tbb504d9f =
+# General
+# t5561fd0b =
+
+# Sync
+t89a71bba = Sincronização
+
+# Security
+# tc2fe21db =
+
+# Browsers
+# td580efd4 =
+
+# About
+# t58e096de =
+
+# A folder another app keeps in sync
+# t27689c98 =
+
+# The repository's default
+# t318b30d3 =
+
+# None: the bucket's top
+# tb62e6c7b =
+
+# Access key
+# t837b43b8 =
+
+# Kept in the vault, on this device only
+# t4893a866 =
+
+# At least 10 characters, hard to guess
+# tea4f3495 =
+
+# The same again
+# t3d35edbe =
+
+# Fill in {what}.
+# t0804c32b =
+
+# the folder
+# t48f6f260 =
+
+# the repository's address
+# t5f845286 =
+
+# the folder's address
+# t3f263e4e =
+
+# the user
+# t9ba42c97 =
+
+# the endpoint
+# t025e0e85 =
+
+# the bucket
+# ta347465a =
+
+# the access key
+# t4e629821 =
+
+# Open the vault first.
+# t18fc18b2 =
+
+# Fill in the password.
+# t396bf9b1 =
+
+# Fill in the secret key.
+# tfddf418b =
+
+# Saved. Syncing now.
+# t3bd89f83 =
+
+# Sync is off. What is in the place stays there.
+# t9350814a =
+
+# Sync here
+# te998c2e0 =
 
 # This vault has no recovery key yet.
 # tdd764294 =
 
-# Recovery key
-# t02904a59 =
+# A passphrase needs at least 10 characters.
+# t848f2c32 =
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-# t82f98ccc =
+# The two passphrases differ.
+# teb0402b1 =
+
+# Too easy to guess: try several unrelated words.
+# tc80e0d6d =
+
+# The passphrase is set.
+# t1c4d5a62 =
+
+# No browser the extension runs in was found.
+# tbdee3baa =
+
+# As the system
+# t29f671f7 =
+
+# Dark
+# t45570065 =
+
+# Light
+# t8ad2f8cf =
+
+# 10 s
+# t656f91cd =
+
+# 20 s
+# t9356dfda =
+
+# 45 s
+# td029e48f =
+
+# 90 s
+# ted25e5d5 =
+
+# Never
+# tb2ff2b29 =
+
+# Language
+# t9a73db9b =
+
+# This device's own: it does not sync.
+# t075c5383 =
+
+# Appearance
+# t31018b9f =
+
+# Colors
+# t25bb4ed1 =
+
+# Text size
+# t2c041143 =
+
+# Codes
+# t758add25 =
+
+# Clear a copied code from the clipboard after
+# tcf387b5b =
+
+# Only if the clipboard still holds it.
+# tedfee6ca =
+
+# Off
+# t0dc6b4aa =
+
+# Folder
+# t06357afd =
+
+# Git
+# tb6b5540b =
+
+# WebDAV
+# t8e2d2e34 =
+
+# S3
+# t060203c3 =
+
+# Saved on this device; type a new one to change it.
+# t6f6ad6e7 =
+
+# Kept sealed in the vault, on this device only: it never syncs.
+# t5529829d =
+
+# The codes stay on this device. Keep its recovery key (Security) and a backup.
+# t29381d6c =
+
+# Choose…
+# t58daae9c =
+
+# Use iCloud Drive
+# t789420ac =
+
+# Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share.
+# taadf45c8 =
+
+# Repository
+# te763c8b5 =
+
+# Branch
+# ta3e27665 =
+
+# A private repository. This computer's git signs in as it does for you.
+# tcf6c891b =
+
+# Folder's address
+# t1331c053 =
+
+# User
+# te0a63e12 =
+
+# Password
+# t2cc30838 =
+
+# Endpoint
+# t27e7d69c =
+
+# Bucket
+# te34e3557 =
+
+# Folder in it
+# tdfe63979 =
+
+# Region
+# t492e789d =
+
+# Secret key
+# t47252d7a =
+
+# Where the vault syncs
+# td7a153f7 =
+
+# Save and sync
+# te0b44954 =
+
+# Stop syncing
+# t59fdbd70 =
+
+# What syncs
+# ta2fbb093 =
+
+# Settings too
+# ta8aa81ba =
+
+# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
+# te0e876b2 =
+
+# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
+# t674d2276 =
 
 # Show the recovery key
 # t16f62979 =
 
 # Hide
 # te10c7bcd =
+
+# Change the passphrase
+# t02c0bf0a =
+
+# Set a passphrase
+# t69755c3c =
+
+# Recovery key
+# t02904a59 =
+
+# It opens the vault when nothing else can: a lost keychain, a forgotten passphrase, a new device. Write it down and keep it apart from this computer.
+# tc3c501b7 =
+
+# Passphrase
+# t191a2dc5 =
+
+# A passphrase opens this vault. Set another below.
+# tc2369f61 =
+
+# No passphrase yet: the keychain alone opens the vault, and it cannot lock.
+# t4373fdd8 =
+
+# Again
+# t58fb56ef =
+
+# Working…
+# td5507854 =
+
+# Save the passphrase
+# t014d0621 =
+
+# Opening and locking
+# tb34987b3 =
+
+# Open by itself
+# t680c6531 =
+
+# The vault's key stays in this computer's keychain. Off: the passphrase opens it, and Lock closes it.
+# ta2c3bb9f =
+
+# Open with {what}
+# td5998b93 =
+
+# Needs a passphrase set. The system asks when you change it.
+# t5b1f668d =
+
+# Lock now
+# t1aa78686 =
+
+# Closes the vault until its passphrase is typed.
+# tba4f5365 =
+
+# Lock
+# t71b42d62 =
+
+# Linked to this authwing
+# ta9f58dac =
+
+# Linked to another copy: {path}
+# t92cd5320 =
+
+# Not linked
+# ta8dc0817 =
+
+# The browser extension
+# tdcceb399 =
+
+# With authwing's extension, the app knows the page in front exactly: a code saved with that site comes first and is typed in, and a page that only looks like it gets none. The extension keeps no codes.
+# t9ca9ffff =
+
+# Link the browsers
+# t813a0fa7 =
+
+# Unlink
+# ta3742172 =
+
+# Browsers on this computer
+# td2a9db60 =
+
+# The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
+# t49b23b02 =
+
+# authwing
+# t36917d20 =
+
+# Version
+# t5dcdd537 =
+
+# License
+# t38e70ee4 =
+
+# Free software: you may share and change it under the GPL.
+# tef971997 =
+
+# Source
+# t61e2a3f8 =
+
+# Updates
+# t483075a5 =
+
+# Not looked for: this build has no release keys to check them with.
+# t208f65bc =
+
+# Open config.toml
+# t07a52335 =
+
+# Done
+# t8dd31791 =
+
+# XXXX-XXXX-…, 13 groups
+# tbb504d9f =
+
+# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
+# t82f98ccc =
 
 # Waiting for a device that syncs: open authwing there.
 # t33ac6aa2 =
@@ -129,9 +462,6 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` foi atribuído a { $kept } e a 
 
 # Stop asking
 # t296beec8 =
-
-# Sync
-t89a71bba = Sincronização
 
 # Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
 # tc75c83a8 =
@@ -244,14 +574,8 @@ t12e9b880 = Não excluída: { $e }
 # Not opened: {e}
 # t2e0269c8 =
 
-# Cannot open config.toml: {e}
-# tb78f406b =
-
-# Lock
-# t71b42d62 =
-
-# Settings (config.toml)
-# t1fc961bb =
+# Settings
+# t4b058728 =
 
 # All codes
 # t113331ee =
@@ -309,9 +633,6 @@ t12e9b880 = Não excluída: { $e }
 
 # Try fewer words, or another group.
 # t289325a3 =
-
-# Set a passphrase
-# t69755c3c =
 
 # This computer has no keychain to keep the vault's key in.
 # t911809a4 =

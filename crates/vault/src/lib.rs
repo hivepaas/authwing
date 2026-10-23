@@ -1169,7 +1169,8 @@ impl Vault {
         Ok(())
     }
 
-    /// The recovery key, to show again, if syncing was ever started.
+    /// The recovery key, to show again. Every vault has one from its first
+    /// opening, synced or not; None only for one older than that.
     pub fn recovery_key(&self) -> Result<Option<RecoveryKey>> {
         let has: bool = {
             let db = self.db.lock().map_err(|_| Error::Decrypt)?;
@@ -1765,6 +1766,30 @@ mod tests {
         dir.join("vault.db")
     }
 
+    #[test]
+    fn a_vault_that_never_synced_has_a_recovery_key_that_opens_it() {
+        let path = temp("local-recovery");
+        let keys = MemoryKeys::default();
+        let v = Vault::open(&path, &keys).expect("open");
+        let made = v
+            .recovery_key()
+            .expect("asked")
+            .expect("one from the start")
+            .to_string();
+        let fields = BTreeMap::from([("issuer".to_string(), "GitHub".to_string())]);
+        v.update(&new_id().expect("id"), "code", "GitHub", &fields)
+            .expect("a code");
+        drop(v);
+        // The keychain item is gone: the recovery key opens the vault.
+        let lost = MemoryKeys::default();
+        assert!(matches!(
+            Vault::open(&path, &lost),
+            Err(Error::Locked(Lock::Recovery))
+        ));
+        let v = Vault::unlock(&path, &lost, Unlock::RecoveryKey(&made)).expect("opened");
+        assert_eq!(v.entries("code").expect("codes").len(), 1);
+        let _ = std::fs::remove_dir_all(path.parent().expect("dir"));
+    }
     #[test]
     fn keeps_edits_and_forgets_snippets() {
         let path = temp("snippets");
