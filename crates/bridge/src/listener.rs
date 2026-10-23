@@ -126,10 +126,14 @@ impl Drop for Listener {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::Release);
         // Accepting blocks: a connection of our own wakes it to see `stop`.
-        let _ = self.endpoint.name().and_then(Stream::connect);
+        // It stays open until the thread has seen it: on Windows a
+        // connection closed before the pipe waits for one is passed over
+        // (ERROR_NO_DATA), and the wait, and so the join, would go on.
+        let wake = self.endpoint.name().and_then(Stream::connect);
         if let Some(thread) = self.thread.take() {
             let _ = thread.join();
         }
+        drop(wake);
     }
 }
 
