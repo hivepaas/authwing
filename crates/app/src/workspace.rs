@@ -341,8 +341,11 @@ impl Workspace {
             }
         }
         if let Some(p) = &self.panel {
-            let status = self.sync_status();
-            p.update(cx, |p, cx| p.set_status(status, cx));
+            let (status, synced) = (self.sync_status(), self.synced());
+            p.update(cx, |p, cx| {
+                p.set_status(status, cx);
+                p.set_synced(synced, cx);
+            });
         }
         cx.notify();
     }
@@ -370,6 +373,11 @@ impl Workspace {
         browser::is_browser(&window.app_id)
             .then_some(self.tab.as_ref())
             .flatten()
+    }
+
+    /// The last sync went through: this device syncs the vault there.
+    fn synced(&self) -> bool {
+        matches!(self.sync_state, SyncState::Synced(..))
     }
 
     /// How syncing goes, in a line.
@@ -408,13 +416,15 @@ impl Workspace {
             return;
         };
         let panel = cx.new(|cx| SyncPanel::new(sync, self.vault.clone(), cx));
-        let (status, requests, joins) = (
+        let (status, requests, joins, synced) = (
             self.sync_status(),
             self.requests.clone(),
             self.passphrase_joins,
+            self.synced(),
         );
         panel.update(cx, |p, cx| {
             p.set_status(status, cx);
+            p.set_synced(synced, cx);
             p.set_requests(requests, cx);
             p.set_passphrase_joins(joins, cx);
         });
@@ -740,6 +750,9 @@ impl Workspace {
         };
         let cloud_tip = self.sync_status();
         let open = self.vault.ready().is_some();
+        // A dialog covers the bar: a tooltip left from the click that opened
+        // it would show over the dialog's shade.
+        let tips = self.adding.is_none() && self.panel.is_none();
         div()
             .size_full()
             .flex()
@@ -809,24 +822,26 @@ impl Workspace {
             )
             .child(
                 icon_button("sync", "icons/cloud.svg", cloud)
-                    .tooltip(move |_, cx| tip(cloud_tip.clone(), cx))
+                    .when(tips, |b| b.tooltip(move |_, cx| tip(cloud_tip.clone(), cx)))
                     .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx))),
             )
             .when(open, |d| {
                 d.child(
                     icon_button("add", "icons/plus.svg", c.soft)
-                        .tooltip(|_, cx| tip(tr!("Add a code"), cx))
+                        .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Add a code"), cx)))
                         .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
                 )
                 .child(
                     icon_button("lock", "icons/lock.svg", c.soft)
-                        .tooltip(|_, cx| tip(tr!("Lock"), cx))
+                        .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Lock"), cx)))
                         .on_click(cx.listener(|ws, _, _, cx| ws.lock(cx))),
                 )
             })
             .child(
                 icon_button("settings", "icons/settings.svg", c.soft)
-                    .tooltip(|_, cx| tip(tr!("Settings (config.toml)"), cx))
+                    .when(tips, |b| {
+                        b.tooltip(|_, cx| tip(tr!("Settings (config.toml)"), cx))
+                    })
                     .on_click(cx.listener(|ws, _, _, cx| ws.open_settings(cx))),
             )
     }

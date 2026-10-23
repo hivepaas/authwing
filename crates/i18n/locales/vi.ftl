@@ -97,6 +97,21 @@ t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ c
 # XXXX-XXXX-…, 13 groups
 tbb504d9f = XXXX-XXXX-…, 13 nhóm
 
+# This vault has no recovery key yet.
+tdd764294 = Vault này chưa có khoá khôi phục.
+
+# Recovery key
+t02904a59 = Khoá khôi phục
+
+# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
+t82f98ccc = Hãy cất nó cùng chỗ với giấy tờ quan trọng: nó mở vault từ một thiết bị mới, và là cách lấy lại khi mất hết mọi thiết bị.
+
+# Show the recovery key
+t16f62979 = Hiện khoá khôi phục
+
+# Hide
+te10c7bcd = Ẩn
+
 # Waiting for a device that syncs: open authwing there.
 t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
 

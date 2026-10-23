@@ -94,6 +94,21 @@ te833da37 = config.toml, [shortcuts] : `{ $key }` est attribué à la fois à { 
 # XXXX-XXXX-…, 13 groups
 # tbb504d9f =
 
+# This vault has no recovery key yet.
+# tdd764294 =
+
+# Recovery key
+# t02904a59 =
+
+# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
+# t82f98ccc =
+
+# Show the recovery key
+# t16f62979 =
+
+# Hide
+# te10c7bcd =
+
 # Waiting for a device that syncs: open authwing there.
 # t33ac6aa2 =
 

@@ -36,6 +36,10 @@ pub struct SyncPanel {
     requests: Vec<Request>,
     /// Whether the sync passphrase joins new devices there too.
     passphrase_joins: bool,
+    /// This device syncs there: the last sync went through.
+    synced: bool,
+    /// The vault's recovery key, while shown.
+    shown_key: Option<String>,
     problem: Option<String>,
     joining: bool,
     recovery: Entity<TextInput>,
@@ -59,6 +63,8 @@ impl SyncPanel {
             asking: None,
             requests: vec![],
             passphrase_joins: false,
+            synced: false,
+            shown_key: None,
             problem: None,
             joining: false,
             recovery: cx.new(|cx| TextInput::said(|| tr!("XXXX-XXXX-…, 13 groups"), cx)),
@@ -81,6 +87,24 @@ impl SyncPanel {
 
     pub fn set_requests(&mut self, requests: Vec<Request>, cx: &mut Context<Self>) {
         self.requests = requests;
+        cx.notify();
+    }
+
+    /// Whether this device syncs there now: then it shows the recovery key,
+    /// rather than ways to join.
+    pub fn set_synced(&mut self, synced: bool, cx: &mut Context<Self>) {
+        self.synced = synced;
+        cx.notify();
+    }
+
+    fn show_key(&mut self, cx: &mut Context<Self>) {
+        let key = self.vault.ready().map(|v| v.recovery_key());
+        match key {
+            Some(Ok(Some(k))) => self.shown_key = Some(k.to_string()),
+            Some(Ok(None)) => self.problem = Some(tr!("This vault has no recovery key yet.")),
+            Some(Err(e)) => self.problem = Some(e.to_string()),
+            None => {}
+        }
         cx.notify();
     }
 
@@ -144,6 +168,61 @@ impl SyncPanel {
             .child(title)
     }
 
+    /// The recovery key, shown when asked: the way into the vault from a new
+    /// device, or when every device is lost.
+    fn key_view(&self, panel: gpui::Div, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let panel = panel.child(Self::section(tr!("Recovery key"))).child(
+            div()
+                .text_size(ui(12.))
+                .text_color(rgb(c.muted))
+                .child(tr!(
+                    "Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost."
+                )),
+        );
+        match &self.shown_key {
+            None => panel.child(
+                div().flex().child(
+                    outline_button("show-key", &tr!("Show the recovery key"))
+                        .on_click(cx.listener(|panel, _, _, cx| panel.show_key(cx))),
+                ),
+            ),
+            Some(key) => {
+                let copy = key.clone();
+                panel
+                    .child(
+                        div()
+                            .p(px(10.))
+                            .rounded(px(6.))
+                            .bg(rgb(c.field))
+                            .text_size(ui(15.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .child(key.clone()),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .gap(px(8.))
+                            .child(
+                                outline_button("copy-key", &tr!("Copy")).on_click(cx.listener(
+                                    move |_, _, _, cx| {
+                                        cx.write_to_clipboard(gpui::ClipboardItem::new_string(
+                                            copy.clone(),
+                                        ));
+                                    },
+                                )),
+                            )
+                            .child(text_button("hide-key", &tr!("Hide"), c.soft).on_click(
+                                cx.listener(|panel, _, _, cx| {
+                                    panel.shown_key = None;
+                                    cx.notify();
+                                }),
+                            )),
+                    )
+            }
+        }
+    }
+
     fn asking_view(&self, place: &SyncPlace, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
         let line = |t: String| div().text_size(ui(13.)).text_color(rgb(c.soft)).child(t);
@@ -170,7 +249,8 @@ impl SyncPanel {
             Some(AskState::Joined) => line(tr!("Joined. The vault's codes are coming.")),
             Some(AskState::Refused) => line(tr!("The other device refused.")),
             Some(AskState::Expired) => line(tr!("Nobody approved in time: ask again.")),
-            None => div().child(
+            // A row, so the button is as wide as its words.
+            None => div().flex().child(
                 outline_button("ask-join", &tr!("Ask a device that syncs")).on_click(cx.listener(
                     move |panel, _, _, cx| {
                         panel.problem = None;
@@ -314,7 +394,10 @@ impl Render for SyncPanel {
                     );
             }
         }
-        panel = panel
+        panel = if self.synced {
+            self.key_view(panel, cx)
+        } else {
+            panel
             .child(Self::section(tr!("Join from this device")))
             .child(
                 div()
@@ -360,6 +443,8 @@ impl Render for SyncPanel {
                         .on_click(cx.listener(|panel, _, _, cx| panel.join(cx))),
                     ),
             )
+        };
+        panel = panel
             .when_some(self.problem.clone(), |d, p| {
                 d.child(
                     div()
