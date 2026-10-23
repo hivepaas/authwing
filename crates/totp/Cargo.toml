@@ -1,0 +1,22 @@
+[package]
+name = "authwing-totp"
+description = "One-time codes (TOTP, HOTP, Steam Guard) and the otpauth URIs that carry them"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# The digest 0.10 family, as the vault's sha2 and hkdf.
+hmac = "0.12"
+sha1 = "0.10"
+sha2 = "0.10"
+# Google Authenticator's export carries its protobuf as base64.
+base64 = "0.22"
+percent-encoding = "2"
+thiserror.workspace = true
+zeroize = "1"
+
+[lints]
+workspace = true
