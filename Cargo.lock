@@ -623,6 +623,7 @@ dependencies = [
  "authwing-i18n",
  "authwing-presence",
  "authwing-remote",
+ "authwing-scan",
  "authwing-totp",
  "authwing-vault",
  "enigo",

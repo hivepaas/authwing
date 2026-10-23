@@ -18,6 +18,7 @@ mod colors;
 mod hotkeys;
 mod input;
 mod look;
+mod menu;
 mod notice;
 mod panel_key;
 mod placement;
@@ -253,6 +254,10 @@ fn main() -> anyhow::Result<()> {
                 ws.track_bounds(window, cx);
                 ws.apply_panel_key(cx);
             });
+            if cfg!(target_os = "macos") {
+                let quitting = ws.clone();
+                menu::install(cx, move |cx| quitting.update(cx, |ws, cx| ws.quit(cx)));
+            }
             // The shortcut opens the quick panel, from the system's thread.
             let (pressed, presses) = async_channel::unbounded::<()>();
             panel_key::listen(move || {

@@ -49,11 +49,18 @@ settings = true              # the settings that are not this device's own sync 
 
 ## Codes
 
-- **Adding:** the **+** in the title bar (or Cmd/Ctrl+N) takes the link a
-  site's QR code holds (`otpauth://totp/…`), a Google Authenticator export
-  (`otpauth-migration://offline?data=…`, every code in it at once), or the
-  key a site shows to type when its QR code cannot be scanned. A group and
-  the sites the code belongs to can be given there.
+- **Adding:** the **+** in the title bar (or Cmd/Ctrl+N).
+  - *Scan the screen* reads the QR code a site shows, wherever it is on the
+    screen; on macOS authwing steps aside while it does. macOS asks once
+    for the Screen Recording permission, which applies when authwing is
+    opened again; under Wayland the system asks to share the screen.
+  - An image of the QR code works too: chosen, dropped on the dialog, or
+    pasted (Cmd/Ctrl+V).
+  - Or paste the link a QR code holds (`otpauth://totp/…`), a Google
+    Authenticator export (`otpauth-migration://offline?data=…`, every code
+    in it at once), or the key a site shows to type.
+
+  A group and the sites the code belongs to can be given there.
 - **Copying:** a click on a card, Enter in the find field (the first code
   shown), or Cmd/Ctrl+1 to 9 by place. The clipboard is cleared after
   `clear_clipboard` seconds, unless something else was copied since. An HOTP
