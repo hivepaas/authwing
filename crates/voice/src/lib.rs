@@ -13,11 +13,13 @@ mod language;
 mod matching;
 pub mod model;
 
+#[cfg(feature = "download")]
+pub mod download;
 #[cfg(feature = "mic")]
 pub mod mic;
 #[cfg(feature = "whisper")]
 pub mod whisper;
 
-pub use audio::{SAMPLE_RATE, resample};
+pub use audio::{SAMPLE_RATE, is_silent, resample};
 pub use language::{LANGUAGES, language_for_locale, system_language};
 pub use matching::{Candidate, Decision, PROMPT_BYTES, Scored, Thresholds, rank, vocabulary};

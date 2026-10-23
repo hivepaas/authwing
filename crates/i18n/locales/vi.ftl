@@ -163,6 +163,24 @@ t0d0135fa = một phím đơn, hoặc chỉ kèm Shift, là để gõ chữ
 # Type to find, or press Enter
 te54f3559 = Gõ để tìm, hoặc nhấn Enter
 
+# Listening… say the code's name.
+t527e2752 = Đang nghe… hãy nói tên mã.
+
+# Finding what you said…
+t5b8aea04 = Đang tìm điều bạn nói…
+
+# Heard “{said}”, which names no code. Choose the one you meant: next time it will be found.
+tc849c7e2 = Nghe được “{ $said }”, không trùng tên mã nào. Hãy chọn mã bạn muốn: lần sau sẽ tìm ra ngay.
+
+# Heard “{said}”.
+t89b5607b = Nghe được “{ $said }”.
+
+# Heard “{said}”: which one? The one you choose is found by it next time.
+t8185b7fe = Nghe được “{ $said }”: mã nào? Mã bạn chọn sẽ được tìm thấy bằng câu này lần sau.
+
+# You said “{said}”
+t798bbde9 = Bạn đã nói “{ $said }”
+
 # Matches this window
 t127fa712 = Khớp với cửa sổ này
 
@@ -192,6 +210,9 @@ t5e806dae = Cho phép Trợ năng để gõ mã vào
 
 # General
 t5561fd0b = Chung
+
+# Voice
+t27d1a499 = Giọng nói
 
 # Sync
 t89a71bba = Đồng bộ
@@ -405,6 +426,63 @@ tb88bea64 = Enter trong bảng tra nhanh gõ mã vào chỗ bạn vừa ở.
 
 # Allow…
 taa765d22 = Cho phép…
+
+# {name} · {mb} MB (recommended)
+t56daa311 = { $name } · { $mb } MB (nên dùng)
+
+# {name} · {mb} MB
+t8b03a237 = { $name } · { $mb } MB
+
+# Downloading {name}: {done} of {mb} MB
+t7e025257 = Đang tải { $name }: { $done } / { $mb } MB
+
+# Stop
+t4b7f7705 = Dừng
+
+# Ready: {name}, {mb} MB
+t1da38629 = Sẵn sàng: { $name }, { $mb } MB
+
+# On this device, in {dir}
+t38f3c37a = Trên thiết bị này, trong { $dir }
+
+# Remove
+t21a5901d = Xoá
+
+# Not downloaded yet
+t79a53bb5 = Chưa tải về
+
+# From Hugging Face, where whisper.cpp publishes it; checked before it is used.
+tcaa028e0 = Từ Hugging Face, nơi whisper.cpp công bố; được kiểm tra trước khi dùng.
+
+# Download {mb} MB
+tf266b00d = Tải { $mb } MB
+
+# Voice is off.
+t201cf2d4 = Giọng nói đang tắt.
+
+# As the app
+tfd37967d = Theo ứng dụng
+
+# Find a code by voice
+t027c8145 = Tìm mã bằng giọng nói
+
+# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+t1342bee3 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “GitHub”, “mở Vietcombank”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
+
+# Model
+t8285e8fa = Model
+
+# The larger ones are slower, and named no more codes right in our tests.
+t52a58f5e = Model lớn hơn chậm hơn, và trong thử nghiệm không nhận đúng thêm mã nào.
+
+# Not downloaded: {why}
+t86abdeb3 = Chưa tải được: { $why }
+
+# The language you speak
+t244ca1cf = Ngôn ngữ bạn nói
+
+# Names said the English way are heard too. This device's own: it does not sync.
+tb454f61c = Tên đọc theo kiểu tiếng Anh cũng nghe được. Riêng của thiết bị này: không đồng bộ.
 
 # Folder
 t06357afd = Thư mục
@@ -730,6 +808,24 @@ tf8592ea2 = chưa đồng bộ được cài đặt: { $e }
 # settings not written: {e}
 t60f438b7 = chưa ghi được cài đặt: { $e }
 
+# Voice's model is still downloading (Settings › Voice).
+t294c50cc = Model giọng nói vẫn đang tải (Cài đặt › Giọng nói).
+
+# Voice is off: download its model in Settings › Voice.
+tcbeb5f49 = Giọng nói đang tắt: hãy tải model trong Cài đặt › Giọng nói.
+
+# The microphone could not be used: {e}
+t70732a3f = Không dùng được micro: { $e }
+
+# Voice: {e}
+tb2751b66 = Giọng nói: { $e }
+
+# Nothing was heard. Is the microphone allowed? System Settings › Privacy & Security › Microphone.
+tc421facd = Không nghe thấy gì. Micro đã được cho phép chưa? Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Micrô.
+
+# Nothing was heard: is the microphone on?
+t5de1c09c = Không nghe thấy gì: micro có đang bật không?
+
 # Find a code
 t8b2733e6 = Tìm mã
 
@@ -774,6 +870,9 @@ t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 
 # The counter was not saved: {e}
 tb28eb5cc = Bộ đếm chưa được lưu: { $e }
+
+# hold {key} and say a name
+t96a7d255 = giữ { $key } và nói tên mã
 
 # Not typed in: {e}
 tf4e0ecfa = Chưa gõ được: { $e }

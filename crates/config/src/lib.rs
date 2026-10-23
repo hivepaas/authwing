@@ -23,10 +23,10 @@ mod store;
 pub use color::Color;
 pub use settings::{
     Appearance, Codes, ColorMode, General, GitSync, PANEL_KEY, Panel, S3Sync, Settings, Sync,
-    SyncPlace, UI_FONT_SIZE, UiFont, Updates, WebDavSync,
+    SyncPlace, UI_FONT_SIZE, UiFont, Updates, Voice, WebDavSync,
 };
 pub use shortcuts::{Chord, Hotkey, Keymap, Mods, Os, ShortcutSettings};
-pub use state::{UpdateState, WindowMode, WindowState};
+pub use state::{UpdateState, VoiceMemory, Voiced, WindowMode, WindowState};
 pub use store::{EditFile, LoadError, SettingValue, Stamp, Store, SyncPlaceText, WriteError};
 
 /// A vault record's fields, by name: what the synced settings travel as.

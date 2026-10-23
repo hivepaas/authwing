@@ -41,6 +41,10 @@ from there; the SSH client does not.
 * **Quick panel:** Option+Space (Ctrl+Alt+Space on Windows and Linux) over any
   app shows the codes for that app or page first; Enter types the code into
   it, Cmd/Ctrl+C copies it.
+* **Voice:** hold the quick panel's key and say the name ("GitHub", "mở
+  Vietcombank", "Öffne PayPal"): Whisper on the device, in your language,
+  the name matched however it was written down; it learns the names it
+  mishears.
 * **Browser extension** (Chrome, Edge, Brave, Arc, Vivaldi, Firefox; in
   `extension/`): it tells the app the page's exact address, so a code saved
   with that site comes first and is typed into the page when copied; a page
@@ -60,19 +64,13 @@ from there; the SSH client does not.
 * **Languages:** English and Vietnamese in full; German, Spanish, French,
   Portuguese, Russian, Japanese, Korean and Chinese in part.
 
-**In a crate, not yet in the window**
-
-* **Voice** (`authwing-voice`): "open Vietcombank", "Öffne PayPal": Whisper on
-  the device, the name matched in any language.
-
-**Next:** voice in the quick panel, the extension in the stores, release
-signing.
+**Next:** the extension in the stores, release signing.
 
 ---
 
 ## 🚀 Getting Started
 
-Build it from source. It needs Rust 1.95+ and each platform's tools
+Build it from source. It needs Rust 1.95+, CMake and each platform's tools
 ([docs/platforms.md](docs/platforms.md)):
 
 ```sh
@@ -107,7 +105,7 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 | `crates/totp` | One-time codes, `otpauth://` links, Google Authenticator's export |
 | `crates/scan` | QR codes read from the screen, an image file or the clipboard |
 | `crates/context` | The active app and window, sites against look-alikes, codes ranked for a context |
-| `crates/voice` | Matching a spoken name to a code; Whisper and the microphone as features |
+| `crates/voice` | Matching a spoken name to a code; Whisper, the microphone and the model's download as features |
 | `crates/bridge` | The browser extension's protocol, Native Messaging host and installer |
 | `crates/vault` | The encrypted vault, and its sync |
 | `crates/remote` | Sync places over the network (WebDAV, S3, Git) |

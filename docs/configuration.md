@@ -42,6 +42,10 @@ clear_clipboard = 20         # seconds a copied code stays on the clipboard; 0: 
 [panel]
 key = "alt+space"            # opens the quick panel from any app; "": none; this device's own
 
+[voice]                      # this device's own
+model = "base"               # "tiny", "base", "small" or "large", once downloaded; "": voice off
+language = "auto"            # the language you name codes in ("vi", "de"…); "auto": the app's
+
 [sync]                       # see Syncing between devices; one place at a time
 folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"
 settings = true              # the settings that are not this device's own sync too
@@ -95,6 +99,30 @@ Linux (*Settings › General*, or `key` under `[panel]`; `""` turns it off).
   Windows keeps Win+Space and Win+Shift+Space for the keyboard's language.
 - **Under Wayland** an app gets no key over the others and cannot type into
   them: the shortcut and typing reach only apps that run through XWayland.
+
+## Finding a code by voice
+
+In the quick panel, hold its shortcut and say a code's name: "GitHub",
+"mở Vietcombank", "Öffne PayPal". Let go, and the codes it names come first,
+the one named clearly selected: Enter types it.
+
+- **The model** is Whisper's, downloaded once from *Settings › Voice*
+  (from Hugging Face, where whisper.cpp publishes it, and checked against
+  its SHA-256). `base` (148 MB) is the one to have; the larger ones were
+  slower and named no more codes right in our tests. Models are kept in
+  `~/Library/Application Support/authwing/models` on macOS,
+  `%LOCALAPPDATA%\authwing\models` on Windows and
+  `~/.local/share/authwing/models` on Linux.
+- **Everything stays on the device.** Whisper runs here, and the microphone
+  is on only while the key is held (or the panel's microphone button is on):
+  a tap opens the panel without it. macOS asks for the microphone the
+  first time; with it refused, the panel says nothing was heard.
+- **The language** is the one names are said in: the app's by default.
+  When that names no code clearly, it listens again in English, as brand
+  names are often said the English way.
+- **It learns.** When voice is not sure, it offers the codes it may mean;
+  the one you choose is found by what was heard next time. That, and how
+  often each code is used, is kept in `state/voice.json`, on this device.
 
 ## Backup, and moving from another app
 
@@ -257,8 +285,8 @@ Settings in `config.toml` sync too, unless `settings = false` under `[sync]`:
 
 - **What syncs:** `[appearance]` (`mode`, `ui_font`) and `[codes]
   clear_clipboard`.
-- **What each device keeps:** `[general] language`, `[sync]`, `[shortcuts]`
-  and `[panel]`, which differ between computers.
+- **What each device keeps:** `[general] language`, `[sync]`, `[shortcuts]`,
+  `[panel]` and `[voice]`, which differ between computers.
 - **Merging** is per setting; the file keeps its comments and layout. A
   device whose settings sync for the first time takes the others' where they
   set one, and keeps its own where they set none.

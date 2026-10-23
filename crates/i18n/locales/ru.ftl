@@ -163,6 +163,24 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` используется и в 
 # Type to find, or press Enter
 # te54f3559 =
 
+# Listening… say the code's name.
+# t527e2752 =
+
+# Finding what you said…
+# t5b8aea04 =
+
+# Heard “{said}”, which names no code. Choose the one you meant: next time it will be found.
+# tc849c7e2 =
+
+# Heard “{said}”.
+# t89b5607b =
+
+# Heard “{said}”: which one? The one you choose is found by it next time.
+# t8185b7fe =
+
+# You said “{said}”
+# t798bbde9 =
+
 # Matches this window
 # t127fa712 =
 
@@ -192,6 +210,9 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` используется и в 
 
 # General
 # t5561fd0b =
+
+# Voice
+# t27d1a499 =
 
 # Sync
 t89a71bba = Синхронизация
@@ -402,6 +423,63 @@ tcb4c07d0 =
 
 # Allow…
 # taa765d22 =
+
+# {name} · {mb} MB (recommended)
+# t56daa311 =
+
+# {name} · {mb} MB
+# t8b03a237 =
+
+# Downloading {name}: {done} of {mb} MB
+# t7e025257 =
+
+# Stop
+# t4b7f7705 =
+
+# Ready: {name}, {mb} MB
+# t1da38629 =
+
+# On this device, in {dir}
+# t38f3c37a =
+
+# Remove
+# t21a5901d =
+
+# Not downloaded yet
+# t79a53bb5 =
+
+# From Hugging Face, where whisper.cpp publishes it; checked before it is used.
+# tcaa028e0 =
+
+# Download {mb} MB
+# tf266b00d =
+
+# Voice is off.
+# t201cf2d4 =
+
+# As the app
+# tfd37967d =
+
+# Find a code by voice
+# t027c8145 =
+
+# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+# t1342bee3 =
+
+# Model
+# t8285e8fa =
+
+# The larger ones are slower, and named no more codes right in our tests.
+# t52a58f5e =
+
+# Not downloaded: {why}
+# t86abdeb3 =
+
+# The language you speak
+# t244ca1cf =
+
+# Names said the English way are heard too. This device's own: it does not sync.
+# tb454f61c =
 
 # Folder
 # t06357afd =
@@ -727,6 +805,24 @@ tf8592ea2 = настройки не синхронизированы: { $e }
 # settings not written: {e}
 t60f438b7 = настройки не записаны: { $e }
 
+# Voice's model is still downloading (Settings › Voice).
+# t294c50cc =
+
+# Voice is off: download its model in Settings › Voice.
+# tcbeb5f49 =
+
+# The microphone could not be used: {e}
+# t70732a3f =
+
+# Voice: {e}
+# tb2751b66 =
+
+# Nothing was heard. Is the microphone allowed? System Settings › Privacy & Security › Microphone.
+# tc421facd =
+
+# Nothing was heard: is the microphone on?
+# t5de1c09c =
+
 # Find a code
 # t8b2733e6 =
 
@@ -774,6 +870,9 @@ tc7922c74 =
 
 # The counter was not saved: {e}
 # tb28eb5cc =
+
+# hold {key} and say a name
+# t96a7d255 =
 
 # Not typed in: {e}
 # tf4e0ecfa =

@@ -34,9 +34,34 @@ pub fn resample(samples: &[f32], rate: u32) -> Vec<f32> {
         .collect()
 }
 
+/// Whether `samples` hold nothing to hear: no sound louder than a quiet
+/// room's. A microphone the system has not let the app use gives zeros.
+pub fn is_silent(samples: &[f32]) -> bool {
+    if samples.is_empty() {
+        return true;
+    }
+    let power = samples.iter().map(|s| f64::from(*s).powi(2)).sum::<f64>() / samples.len() as f64;
+    power.sqrt() < QUIET
+}
+
+/// The loudness (RMS) under which a recording is silence: about -70 dBFS,
+/// below the hiss of any microphone in a room.
+const QUIET: f64 = 3e-4;
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn silence_is_told_from_speech() {
+        assert!(is_silent(&[]));
+        assert!(is_silent(&[0.0; 16_000]));
+        assert!(is_silent(&[1e-5; 16_000]));
+        let tone: Vec<f32> = (0..16_000)
+            .map(|i| (i as f32 * 0.05).sin() * 0.05)
+            .collect();
+        assert!(!is_silent(&tone));
+    }
 
     #[test]
     fn whispers_rate_is_kept() {

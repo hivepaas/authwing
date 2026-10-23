@@ -12,6 +12,8 @@ publish.workspace = true
 whisper = ["dep:whisper-rs", "dep:thiserror"]
 # Hold-to-talk recording from the default microphone.
 mic = ["dep:cpal", "dep:thiserror"]
+# Downloading a model from Hugging Face, checked against its sum.
+download = ["dep:reqwest", "dep:rustls", "dep:sha2", "dep:tokio", "dep:thiserror"]
 
 [dependencies]
 deunicode = "1.6"
@@ -20,12 +22,22 @@ sys-locale = "0.3"
 thiserror = { workspace = true, optional = true }
 whisper-rs = { version = "0.16", optional = true }
 cpal = { version = "0.18", optional = true }
+# reqwest on rustls with ring, as crates/remote and crates/update have them.
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"], optional = true }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"], optional = true }
+sha2 = { version = "0.10", optional = true }
+tokio = { workspace = true, optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 whisper-rs = { version = "0.16", optional = true, features = ["metal"] }
 
 [dev-dependencies]
 hound = "3.5"
+
+# Trying voice out by hand: records, keeps the WAV, says what was heard.
+[[example]]
+name = "listen"
+required-features = ["whisper", "mic"]
 
 [lints]
 workspace = true
