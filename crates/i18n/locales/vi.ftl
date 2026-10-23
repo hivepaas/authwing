@@ -94,6 +94,39 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
 
+# a key alone, or with Shift alone, is for typing
+t0d0135fa = một phím đơn, hoặc chỉ kèm Shift, là để gõ chữ
+
+# Type to find, or press Enter
+te54f3559 = Gõ để tìm, hoặc nhấn Enter
+
+# Matches this window
+t127fa712 = Khớp với cửa sổ này
+
+# Others
+t69bad712 = Mã khác
+
+# No codes yet: the + in authwing's window adds them.
+tdd6e3098 = Chưa có mã nào: nút + trong cửa sổ authwing để thêm.
+
+# No code matches.
+t2c168854 = Không có mã nào khớp.
+
+# {page} is not {site}: no code is typed there.
+t4b979ea8 = { $page } không phải { $site }: không gõ mã nào vào đó.
+
+# type into {app}
+tc5f5d5a6 = gõ vào { $app }
+
+# copy
+te562ea44 = sao chép
+
+# close
+t27cb3b23 = đóng
+
+# Allow Accessibility to type codes in
+t5e806dae = Cho phép Trợ năng để gõ mã vào
+
 # General
 t5561fd0b = Chung
 
@@ -274,6 +307,9 @@ t25bb4ed1 = Màu
 # Text size
 t2c041143 = Cỡ chữ
 
+# Quick panel
+t3fea61e2 = Bảng tra nhanh
+
 # Codes
 t758add25 = Mã
 
@@ -285,6 +321,27 @@ tedfee6ca = Chỉ khi clipboard vẫn còn giữ mã đó.
 
 # Off
 t0dc6b4aa = Tắt
+
+# Shortcut
+t97dcc893 = Phím tắt
+
+# Opens it over any app, with that app's codes first. This device's own.
+t5648409e = Mở bảng trên bất kỳ ứng dụng nào, mã của ứng dụng đó lên đầu. Riêng của thiết bị này.
+
+# Type codes into other apps
+t8562df4f = Gõ mã vào ứng dụng khác
+
+# Allowed: Enter in the quick panel types the code where you were.
+t9beca5b0 = Đã cho phép: Enter trong bảng tra nhanh gõ mã vào chỗ bạn vừa ở.
+
+# macOS asks first (Accessibility). Until then, Enter copies the code.
+t4fcdf7b5 = macOS hỏi trước (Trợ năng). Đến lúc đó, Enter sao chép mã.
+
+# Enter in the quick panel types the code where you were.
+tb88bea64 = Enter trong bảng tra nhanh gõ mã vào chỗ bạn vừa ở.
+
+# Allow…
+taa765d22 = Cho phép…
 
 # Folder
 t06357afd = Thư mục
@@ -616,6 +673,9 @@ t8b2733e6 = Tìm mã
 # Passphrase or recovery key
 t4774284e = Mật khẩu hoặc khoá khôi phục
 
+# The quick panel's shortcut {key} cannot be used: {e}
+td4cbf886 = Không dùng được phím tắt { $key } cho bảng tra nhanh: { $e }
+
 # A device asks to join: open Sync (the cloud) to approve it.
 tf1bf552a = Có thiết bị xin tham gia: mở Đồng bộ (biểu tượng đám mây) để duyệt.
 
@@ -651,6 +711,9 @@ t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 
 # The counter was not saved: {e}
 tb28eb5cc = Bộ đếm chưa được lưu: { $e }
+
+# Not typed in: {e}
+tf4e0ecfa = Chưa gõ được: { $e }
 
 # A code was not saved: {e}
 t6cd84653 = Một mã chưa được lưu: { $e }
@@ -700,18 +763,6 @@ t2f4582ba = Trang này không phải { $site }
 # {page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.
 t6ae50f4f = { $page } chỉ trông giống thôi. Những trang như vậy bắt chước trang đăng nhập thật để lấy mã của bạn: ở đây không có mã nào được đưa ra.
 
-# its site
-tb8141570 = trang web của nó
-
-# a rule
-tf5dd541a = một quy tắc
-
-# chosen here before
-td89d57b6 = đã chọn ở đây trước đó
-
-# its name in the title
-t04583a8a = tên của nó trong tiêu đề
-
 # Matched by {why}
 tf0c6b3bc = Khớp theo { $why }
 
@@ -753,3 +804,15 @@ t99b658f7 = Mở bằng Touch ID hoặc Windows Hello
 
 # Opening…
 tc40f2321 = Đang mở…
+
+# its site
+tb8141570 = trang web của nó
+
+# a rule
+tf5dd541a = một quy tắc
+
+# chosen here before
+td89d57b6 = đã chọn ở đây trước đó
+
+# its name in the title
+t04583a8a = tên của nó trong tiêu đề

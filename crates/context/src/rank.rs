@@ -399,6 +399,7 @@ mod tests {
             app_name: app_name.to_owned(),
             title: title.map(str::to_owned),
             pid: Some(42),
+            handle: None,
         }
     }
 

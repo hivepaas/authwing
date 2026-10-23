@@ -33,6 +33,10 @@ gpui_platform.workspace = true
 anyhow.workspace = true
 async-channel.workspace = true
 unicode-segmentation = "1"
+# The quick panel: a shortcut that works over any app, and the code typed
+# into that app.
+global-hotkey = "0.9"
+enigo = "0.6"
 # The clipboard's copy of a code, wiped from memory when dropped.
 zeroize = "1"
 

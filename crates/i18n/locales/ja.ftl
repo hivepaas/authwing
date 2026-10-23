@@ -91,6 +91,39 @@ te833da37 = config.toml, [shortcuts]：`{ $key }` が { $kept } と { $lost } �
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 # t87e7ceec =
 
+# a key alone, or with Shift alone, is for typing
+# t0d0135fa =
+
+# Type to find, or press Enter
+# te54f3559 =
+
+# Matches this window
+# t127fa712 =
+
+# Others
+# t69bad712 =
+
+# No codes yet: the + in authwing's window adds them.
+# tdd6e3098 =
+
+# No code matches.
+# t2c168854 =
+
+# {page} is not {site}: no code is typed there.
+# t4b979ea8 =
+
+# type into {app}
+# tc5f5d5a6 =
+
+# copy
+# te562ea44 =
+
+# close
+# t27cb3b23 =
+
+# Allow Accessibility to type codes in
+# t5e806dae =
+
 # General
 # t5561fd0b =
 
@@ -262,6 +295,9 @@ t89a71bba = 同期
 # Text size
 # t2c041143 =
 
+# Quick panel
+# t3fea61e2 =
+
 # Codes
 # t758add25 =
 
@@ -273,6 +309,27 @@ t89a71bba = 同期
 
 # Off
 # t0dc6b4aa =
+
+# Shortcut
+# t97dcc893 =
+
+# Opens it over any app, with that app's codes first. This device's own.
+# t5648409e =
+
+# Type codes into other apps
+# t8562df4f =
+
+# Allowed: Enter in the quick panel types the code where you were.
+# t9beca5b0 =
+
+# macOS asks first (Accessibility). Until then, Enter copies the code.
+# t4fcdf7b5 =
+
+# Enter in the quick panel types the code where you were.
+# tb88bea64 =
+
+# Allow…
+# taa765d22 =
 
 # Folder
 # t06357afd =
@@ -604,6 +661,9 @@ t60f438b7 = 設定を書き込めませんでした：{ $e }
 # Passphrase or recovery key
 # t4774284e =
 
+# The quick panel's shortcut {key} cannot be used: {e}
+# td4cbf886 =
+
 # A device asks to join: open Sync (the cloud) to approve it.
 # tf1bf552a =
 
@@ -636,6 +696,9 @@ t8ad2ae06 = 同期中…
 
 # The counter was not saved: {e}
 # tb28eb5cc =
+
+# Not typed in: {e}
+# tf4e0ecfa =
 
 # A code was not saved: {e}
 # t6cd84653 =
@@ -685,18 +748,6 @@ t12e9b880 = 削除できませんでした：{ $e }
 # {page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.
 # t6ae50f4f =
 
-# its site
-# tb8141570 =
-
-# a rule
-# tf5dd541a =
-
-# chosen here before
-# td89d57b6 =
-
-# its name in the title
-# t04583a8a =
-
 # Matched by {why}
 # tf0c6b3bc =
 
@@ -738,3 +789,15 @@ t78b7a6ee = 保管庫がロックされています
 
 # Opening…
 # tc40f2321 =
+
+# its site
+# tb8141570 =
+
+# a rule
+# tf5dd541a =
+
+# chosen here before
+# td89d57b6 =
+
+# its name in the title
+# t04583a8a =

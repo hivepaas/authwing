@@ -8,19 +8,20 @@
 
 use std::path::Path;
 
-use windows::Win32::Foundation::CloseHandle;
+use windows::Win32::Foundation::{CloseHandle, HWND};
 use windows::Win32::System::Threading::{
     OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     GetForegroundWindow, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId,
+    SetForegroundWindow,
 };
 use windows::core::PWSTR;
 
 use super::Window;
 
 pub(super) fn active() -> Option<Window> {
-    let (pid, title) = foreground()?;
+    let (handle, pid, title) = foreground()?;
     let exe = exe(pid).unwrap_or_default();
     let exe = Path::new(&exe);
     let name = |part: Option<&std::ffi::OsStr>| part.map(|p| p.to_string_lossy().into_owned());
@@ -29,12 +30,26 @@ pub(super) fn active() -> Option<Window> {
         app_name: name(exe.file_stem()).unwrap_or_default(),
         title: (!title.is_empty()).then_some(title),
         pid: (pid != 0).then_some(pid),
+        handle: u64::try_from(handle.0.addr()).ok(),
     })
 }
 
-/// The foreground window's process id and title.
+/// Makes the window `handle` the foreground window again. Windows lets the
+/// process that has the foreground do it.
 #[allow(unsafe_code)]
-fn foreground() -> Option<(u32, String)> {
+pub(super) fn bring_back(handle: u64) -> bool {
+    let Ok(handle) = usize::try_from(handle) else {
+        return false;
+    };
+    let window = HWND(std::ptr::without_provenance_mut(handle));
+    // SAFETY: user32 only looks the handle up, and fails on one that is no
+    // window (any more).
+    unsafe { SetForegroundWindow(window) }.as_bool()
+}
+
+/// The foreground window, its process id and its title.
+#[allow(unsafe_code)]
+fn foreground() -> Option<(HWND, u32, String)> {
     // SAFETY: the handle is only given back to user32, whose calls fail
     // cleanly on a window that has closed since; the text is written into
     // a buffer whose length is passed with it. GetWindowText reads the
@@ -50,7 +65,7 @@ fn foreground() -> Option<(u32, String)> {
         let mut text = vec![0u16; length + 1];
         let written = usize::try_from(GetWindowTextW(window, &mut text)).unwrap_or(0);
         text.truncate(written.min(length));
-        Some((pid, String::from_utf16_lossy(&text)))
+        Some((window, pid, String::from_utf16_lossy(&text)))
     }
 }
 

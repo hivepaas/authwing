@@ -9,6 +9,7 @@ pub struct Settings {
     pub sync: Sync,
     pub appearance: Appearance,
     pub codes: Codes,
+    pub panel: Panel,
     pub updates: Updates,
     /// `[shortcuts]`: keys for the window's shortcuts, by name, over the
     /// defaults. This device's own: keys differ between systems.
@@ -43,6 +44,30 @@ impl Default for Codes {
     fn default() -> Self {
         Codes {
             clear_clipboard: 20,
+        }
+    }
+}
+
+/// The quick panel: over any app, the codes for it. This device's own.
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[serde(default)]
+pub struct Panel {
+    /// The shortcut that opens it from any app (`alt+space`); empty: none.
+    pub key: String,
+}
+
+/// Option+Space on macOS; elsewhere Alt+Space opens the window's menu, so
+/// Ctrl+Alt+Space.
+pub const PANEL_KEY: &str = if cfg!(target_os = "macos") {
+    "alt+space"
+} else {
+    "ctrl+alt+space"
+};
+
+impl Default for Panel {
+    fn default() -> Self {
+        Panel {
+            key: PANEL_KEY.to_string(),
         }
     }
 }

@@ -9,7 +9,8 @@ use std::sync::{Mutex, PoisonError};
 use x11rb::connection::Connection;
 use x11rb::errors::ReplyError;
 use x11rb::protocol::xproto::{
-    Atom, AtomEnum, ConnectionExt as _, GetPropertyReply, Window as XWindow,
+    Atom, AtomEnum, ClientMessageEvent, ConnectionExt as _, EventMask, GetPropertyReply,
+    Window as XWindow,
 };
 use x11rb::rust_connection::RustConnection;
 
@@ -49,6 +50,20 @@ pub(super) fn active() -> Option<Window> {
             None
         }
     }
+}
+
+/// Asks the window manager to make `window` the active window again.
+pub(super) fn bring_back(window: u64) -> bool {
+    let Ok(window) = XWindow::try_from(window) else {
+        return false;
+    };
+    let mut display = DISPLAY.lock().unwrap_or_else(PoisonError::into_inner);
+    if display.is_none() {
+        *display = connect();
+    }
+    display
+        .as_ref()
+        .is_some_and(|display| display.activate(window).is_ok())
 }
 
 fn wayland() -> bool {
@@ -99,7 +114,23 @@ impl Display {
             app_name: class,
             title: (!title.is_empty()).then_some(title),
             pid: pid.filter(|&pid| pid != 0),
+            handle: Some(u64::from(window)),
         }))
+    }
+
+    /// A `_NET_ACTIVE_WINDOW` request, as EWMH has a pager send it (source
+    /// 2): window managers that refuse apps the focus to keep them from
+    /// stealing it still grant it to a pager.
+    fn activate(&self, window: XWindow) -> Result<(), x11rb::errors::ConnectionError> {
+        let request =
+            ClientMessageEvent::new(32, window, self.atoms._NET_ACTIVE_WINDOW, [2, 0, 0, 0, 0]);
+        self.connection.send_event(
+            false,
+            self.root,
+            EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY,
+            request,
+        )?;
+        self.connection.flush()
     }
 
     /// A window's property of the given type; empty if it has none.

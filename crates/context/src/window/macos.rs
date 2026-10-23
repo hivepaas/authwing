@@ -8,7 +8,7 @@
 
 use std::ptr::NonNull;
 
-use objc2_app_kit::NSWorkspace;
+use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication, NSWorkspace};
 use objc2_application_services::{
     AXError, AXIsProcessTrusted, AXIsProcessTrustedWithOptions, AXUIElement,
     kAXTrustedCheckOptionPrompt,
@@ -41,7 +41,17 @@ pub(super) fn active() -> Option<Window> {
         app_name,
         title: title.filter(|title| !title.is_empty()),
         pid: u32::try_from(pid).ok(),
+        handle: None,
     })
+}
+
+/// Brings the app `pid` to the front, with the window it had in front.
+pub(super) fn bring_back(pid: u32) -> bool {
+    let Ok(pid) = i32::try_from(pid) else {
+        return false;
+    };
+    NSRunningApplication::runningApplicationWithProcessIdentifier(pid)
+        .is_some_and(|app| app.activateWithOptions(NSApplicationActivationOptions::empty()))
 }
 
 #[allow(unsafe_code)]

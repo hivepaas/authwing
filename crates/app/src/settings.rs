@@ -938,12 +938,77 @@ impl SettingsView {
                     .child(row(tr!("Colors"), String::new(), mode_row))
                     .child(row(tr!("Text size"), String::new(), sizes)),
             )
+            .child(heading(tr!("Quick panel")))
+            .child(self.panel_card(cx))
             .child(heading(tr!("Codes")))
             .child(card().child(row(
                 tr!("Clear a copied code from the clipboard after"),
                 tr!("Only if the clipboard still holds it."),
                 clears,
             )))
+    }
+
+    /// The quick panel's shortcut, and whether codes can be typed into
+    /// other apps.
+    fn panel_card(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let key = self.settings.panel.key.trim().to_string();
+        let mac = cfg!(target_os = "macos");
+        // Elsewhere Alt+Space opens the window's menu, and Windows keeps
+        // Win+Space and Win+Shift+Space for the keyboard's language.
+        let mut keys: Vec<(String, String)> = if mac {
+            vec![
+                ("alt+space".into(), "⌥Space".into()),
+                ("ctrl+alt+space".into(), "⌃⌥Space".into()),
+                ("cmd+shift+space".into(), "⌘⇧Space".into()),
+            ]
+        } else {
+            vec![
+                ("ctrl+alt+space".into(), "Ctrl+Alt+Space".into()),
+                ("alt+shift+space".into(), "Alt+Shift+Space".into()),
+                ("ctrl+shift+space".into(), "Ctrl+Shift+Space".into()),
+            ]
+        };
+        // One written in config.toml by hand, shown as written.
+        if !key.is_empty() && !keys.iter().any(|(k, _)| *k == key) {
+            keys.insert(0, (key.clone(), key.clone()));
+        }
+        keys.push((String::new(), tr!("Off")));
+        let mut choices = div().flex().flex_wrap().gap(px(6.));
+        for (k, label) in keys {
+            let on = key == k;
+            choices = choices.child(choice(&format!("panel-{k}"), &label, on).on_click(
+                cx.listener(move |view, _, _, cx| {
+                    view.set(&["panel", "key"], Some(SettingValue::Str(k.clone())), cx)
+                }),
+            ));
+        }
+        let allowed = crate::typing::allowed();
+        card()
+            .child(row(
+                tr!("Shortcut"),
+                tr!("Opens it over any app, with that app's codes first. This device's own."),
+                choices,
+            ))
+            .child(row(
+                tr!("Type codes into other apps"),
+                if allowed {
+                    tr!("Allowed: Enter in the quick panel types the code where you were.")
+                } else if mac {
+                    tr!("macOS asks first (Accessibility). Until then, Enter copies the code.")
+                } else {
+                    tr!("Enter in the quick panel types the code where you were.")
+                },
+                div().when(mac && !allowed, |d| {
+                    d.child(
+                        outline_button("allow-typing", &tr!("Allow…")).on_click(cx.listener(
+                            |_, _, _, cx| {
+                                authwing_context::window::ask_title_access();
+                                cx.notify();
+                            },
+                        )),
+                    )
+                }),
+            ))
     }
 
     fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
