@@ -65,6 +65,26 @@ settings = true              # the settings that are not this device's own sync 
   sign-in off at the site first, or keep its recovery codes: without the
   code you cannot sign in there.
 
+## The browser extension
+
+With authwing's extension in the browser, the app knows the page in front
+exactly, not just the window's title:
+
+- A code saved with the page's site (or below it: `github.com` covers
+  `gist.github.com`) comes first, and when you copy it on a page with a field
+  for a code, it is typed in too.
+- A page whose address only looks like a saved site
+  (`github.com.login-verify.io`, `githuh.com`, look-alike letters) gets no code,
+  and the window says why.
+- The extension keeps no codes: it only says where the tab is and fills in
+  what the app sends, into that page if it still shows the address the app
+  checked.
+
+To set it up, build it (`extension/README.md`), load it unpacked, and tell the
+browsers where authwing is, once: `authwing --install-browser-host` (it says
+where it wrote; `--uninstall-browser-host` takes it back). The app must be
+running for the extension to link to it; its popup says whether it is.
+
 ## Language
 
 authwing speaks the system's language where it has it, else English;

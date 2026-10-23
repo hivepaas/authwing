@@ -175,6 +175,12 @@ t60f438b7 = no se escribieron los ajustes: { $e }
 # A device asks to join: open Sync (the cloud) to approve it.
 # tf1bf552a =
 
+# Typed into the page.
+# t97706593 =
+
+# Not typed into the page: {why}
+# t709fb554 =
+
 # Not syncing
 # t0f346f03 =
 
@@ -249,6 +255,12 @@ t12e9b880 = No se eliminó: { $e }
 
 # Counter
 # tfc0f33c3 =
+
+# This page is not {site}
+# t2f4582ba =
+
+# {page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.
+# t6ae50f4f =
 
 # its site
 # tb8141570 =

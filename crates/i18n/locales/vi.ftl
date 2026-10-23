@@ -178,6 +178,12 @@ t4774284e = Mật khẩu hoặc khoá khôi phục
 # A device asks to join: open Sync (the cloud) to approve it.
 tf1bf552a = Có thiết bị xin tham gia: mở Đồng bộ (biểu tượng đám mây) để duyệt.
 
+# Typed into the page.
+t97706593 = Đã gõ vào trang.
+
+# Not typed into the page: {why}
+t709fb554 = Chưa gõ được vào trang: { $why }
+
 # Not syncing
 t0f346f03 = Chưa đồng bộ
 
@@ -258,6 +264,12 @@ t8dc21305 = Đã copy
 
 # Counter
 tfc0f33c3 = Bộ đếm
+
+# This page is not {site}
+t2f4582ba = Trang này không phải { $site }
+
+# {page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.
+t6ae50f4f = { $page } chỉ trông giống thôi. Những trang như vậy bắt chước trang đăng nhập thật để lấy mã của bạn: ở đây không có mã nào được đưa ra.
 
 # its site
 tb8141570 = trang web của nó

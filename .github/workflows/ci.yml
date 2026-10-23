@@ -85,6 +85,29 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  extension:
+    name: extension (TypeScript)
+    # The browser extension: with the Linux build, wherever that runs.
+    if: github.event_name != 'workflow_dispatch' || contains(fromJSON('["all","linux"]'), inputs.platforms)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Type-check and build
+        run: |
+          npm ci
+          npm run check
+          npm run build
+
   releasesign:
     name: releasesign (Go)
     # The release signing tool: with the Linux build, wherever that runs.

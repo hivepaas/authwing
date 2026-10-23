@@ -1,13 +1,17 @@
 //! authwing: two-factor codes that know the window you are in.
 //!
-//! Usage: `authwing`. The codes live in the vault in the config directory
+//! Usage: `authwing`, or `authwing --install-browser-host` (and
+//! `--uninstall-browser-host`) to tell the browsers where authwing is, for
+//! its extension. The codes live in the vault in the config directory
 //! (`$AUTHWING_CONFIG_DIR` overrides it); settings in its `config.toml`
-//! (see `docs/configuration.md`).
+//! (see `docs/configuration.md`). Started by a browser, authwing is its
+//! extension's native messaging host instead (see `authwing_bridge`).
 
 // A GUI program on Windows: no console window opens beside it.
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 mod add_code;
+mod browser;
 mod chrome;
 mod codes;
 mod colors;
@@ -117,8 +121,47 @@ impl gpui::AssetSource for Assets {
 /// How often config.toml is checked for edits.
 const CONFIG_POLL: Duration = Duration::from_millis(500);
 
-const USAGE: &str = "usage: authwing
-  Two-factor codes. Settings: config.toml in the config directory.";
+const USAGE: &str = "usage: authwing [--install-browser-host | --uninstall-browser-host]
+  Two-factor codes. Settings: config.toml in the config directory.
+  --install-browser-host    tell the browsers where authwing is, for its extension
+  --uninstall-browser-host  take that back";
+
+/// Writes or removes the browsers' manifests for the extension's host:
+/// what the process should exit with.
+fn browser_host(install: bool) -> i32 {
+    use authwing_bridge::install::{self, Dirs, Os};
+    let dirs = match Dirs::for_user() {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("authwing: {e}");
+            return 1;
+        }
+    };
+    let done = if install {
+        match std::env::current_exe() {
+            Ok(program) => install::install(Os::CURRENT, &dirs, &program),
+            Err(e) => Err(e),
+        }
+    } else {
+        install::uninstall(Os::CURRENT, &dirs)
+    };
+    match done {
+        Ok(places) if places.is_empty() => {
+            println!("No browser the extension runs in was found.");
+            0
+        }
+        Ok(places) => {
+            for (browser, place) in places {
+                println!("{}: {}", browser.name(), place.manifest().display());
+            }
+            0
+        }
+        Err(e) => {
+            eprintln!("authwing: {e}");
+            1
+        }
+    }
+}
 
 /// Windows starts a GUI program without a console. Started from a terminal,
 /// the app takes that one, so `--help` and errors are written there.
@@ -132,15 +175,25 @@ fn attach_console() {
 }
 
 fn main() -> anyhow::Result<()> {
+    // Started by a browser: its stdout is the extension's, so nothing else
+    // may be written first.
+    let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
+    if authwing_bridge::host::is_native_host_invocation(&args) {
+        std::process::exit(authwing_bridge::host::run_native_host(&args));
+    }
     #[cfg(windows)]
     attach_console();
     if let Some(a) = std::env::args().nth(1) {
-        if a == "-h" || a == "--help" {
-            println!("{USAGE}");
-            return Ok(());
+        match a.as_str() {
+            "-h" | "--help" => println!("{USAGE}"),
+            "--install-browser-host" => std::process::exit(browser_host(true)),
+            "--uninstall-browser-host" => std::process::exit(browser_host(false)),
+            _ => {
+                eprintln!("authwing: unknown argument {a}\n{USAGE}");
+                std::process::exit(2);
+            }
         }
-        eprintln!("authwing: unknown argument {a}\n{USAGE}");
-        std::process::exit(2);
+        return Ok(());
     }
     let (live, problems) = look::Live::open(Store::default_dir().map(Store::new));
     // The app's language, before anything is said.

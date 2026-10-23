@@ -10,12 +10,13 @@ use gpui::{
 };
 
 use authwing_config::{EditFile, Hotkey};
-use authwing_context::{Code, Context as Where, Ranking, Reason};
+use authwing_context::{Code, Context as Where, Page, Ranking, Reason, Warning};
 use authwing_i18n::{tr, tr_n};
 use authwing_totp::Kind;
 use authwing_vault::{Lock, Request, Unlock};
 
 use crate::add_code::{AddCode, AddEvent};
+use crate::browser::{self, Bridge, Tab};
 use crate::chrome;
 use crate::codes::{self, Entry};
 use crate::colors::colors;
@@ -68,6 +69,9 @@ pub struct Workspace {
     passphrase_joins: bool,
     /// The window of another app used last: its codes come first.
     elsewhere: Option<authwing_context::Window>,
+    /// The browser extension, and the tab in front as it last said.
+    _bridge: Bridge,
+    tab: Option<Tab>,
     bounds_change: u64,
     /// The passphrase or recovery key typed to open a locked vault.
     unlock: Entity<TextInput>,
@@ -108,6 +112,21 @@ impl Workspace {
             }
         })
         .detach();
+        let (heard, said) = async_channel::unbounded();
+        let bridge = Bridge::start(move |event| {
+            let _ = heard.send_blocking(event);
+        });
+        cx.spawn(async move |this, cx| {
+            while let Ok(event) = said.recv().await {
+                if this
+                    .update(cx, |ws, cx| ws.browser_event(event, cx))
+                    .is_err()
+                {
+                    return;
+                }
+            }
+        })
+        .detach();
         // Once a second: the codes move on, the clipboard is cleared when due.
         cx.spawn(async move |this, cx| {
             loop {
@@ -132,6 +151,8 @@ impl Workspace {
             requests: vec![],
             passphrase_joins: false,
             elsewhere: None,
+            _bridge: bridge,
+            tab: None,
             bounds_change: 0,
             unlock,
             unlocking: false,
@@ -326,6 +347,31 @@ impl Workspace {
         cx.notify();
     }
 
+    fn browser_event(&mut self, event: authwing_bridge::listener::Event, cx: &mut Context<Self>) {
+        let (tab, filled) = browser::tab_after(self.tab.take(), event);
+        self.tab = tab;
+        if let Some(f) = filled {
+            if f.ok {
+                self.say(Notice::good(tr!("Typed into the page.")));
+            } else {
+                self.say(Notice::warn(tr!(
+                    "Not typed into the page: {why}",
+                    why = f.reason.unwrap_or_default()
+                )));
+            }
+        }
+        cx.notify();
+    }
+
+    /// The page in the window used last, when that window is a browser
+    /// with the extension.
+    fn page(&self) -> Option<&Tab> {
+        let window = self.elsewhere.as_ref()?;
+        browser::is_browser(&window.app_id)
+            .then_some(self.tab.as_ref())
+            .flatten()
+    }
+
     /// How syncing goes, in a line.
     fn sync_status(&self) -> String {
         match &self.sync_state {
@@ -406,25 +452,46 @@ impl Workspace {
             .collect()
     }
 
-    /// Puts the code `id` shows now on the clipboard. An HOTP code moves on
-    /// to its next, as it is used.
+    /// Puts the code `id` shows now on the clipboard, and types it into the
+    /// page in front when that is the code's site and has a field for it.
+    /// An HOTP code moves on to its next, as it is used.
     fn copy(&mut self, id: &str, cx: &mut Context<Self>) {
         let Some(entry) = self.codes.iter().find(|c| c.id == id) else {
             return;
         };
         let code = entry.otp.code_at(codes::now());
+        let next = match entry.otp.kind {
+            Kind::Hotp { counter } => {
+                let mut next = entry.otp.clone();
+                next.kind = Kind::Hotp {
+                    counter: counter.saturating_add(1),
+                };
+                Some((next, entry.group.clone(), entry.sites.clone()))
+            }
+            _ => None,
+        };
+        let verified = self
+            .for_window()
+            .1
+            .iter()
+            .any(|(e, why)| e.id == id && why.verified());
+        let typed = verified
+            .then(|| self.page().filter(|t| t.has_code_field))
+            .flatten()
+            .map(|tab| browser::fill(tab, &code));
+        if let Some(Err(e)) = typed {
+            self.say(Notice::warn(tr!(
+                "Not typed into the page: {why}",
+                why = e.to_string()
+            )));
+        }
         cx.write_to_clipboard(ClipboardItem::new_string(code.clone()));
         self.clipboard = Some((code, Instant::now()));
         self.copied = Some((id.to_string(), Instant::now()));
-        if let Kind::Hotp { counter } = entry.otp.kind
+        if let Some((next, group, sites)) = next
             && let Some(vault) = self.vault.ready()
         {
-            let mut next = entry.otp.clone();
-            next.kind = Kind::Hotp {
-                counter: counter.saturating_add(1),
-            };
-            let saved = codes::save(&vault, Some(id), &next, &entry.group, &entry.sites);
-            if let Err(e) = saved {
+            if let Err(e) = codes::save(&vault, Some(id), &next, &group, &sites) {
                 self.say(Notice::bad(tr!("The counter was not saved: {e}", e = e)));
             }
             self.reload();
@@ -1015,14 +1082,21 @@ impl Workspace {
             .into_any_element()
     }
 
-    /// The codes for the window used last, surest first, with why each.
-    fn for_window(&self) -> (Option<&authwing_context::Window>, Vec<(&Entry, Reason)>) {
+    /// The codes for the window used last, surest first, with why each;
+    /// or, on a page that only looks like a code's site, why none is.
+    fn for_window(
+        &self,
+    ) -> (
+        Option<&authwing_context::Window>,
+        Vec<(&Entry, Reason)>,
+        Option<Warning>,
+    ) {
         let Some(window) = &self.elsewhere else {
-            return (None, vec![]);
+            return (None, vec![], None);
         };
         let place = Where {
             window: Some(window.clone()),
-            page: None,
+            page: self.page().map(|t| Page::parse(&t.url)),
         };
         let list: Vec<Code> = self
             .codes
@@ -1034,22 +1108,43 @@ impl Workspace {
                 times: 0,
             })
             .collect();
-        let found = match authwing_context::rank(&place, &list) {
-            Ranking::Candidates(found) => found
-                .into_iter()
-                .take(FOR_WINDOW)
-                .filter_map(|c| Some((self.codes.get(c.code)?, c.why)))
-                .collect(),
-            // Only pages are looked alike, and the window gives none yet.
-            Ranking::LookAlike(_) => vec![],
-        };
-        (Some(window), found)
+        match authwing_context::rank(&place, &list) {
+            Ranking::Candidates(found) => {
+                let found = found
+                    .into_iter()
+                    .take(FOR_WINDOW)
+                    .filter_map(|c| Some((self.codes.get(c.code)?, c.why)))
+                    .collect();
+                (Some(window), found, None)
+            }
+            Ranking::LookAlike(w) => (Some(window), vec![], Some(w)),
+        }
     }
 
     fn for_window_view(&self, now: u64, cx: &mut Context<Self>) -> Option<gpui::Div> {
         let c = colors();
-        let (window, found) = self.for_window();
+        let (window, found, warning) = self.for_window();
         let window = window?;
+        if let Some(w) = warning {
+            return Some(
+                notice::colored(div(), notice::Tone::Bad)
+                    .mb(px(18.))
+                    .p(px(14.))
+                    .rounded(px(12.))
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(tr!("This page is not {site}", site = w.like.to_string())),
+                    )
+                    .child(div().text_size(ui(12.)).child(tr!(
+                        "{page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.",
+                        page = w.page.clone()
+                    ))),
+            );
+        }
         if found.is_empty() {
             return None;
         }

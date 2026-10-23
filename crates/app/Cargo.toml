@@ -26,6 +26,7 @@ authwing-i18n.workspace = true
 authwing-presence.workspace = true
 authwing-totp.workspace = true
 authwing-context.workspace = true
+authwing-bridge.workspace = true
 gpui.workspace = true
 gpui_platform.workspace = true
 anyhow.workspace = true

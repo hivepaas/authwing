@@ -17,7 +17,13 @@ t304ff7fb = Нет
 # tdb7a122d =
 
 # The export holds no code authwing can use ({n} left out). | The export holds no code authwing can use ({n} left out).
-# ta13f22fd =
+ta13f22fd =
+    { $n ->
+        [one] В экспорте нет кодов, которые authwing может использовать ({ $n } пропущен).
+        [few] В экспорте нет кодов, которые authwing может использовать ({ $n } пропущено).
+        [many] В экспорте нет кодов, которые authwing может использовать ({ $n } пропущено).
+       *[other] В экспорте нет кодов, которые authwing может использовать ({ $n } пропущено).
+    }
 
 # Add a code
 # t82066414 =
@@ -175,6 +181,12 @@ t60f438b7 = настройки не записаны: { $e }
 # A device asks to join: open Sync (the cloud) to approve it.
 # tf1bf552a =
 
+# Typed into the page.
+# t97706593 =
+
+# Not typed into the page: {why}
+# t709fb554 =
+
 # Not syncing
 # t0f346f03 =
 
@@ -185,7 +197,13 @@ t8ad2ae06 = Синхронизация…
 # t4df6f903 =
 
 # Synced {n} minute ago | Synced {n} minutes ago
-# tc7922c74 =
+tc7922c74 =
+    { $n ->
+        [one] Синхронизировано { $n } минуту назад
+        [few] Синхронизировано { $n } минуты назад
+        [many] Синхронизировано { $n } минут назад
+       *[other] Синхронизировано { $n } минуты назад
+    }
 
 # {when}: {pulled} in, {pushed} out
 # t9dc23f47 =
@@ -203,7 +221,13 @@ t8ad2ae06 = Синхронизация…
 # t6cd84653 =
 
 # {n} code added. | {n} codes added.
-# tcb4c07d0 =
+tcb4c07d0 =
+    { $n ->
+        [one] Добавлен { $n } код.
+        [few] Добавлено { $n } кода.
+        [many] Добавлено { $n } кодов.
+       *[other] Добавлено { $n } кода.
+    }
 
 # Delete the code for {name}?
 # t1690127f =
@@ -249,6 +273,12 @@ t12e9b880 = Не удалено: { $e }
 
 # Counter
 # tfc0f33c3 =
+
+# This page is not {site}
+# t2f4582ba =
+
+# {page} only looks like it. Pages like this copy a real sign-in to take your code: none is offered here.
+# t6ae50f4f =
 
 # its site
 # tb8141570 =

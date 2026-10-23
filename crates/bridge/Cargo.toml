@@ -1,0 +1,30 @@
+[package]
+name = "authwing-bridge"
+description = "The browser extension's bridge: the native messaging host and the app's end of it"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+interprocess = "2.4"
+dirs = "7"
+
+# The process's user, to compare with the other end's.
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.31", default-features = false, features = ["user"] }
+
+# The registry keys that point browsers at the host's manifests, and the
+# pipe's access list, which interprocess takes as a UTF-16 string.
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+widestring = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

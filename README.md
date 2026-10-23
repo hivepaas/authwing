@@ -37,6 +37,11 @@ from there; the SSH client does not.
   in the sidebar.
 * **For the window used last:** the codes for the app you were in come first,
   by the sites saved with them or their name in the window's title.
+* **Browser extension** (Chrome, Edge, Brave, Arc, Vivaldi, Firefox; in
+  `extension/`): it tells the app the page's exact address, so a code saved
+  with that site comes first and is typed into the page when copied; a page
+  whose address only looks like a saved site (`github.com.login-verify.io`)
+  gets no code and a warning. Not in the stores yet: load it unpacked.
 * **Encrypted vault and sync:** through a folder (iCloud Drive, Syncthing,
   Dropbox…) or a Git repository; a new device joins with the recovery key or
   by approving six digits on a device that syncs. Only ciphertext leaves the
@@ -44,18 +49,15 @@ from there; the SSH client does not.
 * **Languages:** English and Vietnamese in full; German, Spanish, French,
   Portuguese, Russian, Japanese, Korean and Chinese in part.
 
-**In the crates, not yet in the window**
+**In a crate, not yet in the window**
 
-* **Look-alike sites** (`authwing-context`): a page whose address only looks
-  like a saved site (`github.com.login-verify.io`) gets no code and a warning.
 * **Voice** (`authwing-voice`): "open Vietcombank", "Öffne PayPal": Whisper on
   the device, the name matched in any language.
-* **Browser extension** (`authwing-bridge`, `extension/`): tells the app the
-  page's exact address over Native Messaging, and types the code in.
 
-**Next:** a quick panel over any app (a global shortcut), the extension in the
-window, Settings (sync places with their passwords, the vault's passphrase,
-Touch ID), import from other authenticators, release signing.
+**Next:** a quick panel over any app (a global shortcut), voice in it,
+Settings (sync places with their passwords, the vault's passphrase, Touch ID,
+the browsers), import from other authenticators, the extension in the stores,
+release signing.
 
 ---
 
