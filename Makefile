@@ -1,4 +1,4 @@
-# Building shellwing in one word: `make build`, `make run`; `make` alone lists
+# Building authwing in one word: `make build`, `make run`; `make` alone lists
 # the rest. Needs Rust (rustup) and Zig 0.16 on PATH, plus each platform's
 # tools (docs/platforms.md). On Windows, run it from Git Bash or MSYS2.
 #
@@ -50,36 +50,36 @@ else
 endif
 
 run: zig ## Build (debug) and start the app
-	$(CARGO) run -p shellwing
+	$(CARGO) run -p authwing
 
 dev: zig ## Debug build: quicker to make, slower to run
-	$(CARGO) build -p shellwing
+	$(CARGO) build -p authwing
 
-build-mac: zig ## macOS release build -> dist/shellwing-macos-<arch>
+build-mac: zig ## macOS release build -> dist/authwing-macos-<arch>
 ifneq ($(HOST),Darwin)
 	@echo "build-mac runs on a Mac (this is $(HOST)); CI: Run workflow > macos"; exit 1
 endif
-	$(CARGO) build --release -p shellwing
-	@mkdir -p $(DIST) && cp target/release/shellwing $(DIST)/shellwing-macos-$(ARCH)
-	@echo "built $(DIST)/shellwing-macos-$(ARCH)"
+	$(CARGO) build --release -p authwing
+	@mkdir -p $(DIST) && cp target/release/authwing $(DIST)/authwing-macos-$(ARCH)
+	@echo "built $(DIST)/authwing-macos-$(ARCH)"
 
-build-linux: zig ## Linux release build -> dist/shellwing-linux-<arch>
+build-linux: zig ## Linux release build -> dist/authwing-linux-<arch>
 ifneq ($(HOST),Linux)
 	@echo "build-linux runs on Linux (this is $(HOST)): GPUI links the system's Wayland and X11"
 	@echo "libraries. Build in a Linux VM or container, or CI: Run workflow > linux."; exit 1
 endif
-	$(CARGO) build --release -p shellwing --no-default-features --features $(LINUX_FEATURES)
-	@mkdir -p $(DIST) && cp target/release/shellwing $(DIST)/shellwing-linux-$(ARCH)
-	@echo "built $(DIST)/shellwing-linux-$(ARCH)"
+	$(CARGO) build --release -p authwing --no-default-features --features $(LINUX_FEATURES)
+	@mkdir -p $(DIST) && cp target/release/authwing $(DIST)/authwing-linux-$(ARCH)
+	@echo "built $(DIST)/authwing-linux-$(ARCH)"
 
-build-windows: zig ## Windows release build -> dist/shellwing-windows-<arch>.exe
+build-windows: zig ## Windows release build -> dist/authwing-windows-<arch>.exe
 ifneq ($(HOST),Windows)
 	@echo "build-windows runs on Windows (this is $(HOST)), with Visual Studio Build Tools;"
 	@echo "see docs/platforms.md, or CI: Run workflow > windows."; exit 1
 endif
-	$(CARGO) build --release -p shellwing
-	@mkdir -p $(DIST) && cp target/release/shellwing.exe $(DIST)/shellwing-windows-$(ARCH).exe
-	@echo "built $(DIST)/shellwing-windows-$(ARCH).exe"
+	$(CARGO) build --release -p authwing
+	@mkdir -p $(DIST) && cp target/release/authwing.exe $(DIST)/authwing-windows-$(ARCH).exe
+	@echo "built $(DIST)/authwing-windows-$(ARCH).exe"
 
 install-desktop: ## Linux: add the built app to the desktop's launcher
 	scripts/install-desktop.sh
@@ -97,19 +97,19 @@ endif
 
 # Xcode rather than the Command Line Tools, which have no iOS SDK.
 build-ios-core: export DEVELOPER_DIR ?= /Applications/Xcode.app/Contents/Developer
-build-ios-core: zig ## shellwing-core for the iOS Simulator (needs Xcode)
+build-ios-core: zig ## authwing-core for the iOS Simulator (needs Xcode)
 	$(RUSTUP) target add aarch64-apple-ios-sim
-	$(CARGO) build -p shellwing-core --target aarch64-apple-ios-sim
+	$(CARGO) build -p authwing-core --target aarch64-apple-ios-sim
 
 ANDROID_NDK_HOME ?= $(firstword $(wildcard /opt/homebrew/share/android-ndk $(HOME)/Library/Android/sdk/ndk/* $(HOME)/Android/Sdk/ndk/*))
 NDK_BIN = $(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/$(if $(filter Darwin,$(HOST)),darwin,linux)-x86_64/bin
 build-android-core: export ANDROID_NDK_HOME := $(ANDROID_NDK_HOME)
 build-android-core: export CC_aarch64_linux_android = $(NDK_BIN)/aarch64-linux-android24-clang
 build-android-core: export AR_aarch64_linux_android = $(NDK_BIN)/llvm-ar
-build-android-core: zig ## shellwing-core for Android arm64 (needs the NDK)
+build-android-core: zig ## authwing-core for Android arm64 (needs the NDK)
 	@test -d "$(ANDROID_NDK_HOME)" || { echo "no Android NDK found: set ANDROID_NDK_HOME (docs/platforms.md)"; exit 1; }
 	$(RUSTUP) target add aarch64-linux-android
-	$(CARGO) build -p shellwing-core --target aarch64-linux-android
+	$(CARGO) build -p authwing-core --target aarch64-linux-android
 
 ## Before a pull request (CONTRIBUTING.md)
 

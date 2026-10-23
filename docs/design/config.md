@@ -3,13 +3,13 @@
 ## Where
 
 The config directory is the platform's, overridable with
-`$SHELLWING_CONFIG_DIR`:
+`$AUTHWING_CONFIG_DIR`:
 
 | OS | Directory |
 | --- | --- |
-| Linux | `$XDG_CONFIG_HOME/shellwing` (`~/.config/shellwing`) |
-| macOS | `~/Library/Application Support/shellwing` |
-| Windows | `%APPDATA%\shellwing` |
+| Linux | `$XDG_CONFIG_HOME/authwing` (`~/.config/authwing`) |
+| macOS | `~/Library/Application Support/authwing` |
+| Windows | `%APPDATA%\authwing` |
 
 ```
 config.toml       settings; edited by people and by the Settings screen; per device
@@ -67,7 +67,7 @@ beats the host's `user`.
 ## hosts.toml
 
 ```toml
-# Written by shellwing. Editing by hand is fine; comments are kept.
+# Written by authwing. Editing by hand is fine; comments are kept.
 [[group]]
 id = "01JAQ7…"
 name = "Production"
@@ -76,7 +76,7 @@ color = "pink"
 [[host]]
 id = "01JAQ8…"            # ULID; stays when renamed; sync matches on it
 name = "api-1"
-alias = "api1"            # `shellwing api1`
+alias = "api1"            # `authwing api1`
 address = "10.0.1.11"
 port = 22
 user = "deploy"

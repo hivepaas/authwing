@@ -5,7 +5,7 @@ CI builds and tests every push to main and every pull request into main on Linux
 (arm64) and Windows (x86_64) run when started by hand, once a feature is ready:
 Actions → CI → Run workflow, pick the branch and the platforms, or
 `gh workflow run ci.yml --ref <branch> -f platforms=all`. Each run uploads the
-binaries as workflow artifacts (`shellwing-<platform>`), so a test machine does
+binaries as workflow artifacts (`authwing-<platform>`), so a test machine does
 not need a toolchain: download the artifact from the run's summary page.
 
 Rendering and input (IME, keyboard layouts, HiDPI) still need a real desktop;
@@ -29,25 +29,25 @@ hand:
 
 ```sh
 cargo build --release          # Linux: Wayland and X11
-cargo build --release -p shellwing --no-default-features --features wayland   # Linux without the X11 libraries
+cargo build --release -p authwing --no-default-features --features wayland   # Linux without the X11 libraries
 ```
 
 Downloaded macOS binaries are quarantined by Gatekeeper; clear the flag once:
 
 ```sh
-xattr -d com.apple.quarantine ./shellwing && chmod +x ./shellwing
+xattr -d com.apple.quarantine ./authwing && chmod +x ./authwing
 ```
 
 ## The core on iOS and Android
 
-There is no mobile app yet, but `shellwing-core` (term, ssh, config, vault) builds
+There is no mobile app yet, but `authwing-core` (term, ssh, config, vault) builds
 for the phones, for a front end to link. The vault's key store comes from the app
 there (`VaultSlot::open_with`): the keyring crate picks none on iOS or Android.
 
 - iOS: Xcode with the iOS SDK. If `xcode-select -p` shows the Command Line Tools,
   set `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`, then
   `rustup target add aarch64-apple-ios-sim` and
-  `cargo build -p shellwing-core --target aarch64-apple-ios-sim`.
+  `cargo build -p authwing-core --target aarch64-apple-ios-sim`.
 - Android: the NDK (`brew install --cask android-ndk` on macOS), with
   `ANDROID_NDK_HOME` pointing at it, and its clang for the C parts:
 
@@ -56,7 +56,7 @@ there (`VaultSlot::open_with`): the keyring crate picks none on iOS or Android.
   export CC_aarch64_linux_android="$bin/aarch64-linux-android24-clang"
   export AR_aarch64_linux_android="$bin/llvm-ar"
   rustup target add aarch64-linux-android
-  cargo build -p shellwing-core --target aarch64-linux-android
+  cargo build -p authwing-core --target aarch64-linux-android
   ```
 
 CI builds the Android core on every pull request; iOS when started by hand
@@ -77,9 +77,9 @@ Microsoft's Windows 11 Enterprise evaluation image works for testing.
 
 ## What to check by hand
 
-Connect to any SSH server you can reach (`shellwing user@host`), with the key in
+Connect to any SSH server you can reach (`authwing user@host`), with the key in
 your ssh-agent (OpenSSH agent or Pageant on Windows) or, in a debug build,
-`SHELLWING_PASSWORD`.
+`AUTHWING_PASSWORD`.
 
 1. Typing, Enter, Backspace, arrows, Ctrl+C; `htop` and `vim` (including the mouse).
 2. Input methods: with an input source that composes text (an IME), the
@@ -92,5 +92,5 @@ your ssh-agent (OpenSSH agent or Pageant on Windows) or, in a debug build,
 6. Links: hold Ctrl (Cmd on macOS) over a URL, click to open.
 7. `echo "日本語 한국어 😀 🇻🇳"` stays aligned on the grid.
 8. HiDPI: text is sharp at the display's scale (e.g. 125 % or 150 % on Windows).
-9. Performance: `SHELLWING_BENCH=flood shellwing user@host` prints frames per second
-   (expect the display's refresh rate); `SHELLWING_BENCH=latency` prints echo latency.
+9. Performance: `AUTHWING_BENCH=flood authwing user@host` prints frames per second
+   (expect the display's refresh rate); `AUTHWING_BENCH=latency` prints echo latency.

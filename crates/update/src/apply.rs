@@ -16,7 +16,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use shellwing_spawn::Unblocked;
+use authwing_spawn::Unblocked;
 
 use crate::install::Install;
 
@@ -83,7 +83,7 @@ pub fn replace_bundle(
         .parent()
         .ok_or_else(|| io::Error::other("no folder"))?;
     // Beside it, so the swap is a rename on one volume.
-    let work = parent.join(format!(".shellwing-update-{}", std::process::id()));
+    let work = parent.join(format!(".authwing-update-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&work);
     std::fs::create_dir(&work)?;
     let done = (|| {
@@ -187,7 +187,7 @@ mod tests {
 
     fn temp(name: &str) -> PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-apply-{}-{name}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-apply-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         dir
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn an_appimage_is_replaced_whole_and_left_runnable() {
         let dir = temp("appimage");
-        let image = dir.join("shellwing.AppImage");
+        let image = dir.join("authwing.AppImage");
         let new = dir.join("downloaded");
         std::fs::write(&image, b"old").expect("old");
         std::fs::write(&new, b"new").expect("new");
@@ -217,7 +217,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// A tar.gz holding `Shellwing.app` with one file saying `what`.
+    /// A tar.gz holding `Authwing.app` with one file saying `what`.
     fn app_archive(path: &Path, what: &str) {
         let file = std::fs::File::create(path).expect("archive");
         let gz = flate2::write::GzEncoder::new(file, flate2::Compression::fast());
@@ -228,7 +228,7 @@ mod tests {
         head.set_cksum();
         tar.append_data(
             &mut head,
-            "Shellwing.app/Contents/MacOS/shellwing",
+            "Authwing.app/Contents/MacOS/authwing",
             what.as_bytes(),
         )
         .expect("append");
@@ -238,26 +238,26 @@ mod tests {
     #[test]
     fn an_app_bundle_is_swapped_once_checked_and_kept_when_refused() {
         let dir = temp("bundle");
-        let bundle = dir.join("Shellwing.app");
+        let bundle = dir.join("Authwing.app");
         std::fs::create_dir_all(bundle.join("Contents/MacOS")).expect("app");
-        std::fs::write(bundle.join("Contents/MacOS/shellwing"), "old").expect("old");
+        std::fs::write(bundle.join("Contents/MacOS/authwing"), "old").expect("old");
         let archive = dir.join("release.app.tar.gz");
         app_archive(&archive, "new");
         // Refused: the running one stays as it was.
         let refused = replace_bundle(&bundle, &archive, |_, _| Err(io::Error::other("no")));
         assert!(refused.is_err());
         assert_eq!(
-            std::fs::read_to_string(bundle.join("Contents/MacOS/shellwing")).expect("read"),
+            std::fs::read_to_string(bundle.join("Contents/MacOS/authwing")).expect("read"),
             "old"
         );
         // Accepted: swapped, and nothing left beside it.
         replace_bundle(&bundle, &archive, |new, old| {
-            assert!(new.ends_with("Shellwing.app") && old == bundle);
+            assert!(new.ends_with("Authwing.app") && old == bundle);
             Ok(())
         })
         .expect("swap");
         assert_eq!(
-            std::fs::read_to_string(bundle.join("Contents/MacOS/shellwing")).expect("read"),
+            std::fs::read_to_string(bundle.join("Contents/MacOS/authwing")).expect("read"),
             "new"
         );
         let left: Vec<String> = std::fs::read_dir(&dir)

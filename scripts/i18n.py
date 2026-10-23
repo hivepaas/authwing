@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keeps shellwing's translations in step with the code.
+"""Keeps authwing's translations in step with the code.
 
 The English is in the code (`tr!("…")`, `tr_n!(n, "…", "…")`); each message's
 id is the FNV-1a hash of its English, as crates/i18n computes it.
@@ -123,7 +123,7 @@ def comment(one, other):
 
 def en_ftl(found):
     out = [
-        "# shellwing's English, from the code (scripts/i18n.py update writes it:",
+        "# authwing's English, from the code (scripts/i18n.py update writes it:",
         "# do not edit). The source for translations.",
         "",
     ]

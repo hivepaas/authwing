@@ -1,9 +1,9 @@
-// Command releasesign makes shellwing's release signing keys, and signs the list
+// Command releasesign makes authwing's release signing keys, and signs the list
 // of releases (release.json) with them into release.signed.json, the file the
 // app reads to tell its user that a newer version is out.
 //
 // The list is signed twice, with Ed25519 (Ed25519ctx) and with ML-DSA-65, both
-// under the context "shellwing-release-v1"; the app (crates/update) requires
+// under the context "authwing-release-v1"; the app (crates/update) requires
 // both, by keys built into it. A forger has to break both: Ed25519 falls to a
 // large enough quantum computer, ML-DSA is young.
 //
@@ -50,7 +50,7 @@ import (
 )
 
 // context is what the list is signed for; crates/update verifies under it.
-const context = "shellwing-release-v1"
+const context = "authwing-release-v1"
 
 const (
 	algEd25519 = "ed25519"

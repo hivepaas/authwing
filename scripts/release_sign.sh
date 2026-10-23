@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Signs shellwing's list of releases (release.json) with the offline release
+# Signs authwing's list of releases (release.json) with the offline release
 # keys into release.signed.json, the file the app reads (see docs/updates.md).
 #
 #   scripts/release_sign.sh /offline/2026-ed.key /offline/2026-ml.key
@@ -23,7 +23,7 @@
 
 set -euo pipefail
 
-CONTEXT="shellwing-release-v1" # must match tools/releasesign and crates/update
+CONTEXT="authwing-release-v1" # must match tools/releasesign and crates/update
 ROOT="$(git rev-parse --show-toplevel)"
 IN="${IN:-$ROOT/release.json}"
 OUT="${OUT:-$ROOT/release.signed.json}"

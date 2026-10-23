@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="packaging/icons/shellwing.svg" alt="shellwing logo" width="96" height="96">
+<img src="packaging/icons/authwing.svg" alt="authwing logo" width="96" height="96">
 
-# shellwing
+# authwing
 
 **A fast, native SSH client for macOS, Windows and Linux.**
 
 Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs between your devices, in a GPU-rendered terminal built in Rust.
 
-[![CI](https://github.com/hivepaas/shellwing/actions/workflows/ci.yml/badge.svg)](https://github.com/hivepaas/shellwing/actions/workflows/ci.yml)
+[![CI](https://github.com/hivepaas/authwing/actions/workflows/ci.yml/badge.svg)](https://github.com/hivepaas/authwing/actions/workflows/ci.yml)
 [![Rust](https://img.shields.io/badge/Rust-1.95+-DEA584?style=flat&logo=rust)](https://www.rust-lang.org)
 [![GPUI](https://img.shields.io/badge/UI-GPUI-7B61FF?style=flat)](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 [![libghostty](https://img.shields.io/badge/Terminal-libghostty-3551F3?style=flat)](https://ghostty.org)
@@ -38,12 +38,12 @@ Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs betwe
 
 ## 🚀 Getting Started
 
-Download the latest release from [GitHub Releases](https://github.com/hivepaas/shellwing/releases/latest):
+Download the latest release from [GitHub Releases](https://github.com/hivepaas/authwing/releases/latest):
 
 | System | File |
 | --- | --- |
-| macOS (Apple silicon, Intel) | `shellwing_<version>_macos_<arch>.dmg` |
-| Windows | `shellwing_<version>_windows_x86_64-setup.exe`, or the `.zip` |
+| macOS (Apple silicon, Intel) | `authwing_<version>_macos_<arch>.dmg` |
+| Windows | `authwing_<version>_windows_x86_64-setup.exe`, or the `.zip` |
 | Linux (x86_64, aarch64) | the `.AppImage`, the `.deb`, or the `.tar.gz` |
 
 The releases are not signed with an Apple Developer ID or a Windows certificate yet: the first time, macOS asks you to allow it in *System Settings › Privacy & Security* (**Open Anyway**), and Windows' SmartScreen under **More info › Run anyway**. The app tells you when a newer version is out, and installs it when you say so.
@@ -61,9 +61,9 @@ cargo build --release         # or by hand
 Then:
 
 ```sh
-shellwing                     # the window with the host list
-shellwing [user@]host[:port]  # and a tab connected to the host
-shellwing --local             # and a tab with a shell on this computer
+authwing                     # the window with the host list
+authwing [user@]host[:port]  # and a tab connected to the host
+authwing --local             # and a tab with a shell on this computer
 ```
 
 `host` can be a name from `hosts.toml` or an alias from `~/.ssh/config`. Per-platform setup (toolchains, Linux libraries, testing on Windows in a VM) is in [docs/platforms.md](docs/platforms.md).
@@ -72,7 +72,7 @@ shellwing --local             # and a tab with a shell on this computer
 
 ## ⚙️ Configuration
 
-Settings, hosts and themes are TOML files in the config directory (`~/.config/shellwing` on Linux) and apply while the app runs; *Settings* in the app edits the same files. Everything is described in [docs/configuration.md](docs/configuration.md), and the design notes are in [docs/design](docs/design/README.md).
+Settings, hosts and themes are TOML files in the config directory (`~/.config/authwing` on Linux) and apply while the app runs; *Settings* in the app edits the same files. Everything is described in [docs/configuration.md](docs/configuration.md), and the design notes are in [docs/design](docs/design/README.md).
 
 ---
 
@@ -97,8 +97,8 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 
 ## 📜 License
 
-shellwing is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). Copyright (C) 2026 HivePaaS.
+authwing is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). Copyright (C) 2026 HivePaaS.
 
 The name and logo are not covered by the GPL: see [TRADEMARKS.md](TRADEMARKS.md). Contributions are welcome under the terms in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Code adapted from other projects keeps its license and notice: `crates/app/src/input.rs` is adapted from GPUI's `examples/input.rs` (Apache-2.0, Zed Industries), `crates/note-editor` from zorite-editor (MIT; see `crates/note-editor/LICENSE`), and most built-in terminal themes come from iTerm2-Color-Schemes (MIT; see `crates/config/themes/LICENSE-iTerm2-Color-Schemes`). The libraries shellwing builds on are all under licenses that allow this (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0 and similar).
+Code adapted from other projects keeps its license and notice: `crates/app/src/input.rs` is adapted from GPUI's `examples/input.rs` (Apache-2.0, Zed Industries), `crates/note-editor` from zorite-editor (MIT; see `crates/note-editor/LICENSE`), and most built-in terminal themes come from iTerm2-Color-Schemes (MIT; see `crates/config/themes/LICENSE-iTerm2-Color-Schemes`). The libraries authwing builds on are all under licenses that allow this (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0 and similar).

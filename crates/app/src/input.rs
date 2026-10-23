@@ -3,7 +3,7 @@
 //! and gives nothing to the clipboard.
 //!
 //! Adapted from GPUI's `examples/input.rs` (Apache-2.0, Zed Industries): keys
-//! are handled directly instead of through actions, and the look is shellwing's.
+//! are handled directly instead of through actions, and the look is authwing's.
 
 use std::ops::Range;
 

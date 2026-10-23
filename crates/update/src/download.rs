@@ -29,7 +29,7 @@ pub async fn download(
     let client = reqwest::Client::builder()
         .connect_timeout(CONNECT_TIMEOUT)
         .read_timeout(READ_TIMEOUT)
-        .user_agent(concat!("shellwing/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("authwing/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| fail(&e))?;
     let mut res = client.get(url).send().await.map_err(|e| fail(&e))?;
@@ -101,9 +101,9 @@ mod tests {
 
     #[tokio::test]
     async fn a_download_is_kept_only_when_its_hash_is_the_listed_one() {
-        let dir = std::env::temp_dir().join(format!("shellwing-download-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-download-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
-        let dest = dir.join("shellwing.AppImage");
+        let dest = dir.join("authwing.AppImage");
         let body: &[u8] = b"the release";
 
         let seen = std::sync::Mutex::new(Vec::new());

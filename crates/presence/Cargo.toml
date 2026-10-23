@@ -1,5 +1,5 @@
 [package]
-name = "shellwing-presence"
+name = "authwing-presence"
 description = "Windows Hello and Touch ID, to open the vault with the user's presence"
 version.workspace = true
 edition.workspace = true
@@ -23,7 +23,7 @@ windows = { version = "0.62", features = [
 security-framework = { version = "3.7", features = ["OSX_10_15"] }
 getrandom = "0.3"
 
-# Asking that it is the user, for shellwing's lock (confirm.rs).
+# Asking that it is the user, for authwing's lock (confirm.rs).
 [target.'cfg(any(target_os = "macos", windows))'.dependencies]
 robius-authentication = "0.3"
 

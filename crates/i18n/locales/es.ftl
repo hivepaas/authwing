@@ -1,17 +1,17 @@
-# shellwing in es. Each message is found by its English, the
+# authwing in es. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
 # unlock its windows
 t7c69953e = desbloquear sus ventanas
 
-# Confirm it is you to unlock shellwing.
-t31ace1f1 = Confirma que eres tú para desbloquear shellwing.
+# Confirm it is you to unlock authwing.
+t31ace1f1 = Confirma que eres tú para desbloquear authwing.
 
 # Checking…
 t87f62cb7 = Comprobando…
 
-# Not confirmed: shellwing stays locked.
-t1db04c44 = No confirmado: shellwing sigue bloqueado.
+# Not confirmed: authwing stays locked.
+t1db04c44 = No confirmado: authwing sigue bloqueado.
 
 # That is not the password.
 t06b4bdb7 = Esa no es la contraseña.
@@ -31,17 +31,17 @@ t8eeb5228 = Tu contraseña de inicio de sesión lo desbloquea.
 # Unlock
 t9c799975 = Desbloquear
 
-# Quit shellwing
-t8857c967 = Salir de shellwing
+# Quit authwing
+t8857c967 = Salir de authwing
 
-# shellwing is locked
-t665c7b6c = shellwing está bloqueado
+# authwing is locked
+t665c7b6c = authwing está bloqueado
 
 # Your login password
 t2348e42c = Tu contraseña de inicio de sesión
 
-# shellwing is locked: unlock it in its main window.
-tf4ae07e3 = shellwing está bloqueado: desbloquéalo en su ventana principal.
+# authwing is locked: unlock it in its main window.
+tf4ae07e3 = authwing está bloqueado: desbloquéalo en su ventana principal.
 
 # An edit of {remote} was not written back to the server; the file is kept as {path}.
 t62769e5b = Una edición de { $remote } no se guardó en el servidor; el archivo se conserva como { $path }.
@@ -424,8 +424,8 @@ t85f5968b = De ~/.ssh/config
 # Host from ~/.ssh/config
 t6a7dc843 = Servidor de ~/.ssh/config
 
-# shellwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
-t509e342f = shellwing lee este archivo pero nunca escribe en él. Edítalo en tu editor, o haz una copia aquí para añadir un grupo, un tema, reenvíos o una contraseña guardada.
+# authwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
+t509e342f = authwing lee este archivo pero nunca escribe en él. Edítalo en tu editor, o haz una copia aquí para añadir un grupo, un tema, reenvíos o una contraseña guardada.
 
 # Open config file
 t54ea8995 = Abrir archivo de configuración
@@ -730,8 +730,8 @@ ta81ce4ca = { $key } sola es para escribir: mantén pulsado Cmd, Ctrl u Option a
 # {key} alone is for typing: hold Ctrl or Alt with it.
 t834f7024 = { $key } sola es para escribir: mantén pulsado Ctrl o Alt a la vez.
 
-# {key} belongs to the system: it never reaches Shellwing.
-tcf75feb6 = { $key } pertenece al sistema: nunca llega a Shellwing.
+# {key} belongs to the system: it never reaches Authwing.
+tcf75feb6 = { $key } pertenece al sistema: nunca llega a Authwing.
 
 # {key} is {what}, which cannot be changed.
 t01906ac3 = { $key } es «{ $what }», que no se puede cambiar.
@@ -1086,8 +1086,8 @@ td51093f3 = Este archivo de clave tiene frase de contraseña. Escríbela para pa
 # Save the passphrase of {path}
 ta6e38b23 = Guardar la frase de contraseña de { $path }
 
-# Kept in the vault, encrypted, and synced: shellwing then signs in with this key without asking, here and on your other devices.
-tf45d84f1 = Se guarda en la bóveda, cifrada, y se sincroniza: así shellwing inicia sesión con esta clave sin preguntar, aquí y en tus otros dispositivos.
+# Kept in the vault, encrypted, and synced: authwing then signs in with this key without asking, here and on your other devices.
+tf45d84f1 = Se guarda en la bóveda, cifrada, y se sincroniza: así authwing inicia sesión con esta clave sin preguntar, aquí y en tus otros dispositivos.
 
 # Asking the agent…
 tabb2eee4 = Consultando al agente…
@@ -1113,8 +1113,8 @@ t650c9448 = No se puede leer la bóveda: { $p }
 # In the vault
 ta13ebcfd = En la bóveda
 
-# synced · used only by shellwing
-t0714e99d = sincronizadas · solo las usa shellwing
+# synced · used only by authwing
+t0714e99d = sincronizadas · solo las usa authwing
 
 # None yet: generate one, or copy one of your key files here.
 t95a0c0ba = Aún no hay ninguna: genera una, o copia aquí uno de tus archivos de clave.
@@ -1418,8 +1418,8 @@ tb31ba949 = Las imágenes se muestran en notas Markdown; esta nota es texto sin 
 # Images go in while the note is edited.
 t6f2c9191 = Las imágenes se añaden mientras se edita la nota.
 
-# shellwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
-t4f35c5e2 = shellwing las descarga de { $hosts }, que conocen tu dirección. Luego se guardan en la bóveda, cifradas, y se reemplazan los enlaces de la nota.
+# authwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
+t4f35c5e2 = authwing las descarga de { $hosts }, que conocen tu dirección. Luego se guardan en la bóveda, cifradas, y se reemplazan los enlaces de la nota.
 
 # Some come over plain http: they could be altered on the way.
 tfe0055bd = Algunas llegan por http sin cifrar: podrían alterarse por el camino.
@@ -1673,8 +1673,8 @@ te39c67c2 = ↑↓ mover   Enter elegir   Esc cancelar
 # About
 t58e096de = Acerca de
 
-# © {year} HivePaaS. The shellwing name and logo are trademarks of HivePaaS.
-ta956e96f = © { $year } HivePaaS. El nombre y el logotipo de shellwing son marcas de HivePaaS.
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+ta956e96f = © { $year } HivePaaS. El nombre y el logotipo de authwing son marcas de HivePaaS.
 
 # A native SSH client for Linux, macOS and Windows.
 t182e3bec = Un cliente SSH nativo para Linux, macOS y Windows.
@@ -1691,8 +1691,8 @@ t183c7f9f = Copiado: { $info }
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = Esta compilación no tiene claves de publicación, así que no puede avisar de actualizaciones.
 
-# shellwing {version} is ready
-t3f4cfe3f = shellwing { $version } está listo
+# authwing {version} is ready
+t3f4cfe3f = authwing { $version } está listo
 
 # It is installed when you quit, or now with Restart.
 t6fecac86 = Se instala al salir, o ahora con Reiniciar.
@@ -1700,8 +1700,8 @@ t6fecac86 = Se instala al salir, o ahora con Reiniciar.
 # Restart now
 t54001a7c = Reiniciar ahora
 
-# shellwing {version}
-tfc977e10 = shellwing { $version }
+# authwing {version}
+tfc977e10 = authwing { $version }
 
 # Looking for a newer version…
 tf1905fe9 = Buscando una versión más reciente…
@@ -1724,8 +1724,8 @@ tb46c0678 = Se descarga y se comprueba, y se instala al salir.
 # Download it, and install it in place of this one.
 t39312eae = Descárgala e instálala en lugar de esta.
 
-# shellwing {version} is out
-t5b33836c = shellwing { $version } está disponible
+# authwing {version} is out
+t5b33836c = authwing { $version } está disponible
 
 # The download failed: {why}
 t5e96c075 = La descarga falló: { $why }
@@ -1760,8 +1760,8 @@ tcc27ace1 = Buscar actualizaciones una vez al día
 # It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t258cdfd9 = Lee la lista de versiones desde GitHub y solo la cree si sus firmas son válidas. No se descarga ni se instala nada sin ti.
 
-# Visit shellwing.app
-t1d2ed540 = Visitar shellwing.app
+# Visit authwing.app
+t1d2ed540 = Visitar authwing.app
 
 # Report a problem
 t7b1728e7 = Informar de un problema
@@ -1772,8 +1772,8 @@ tc52ab62f = Notas de la versión
 # Open source
 ta04619ce = Código abierto
 
-# shellwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
-tcde8081b = shellwing es software libre y de código abierto, con licencia GPL-3.0-or-later. Lee el código, compílalo tú mismo, informa de un problema o envía una corrección.
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tcde8081b = authwing es software libre y de código abierto, con licencia GPL-3.0-or-later. Lee el código, compílalo tú mismo, informa de un problema o envía una corrección.
 
 # Open source · Apache-2.0
 tf33a768c = Código abierto · Apache-2.0
@@ -1964,8 +1964,8 @@ t4956cc50 = Como el sistema ({ $language })
 # Language
 t9a73db9b = Idioma
 
-# shellwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
-t74b71048 = Los textos propios de shellwing: menús, Ajustes, preguntas y avisos. Lo que muestra la terminal viene del servidor. Propio de este dispositivo: no se sincroniza.
+# authwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
+t74b71048 = Los textos propios de authwing: menús, Ajustes, preguntas y avisos. Lo que muestra la terminal viene del servidor. Propio de este dispositivo: no se sincroniza.
 
 # Text editor for remote files
 tdc31a941 = Editor de texto para archivos remotos
@@ -1976,8 +1976,8 @@ t3110b5e8 = Editar en el editor de texto, en el panel Archivos, abre una copia c
 # Open the last tabs at start
 tf7087aa7 = Abrir las últimas pestañas al iniciar
 
-# When shellwing starts without a host, it opens the tabs and splits it had.
-t2b27326b = Cuando shellwing se inicia sin un servidor, abre las pestañas y divisiones que tenía.
+# When authwing starts without a host, it opens the tabs and splits it had.
+t2b27326b = Cuando authwing se inicia sin un servidor, abre las pestañas y divisiones que tenía.
 
 # Hosts from another app
 tffafddac = Servidores de otra app
@@ -2177,8 +2177,8 @@ tab3a8a0a = desactivado
 # known_hosts file
 t2e38efc6 = Archivo known_hosts
 
-# Shared with ssh. shellwing adds the keys you trust.
-t43d70395 = Compartido con ssh. shellwing añade las claves en las que confías.
+# Shared with ssh. authwing adds the keys you trust.
+t43d70395 = Compartido con ssh. authwing añade las claves en las que confías.
 
 # ssh config file
 t70767f0d = Archivo de configuración de ssh
@@ -2331,8 +2331,8 @@ tcd6d61d0 = No está abierta.
 # In the system keychain, and kept by a passphrase too.
 tc986f88d = En el llavero del sistema, y también protegida por una frase de contraseña.
 
-# Kept by its passphrase: typed when shellwing starts.
-t31c62b2e = Protegida por su frase de contraseña: se escribe al iniciar shellwing.
+# Kept by its passphrase: typed when authwing starts.
+t31c62b2e = Protegida por su frase de contraseña: se escribe al iniciar authwing.
 
 # In the system keychain.
 te1cb09c0 = En el llavero del sistema.
@@ -2367,17 +2367,17 @@ t0c43fb4a = 1 hora
 # {m} min
 t7eebb6a4 = { $m } min
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-ta9231ed4 = Al iniciarse shellwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que Touch ID o la contraseña de tu Mac confirmen que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+ta9231ed4 = Al iniciarse authwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que Touch ID o la contraseña de tu Mac confirmen que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-t34186d03 = Al iniciarse shellwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que Windows Hello o tu contraseña de Windows confirmen que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+t34186d03 = Al iniciarse authwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que Windows Hello o tu contraseña de Windows confirmen que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-teb40e26b = Al iniciarse shellwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que tu contraseña de inicio de sesión confirme que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+teb40e26b = Al iniciarse authwing, y tras este tiempo sin pulsar una tecla ni hacer clic, sus ventanas se ocultan hasta que tu contraseña de inicio de sesión confirme que eres tú. Una protección ligera para una pantalla que quedó sin bloquear: las sesiones siguen debajo.
 
-# Lock shellwing when away
-t7ad7e7d1 = Bloquear shellwing en tu ausencia
+# Lock authwing when away
+t7ad7e7d1 = Bloquear authwing en tu ausencia
 
 # Saved passwords and passphrases
 t4b07c4a2 = Contraseñas y frases de contraseña guardadas
@@ -2394,8 +2394,8 @@ td09ac71d = La clave de la bóveda
 # What opens vault.db. A passphrase keeps it where there is no system keychain (or as well as one); the recovery key always opens it, if the passphrase is forgotten or the keychain loses it.
 t6a54a5a7 = Lo que abre vault.db. Una frase de contraseña la protege donde no hay llavero del sistema (o además de este); la clave de recuperación siempre la abre, si se olvida la frase de contraseña o el llavero la pierde.
 
-# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of shellwing.
-t056f7fb9 = Cuando la bóveda está bloqueada, { $name } la abre, igual que su frase de contraseña (que sigue funcionando). Solo los dedos registrados ahora: añadir uno lo desactiva hasta que se vuelva a activar. Requiere una versión firmada de shellwing.
+# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of authwing.
+t056f7fb9 = Cuando la bóveda está bloqueada, { $name } la abre, igual que su frase de contraseña (que sigue funcionando). Solo los dedos registrados ahora: añadir uno lo desactiva hasta que se vuelva a activar. Requiere una versión firmada de authwing.
 
 # When the vault is locked, {name} (a fingerprint, the face or this device's PIN) opens it, as its passphrase does (which still works). The key is kept by this device's security chip.
 t0baa8f35 = Cuando la bóveda está bloqueada, { $name } (una huella, el rostro o el PIN de este dispositivo) la abre, igual que su frase de contraseña (que sigue funcionando). La clave la guarda el chip de seguridad de este dispositivo.
@@ -2448,8 +2448,8 @@ t0e963f08 = + Servidor
 # + Group
 t9585c651 = + Grupo
 
-# About shellwing
-t884dc61f = Acerca de shellwing
+# About authwing
+t884dc61f = Acerca de authwing
 
 # HOSTS
 t0d325d34 = SERVIDORES
@@ -2800,8 +2800,8 @@ t88dd5f11 = Tus servidores en todos tus dispositivos. Solo inicia sesión.
 # Hosts, passwords, keys and snippets stay on this computer for now.
 td2cff7db = Los servidores, contraseñas, claves y fragmentos se quedan por ahora en este equipo.
 
-# See shellwing cloud
-t88cbb4e0 = Ver shellwing cloud
+# See authwing cloud
+t88cbb4e0 = Ver authwing cloud
 
 # A folder, WebDAV, S3 or Git of your own:
 t42ad626a = Una carpeta, WebDAV, S3 o Git propios:
@@ -2845,8 +2845,8 @@ t025d99af = Los servidores, las contraseñas guardadas, las claves y los fragmen
 # Nothing to set up: no folder, no server, no key to type on a new device.
 tde7b1d58 = Nada que configurar: ni carpeta, ni servidor, ni clave que escribir en un dispositivo nuevo.
 
-# Encrypted on your devices: shellwing never sees your secrets.
-t35aecaf3 = Cifrado en tus dispositivos: shellwing nunca ve tus secretos.
+# Encrypted on your devices: authwing never sees your secrets.
+t35aecaf3 = Cifrado en tus dispositivos: authwing nunca ve tus secretos.
 
 # Create an account
 td7f6c093 = Crear una cuenta
@@ -2857,11 +2857,11 @@ t2f60c9bf = o continúa con
 # Rather not keep it yourself?
 t616f184a = ¿Prefieres no encargarte tú?
 
-# shellwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
-t81dee99e = shellwing cloud lo guarda por ti: inicia sesión en cada dispositivo y listo. Sigue cifrado de extremo a extremo.
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t81dee99e = authwing cloud lo guarda por ti: inicia sesión en cada dispositivo y listo. Sigue cifrado de extremo a extremo.
 
-# shellwing cloud is coming: signing in opens with it.
-t8de35792 = shellwing cloud llega pronto: el inicio de sesión se habilitará con él.
+# authwing cloud is coming: signing in opens with it.
+t8de35792 = authwing cloud llega pronto: el inicio de sesión se habilitará con él.
 
 # {n} host · $3.99/mo | {n} hosts · $3.99/mo
 td1ec974a =
@@ -3320,17 +3320,17 @@ ta8cbd72e = la App Store
 # the Microsoft Store
 t1df799a1 = la Microsoft Store
 
-# shellwing {version} is out: {by} updates it ({command}).
-t270e30ba = shellwing { $version } está disponible: se actualiza con { $by } ({ $command }).
+# authwing {version} is out: {by} updates it ({command}).
+t270e30ba = authwing { $version } está disponible: se actualiza con { $by } ({ $command }).
 
-# shellwing {version} is out: {by} updates it.
-t34c8e3f2 = shellwing { $version } está disponible: se actualiza con { $by }.
+# authwing {version} is out: {by} updates it.
+t34c8e3f2 = authwing { $version } está disponible: se actualiza con { $by }.
 
 # No folder to download to.
 t2bfc1370 = No hay ninguna carpeta donde descargar.
 
-# shellwing {version} is ready: it is installed when you quit, or now with Restart.
-t4cc4357e = shellwing { $version } está listo: se instala al salir, o ahora con Reiniciar.
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+t4cc4357e = authwing { $version } está listo: se instala al salir, o ahora con Reiniciar.
 
 # Downloading… {got} of {total}
 taee668c2 = Descargando… { $got } de { $total }
@@ -3408,8 +3408,8 @@ tbac763bb =
 # Cannot open a terminal: {e}
 t3ffc1c98 = No se puede abrir una terminal: { $e }
 
-# shellwing cannot lock here: this system has no way to ask that it is you.
-t222eeef4 = shellwing no puede bloquearse aquí: este sistema no tiene forma de confirmar que eres tú.
+# authwing cannot lock here: this system has no way to ask that it is you.
+t222eeef4 = authwing no puede bloquearse aquí: este sistema no tiene forma de confirmar que eres tú.
 
 # A connection is open; quitting closes it.
 tf3732b18 = Hay una conexión abierta; al salir, se cerrará.
@@ -3427,8 +3427,8 @@ t2f44ed8c = Reiniciar
 # Restart to install the update?
 tdab4b0cf = ¿Reiniciar para instalar la actualización?
 
-# Quit shellwing?
-tfa31f588 = ¿Salir de shellwing?
+# Quit authwing?
+tfa31f588 = ¿Salir de authwing?
 
 # Syncing the notes before quitting…
 tb66945de = Sincronizando las notas antes de salir…
@@ -3508,8 +3508,8 @@ tdfc17c92 = Contraseñas y frases de contraseña guardadas…
 # Lock the vault
 tc05449a1 = Bloquear la bóveda
 
-# Lock shellwing
-ta4580143 = Bloquear shellwing
+# Lock authwing
+ta4580143 = Bloquear authwing
 
 # Sync now with {place}
 t8aad97ad = Sincronizar ahora con { $place }
@@ -3523,11 +3523,11 @@ tc73a9bf6 = Sincronizar contraseñas con un servidor…
 # Settings…
 t64d0d0b4 = Ajustes…
 
-# Restart to install shellwing {version}
-taadea299 = Reiniciar para instalar shellwing { $version }
+# Restart to install authwing {version}
+taadea299 = Reiniciar para instalar authwing { $version }
 
-# shellwing {version} is out…
-tab699ac8 = shellwing { $version } está disponible…
+# authwing {version} is out…
+tab699ac8 = authwing { $version } está disponible…
 
 # Check for updates
 t70ad7706 = Buscar actualizaciones
@@ -3636,8 +3636,8 @@ te7d01782 = Para confirmarla.
 # There is no system keychain to keep the vault's key
 t04970b55 = No hay llavero del sistema para guardar la clave de la bóveda
 
-# A passphrase keeps it instead: you type it when shellwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
-t2fd0f1b3 = En su lugar, la protege una frase de contraseña: la escribes al iniciar shellwing. Al menos { $min } caracteres. Esc: sin contraseñas guardadas, claves ni sincronización esta vez.
+# A passphrase keeps it instead: you type it when authwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
+t2fd0f1b3 = En su lugar, la protege una frase de contraseña: la escribes al iniciar authwing. Al menos { $min } caracteres. Esc: sin contraseñas guardadas, claves ni sincronización esta vez.
 
 # A passphrase for the vault
 t25841dd8 = Una frase de contraseña para la bóveda
@@ -3750,8 +3750,8 @@ t24c15ff5 = { $device } pregunta si dejar entrar a este dispositivo. Aprueba all
 # Waiting for a device that syncs
 t6e41520f = Esperando un dispositivo que sincroniza
 
-# Open shellwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
-ted2b04ee = Abre shellwing en un dispositivo que sincroniza esta carpeta: preguntará si dejar entrar a este. Esc cancela.
+# Open authwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
+ted2b04ee = Abre authwing en un dispositivo que sincroniza esta carpeta: preguntará si dejar entrar a este. Esc cancela.
 
 # Sync with this folder
 t8eb0599a = Sincronizar con esta carpeta

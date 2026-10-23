@@ -1,17 +1,17 @@
-# shellwing in ja. Each message is found by its English, the
+# authwing in ja. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
 # unlock its windows
 t7c69953e = ウィンドウのロックを解除
 
-# Confirm it is you to unlock shellwing.
-t31ace1f1 = shellwing のロックを解除するには、本人であることを確認してください。
+# Confirm it is you to unlock authwing.
+t31ace1f1 = authwing のロックを解除するには、本人であることを確認してください。
 
 # Checking…
 t87f62cb7 = 確認中…
 
-# Not confirmed: shellwing stays locked.
-t1db04c44 = 確認されませんでした。shellwing はロックされたままです。
+# Not confirmed: authwing stays locked.
+t1db04c44 = 確認されませんでした。authwing はロックされたままです。
 
 # That is not the password.
 t06b4bdb7 = パスワードが違います。
@@ -31,17 +31,17 @@ t8eeb5228 = ログインパスワードでロックを解除できます。
 # Unlock
 t9c799975 = ロックを解除
 
-# Quit shellwing
-t8857c967 = shellwing を終了
+# Quit authwing
+t8857c967 = authwing を終了
 
-# shellwing is locked
-t665c7b6c = shellwing はロックされています
+# authwing is locked
+t665c7b6c = authwing はロックされています
 
 # Your login password
 t2348e42c = ログインパスワード
 
-# shellwing is locked: unlock it in its main window.
-tf4ae07e3 = shellwing はロックされています。メインウィンドウでロックを解除してください。
+# authwing is locked: unlock it in its main window.
+tf4ae07e3 = authwing はロックされています。メインウィンドウでロックを解除してください。
 
 # An edit of {remote} was not written back to the server; the file is kept as {path}.
 t62769e5b = { $remote } の編集内容はサーバーに書き戻されませんでした。ファイルは { $path } に保存されています。
@@ -412,8 +412,8 @@ t85f5968b = ~/.ssh/config から
 # Host from ~/.ssh/config
 t6a7dc843 = ~/.ssh/config のホスト
 
-# shellwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
-t509e342f = shellwing はこのファイルを読み込みますが、書き込むことはありません。エディタで編集するか、ここにコピーを作成してグループ、テーマ、フォワード、保存済みパスワードを追加してください。
+# authwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
+t509e342f = authwing はこのファイルを読み込みますが、書き込むことはありません。エディタで編集するか、ここにコピーを作成してグループ、テーマ、フォワード、保存済みパスワードを追加してください。
 
 # Open config file
 t54ea8995 = 設定ファイルを開く
@@ -718,8 +718,8 @@ ta81ce4ca = { $key } だけでは文字入力になります。Cmd、Ctrl、Opti
 # {key} alone is for typing: hold Ctrl or Alt with it.
 t834f7024 = { $key } だけでは文字入力になります。Ctrl か Alt を押しながら押してください。
 
-# {key} belongs to the system: it never reaches Shellwing.
-tcf75feb6 = { $key } はシステムが使用しています。Shellwing には届きません。
+# {key} belongs to the system: it never reaches Authwing.
+tcf75feb6 = { $key } はシステムが使用しています。Authwing には届きません。
 
 # {key} is {what}, which cannot be changed.
 t01906ac3 = { $key } は「{ $what }」で、変更できません。
@@ -1054,8 +1054,8 @@ td51093f3 = この鍵ファイルにはパスフレーズが設定されてい�
 # Save the passphrase of {path}
 ta6e38b23 = { $path } のパスフレーズを保存
 
-# Kept in the vault, encrypted, and synced: shellwing then signs in with this key without asking, here and on your other devices.
-tf45d84f1 = 保管庫に暗号化して保存され、同期されます。以降 shellwing は、このデバイスでも他のデバイスでも、確認なしでこの鍵でサインインします。
+# Kept in the vault, encrypted, and synced: authwing then signs in with this key without asking, here and on your other devices.
+tf45d84f1 = 保管庫に暗号化して保存され、同期されます。以降 authwing は、このデバイスでも他のデバイスでも、確認なしでこの鍵でサインインします。
 
 # Asking the agent…
 tabb2eee4 = エージェントに問い合わせ中…
@@ -1081,8 +1081,8 @@ t650c9448 = 保管庫を読み込めません：{ $p }
 # In the vault
 ta13ebcfd = 保管庫内
 
-# synced · used only by shellwing
-t0714e99d = 同期 · shellwing でのみ使用
+# synced · used only by authwing
+t0714e99d = 同期 · authwing でのみ使用
 
 # None yet: generate one, or copy one of your key files here.
 t95a0c0ba = まだありません。鍵を生成するか、鍵ファイルをここにコピーしてください。
@@ -1378,8 +1378,8 @@ tb31ba949 = 画像は Markdown のノートで表示されます。このノー�
 # Images go in while the note is edited.
 t6f2c9191 = 画像はノートの編集中に追加できます。
 
-# shellwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
-t4f35c5e2 = shellwing は { $hosts } から画像をダウンロードします。これらのサーバーにはあなたのアドレスが伝わります。画像は暗号化されて保管庫に保存され、ノート内のリンクは置き換えられます。
+# authwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
+t4f35c5e2 = authwing は { $hosts } から画像をダウンロードします。これらのサーバーにはあなたのアドレスが伝わります。画像は暗号化されて保管庫に保存され、ノート内のリンクは置き換えられます。
 
 # Some come over plain http: they could be altered on the way.
 tfe0055bd = 一部は暗号化されていない http で届くため、途中で改ざんされる可能性があります。
@@ -1630,8 +1630,8 @@ te39c67c2 = ↑↓ 移動   Enter 選択   Esc キャンセル
 # About
 t58e096de = 情報
 
-# © {year} HivePaaS. The shellwing name and logo are trademarks of HivePaaS.
-ta956e96f = © { $year } HivePaaS。shellwing の名称とロゴは HivePaaS の商標です。
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+ta956e96f = © { $year } HivePaaS。authwing の名称とロゴは HivePaaS の商標です。
 
 # A native SSH client for Linux, macOS and Windows.
 t182e3bec = Linux、macOS、Windows 向けのネイティブ SSH クライアント。
@@ -1648,8 +1648,8 @@ t183c7f9f = コピーしました：{ $info }
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = このビルドにはリリース鍵がないため、アップデートを知らせることができません。
 
-# shellwing {version} is ready
-t3f4cfe3f = shellwing { $version } の準備ができました
+# authwing {version} is ready
+t3f4cfe3f = authwing { $version } の準備ができました
 
 # It is installed when you quit, or now with Restart.
 t6fecac86 = 終了時にインストールされます。今すぐなら「再起動」を押してください。
@@ -1657,8 +1657,8 @@ t6fecac86 = 終了時にインストールされます。今すぐなら「再�
 # Restart now
 t54001a7c = 今すぐ再起動
 
-# shellwing {version}
-tfc977e10 = shellwing { $version }
+# authwing {version}
+tfc977e10 = authwing { $version }
 
 # Looking for a newer version…
 tf1905fe9 = 新しいバージョンを確認しています…
@@ -1681,8 +1681,8 @@ tb46c0678 = ダウンロードして検証し、終了時にインストール�
 # Download it, and install it in place of this one.
 t39312eae = ダウンロードして、このバージョンの代わりにインストールしてください。
 
-# shellwing {version} is out
-t5b33836c = shellwing { $version } が公開されました
+# authwing {version} is out
+t5b33836c = authwing { $version } が公開されました
 
 # The download failed: {why}
 t5e96c075 = ダウンロードに失敗しました: { $why }
@@ -1717,8 +1717,8 @@ tcc27ace1 = 1 日 1 回アップデートを確認
 # It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t258cdfd9 = リリース一覧を GitHub から読み込み、署名が検証できた場合のみ信頼します。あなたの操作なしに何もダウンロード・インストールされません。
 
-# Visit shellwing.app
-t1d2ed540 = shellwing.app を見る
+# Visit authwing.app
+t1d2ed540 = authwing.app を見る
 
 # Report a problem
 t7b1728e7 = 問題を報告
@@ -1729,8 +1729,8 @@ tc52ab62f = リリースノート
 # Open source
 ta04619ce = オープンソース
 
-# shellwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
-tcde8081b = shellwing は GPL-3.0-or-later ライセンスの無料オープンソースソフトウェアです。コードを読む、自分でビルドする、問題を報告する、修正を送る、どれも自由です。
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tcde8081b = authwing は GPL-3.0-or-later ライセンスの無料オープンソースソフトウェアです。コードを読む、自分でビルドする、問題を報告する、修正を送る、どれも自由です。
 
 # Open source · Apache-2.0
 tf33a768c = オープンソース · Apache-2.0
@@ -1921,8 +1921,8 @@ t4956cc50 = システムと同じ（{ $language }）
 # Language
 t9a73db9b = 言語
 
-# shellwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
-t74b71048 = shellwing 自身の表示（メニュー、設定、確認、通知）に使う言語です。ターミナルに表示される内容はサーバー側のものです。このデバイスのみの設定で、同期されません。
+# authwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
+t74b71048 = authwing 自身の表示（メニュー、設定、確認、通知）に使う言語です。ターミナルに表示される内容はサーバー側のものです。このデバイスのみの設定で、同期されません。
 
 # Text editor for remote files
 tdc31a941 = リモートファイル用のテキストエディタ
@@ -1933,8 +1933,8 @@ t3110b5e8 = ファイルパネルの「テキストエディタで編集」は�
 # Open the last tabs at start
 tf7087aa7 = 起動時に前回のタブを開く
 
-# When shellwing starts without a host, it opens the tabs and splits it had.
-t2b27326b = ホストを指定せずに shellwing を起動すると、前回のタブと分割を開きます。
+# When authwing starts without a host, it opens the tabs and splits it had.
+t2b27326b = ホストを指定せずに authwing を起動すると、前回のタブと分割を開きます。
 
 # Hosts from another app
 tffafddac = ほかのアプリのホスト
@@ -2134,8 +2134,8 @@ tab3a8a0a = オフ
 # known_hosts file
 t2e38efc6 = known_hosts ファイル
 
-# Shared with ssh. shellwing adds the keys you trust.
-t43d70395 = ssh と共有します。shellwing は信頼した鍵を追加します。
+# Shared with ssh. authwing adds the keys you trust.
+t43d70395 = ssh と共有します。authwing は信頼した鍵を追加します。
 
 # ssh config file
 t70767f0d = ssh 設定ファイル
@@ -2284,8 +2284,8 @@ tcd6d61d0 = 開いていません。
 # In the system keychain, and kept by a passphrase too.
 tc986f88d = システムのキーチェーンに保存され、パスフレーズでも保護されています。
 
-# Kept by its passphrase: typed when shellwing starts.
-t31c62b2e = パスフレーズで保護されています。shellwing の起動時に入力します。
+# Kept by its passphrase: typed when authwing starts.
+t31c62b2e = パスフレーズで保護されています。authwing の起動時に入力します。
 
 # In the system keychain.
 te1cb09c0 = システムのキーチェーンに保存されています。
@@ -2320,17 +2320,17 @@ t0c43fb4a = 1 時間
 # {m} min
 t7eebb6a4 = { $m } 分
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-ta9231ed4 = shellwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、Touch ID または Mac のパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+ta9231ed4 = authwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、Touch ID または Mac のパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-t34186d03 = shellwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、Windows Hello または Windows のパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+t34186d03 = authwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、Windows Hello または Windows のパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-teb40e26b = shellwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、ログインパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+teb40e26b = authwing の起動時、およびキー入力やクリックがないままこの時間が経過すると、ログインパスワードで本人と確認されるまでウィンドウが隠れます。画面のロックし忘れに備える軽い保護です。セッションは裏で動き続けます。
 
-# Lock shellwing when away
-t7ad7e7d1 = 離席時に shellwing をロック
+# Lock authwing when away
+t7ad7e7d1 = 離席時に authwing をロック
 
 # Saved passwords and passphrases
 t4b07c4a2 = 保存済みのパスワードとパスフレーズ
@@ -2347,8 +2347,8 @@ td09ac71d = 保管庫の鍵
 # What opens vault.db. A passphrase keeps it where there is no system keychain (or as well as one); the recovery key always opens it, if the passphrase is forgotten or the keychain loses it.
 t6a54a5a7 = vault.db を開くための鍵です。パスフレーズは、システムのキーチェーンがない環境で（またはキーチェーンと併用して）この鍵を保持します。パスフレーズを忘れた場合やキーチェーンから失われた場合でも、復旧キーで必ず開けます。
 
-# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of shellwing.
-t056f7fb9 = 保管庫がロックされているとき、パスフレーズと同様に { $name } で開けます（パスフレーズも引き続き使えます）。対象は現在登録されている指紋で、指紋を追加すると再びオンにするまで無効になります。署名済みビルドの shellwing が必要です。
+# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of authwing.
+t056f7fb9 = 保管庫がロックされているとき、パスフレーズと同様に { $name } で開けます（パスフレーズも引き続き使えます）。対象は現在登録されている指紋で、指紋を追加すると再びオンにするまで無効になります。署名済みビルドの authwing が必要です。
 
 # When the vault is locked, {name} (a fingerprint, the face or this device's PIN) opens it, as its passphrase does (which still works). The key is kept by this device's security chip.
 t0baa8f35 = 保管庫がロックされているとき、パスフレーズと同様に { $name }（指紋、顔、またはこのデバイスの PIN）で開けます（パスフレーズも引き続き使えます）。鍵はこのデバイスのセキュリティチップに保管されます。
@@ -2401,8 +2401,8 @@ t0e963f08 = + ホスト
 # + Group
 t9585c651 = + グループ
 
-# About shellwing
-t884dc61f = shellwing について
+# About authwing
+t884dc61f = authwing について
 
 # HOSTS
 t0d325d34 = ホスト
@@ -2737,8 +2737,8 @@ t88dd5f11 = すべてのデバイスであなたのホストを。サインイ�
 # Hosts, passwords, keys and snippets stay on this computer for now.
 td2cff7db = ホスト、パスワード、鍵、スニペットは今のところこのコンピューターにだけあります。
 
-# See shellwing cloud
-t88cbb4e0 = shellwing cloud を見る
+# See authwing cloud
+t88cbb4e0 = authwing cloud を見る
 
 # A folder, WebDAV, S3 or Git of your own:
 t42ad626a = 自前のフォルダ、WebDAV、S3、Git：
@@ -2782,8 +2782,8 @@ t025d99af = ホスト、保存済みパスワード、鍵、スニペットを�
 # Nothing to set up: no folder, no server, no key to type on a new device.
 tde7b1d58 = 設定は不要です。新しいデバイスでフォルダ、サーバー、キーを入力する必要はありません。
 
-# Encrypted on your devices: shellwing never sees your secrets.
-t35aecaf3 = デバイス上で暗号化されるため、shellwing があなたのシークレットを見ることはありません。
+# Encrypted on your devices: authwing never sees your secrets.
+t35aecaf3 = デバイス上で暗号化されるため、authwing があなたのシークレットを見ることはありません。
 
 # Create an account
 td7f6c093 = アカウントを作成
@@ -2794,11 +2794,11 @@ t2f60c9bf = または次の方法で続行
 # Rather not keep it yourself?
 t616f184a = 自分で保管したくない場合は
 
-# shellwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
-t81dee99e = shellwing cloud が代わりに保管します。各デバイスでサインインするだけです。エンドツーエンドの暗号化はそのままです。
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t81dee99e = authwing cloud が代わりに保管します。各デバイスでサインインするだけです。エンドツーエンドの暗号化はそのままです。
 
-# shellwing cloud is coming: signing in opens with it.
-t8de35792 = shellwing cloud は近日提供予定です。提供開始後はサインインで使えます。
+# authwing cloud is coming: signing in opens with it.
+t8de35792 = authwing cloud は近日提供予定です。提供開始後はサインインで使えます。
 
 # {n} host · $3.99/mo | {n} hosts · $3.99/mo
 td1ec974a = ホスト { $n } 件 · $3.99/月
@@ -3226,17 +3226,17 @@ ta8cbd72e = App Store
 # the Microsoft Store
 t1df799a1 = Microsoft Store
 
-# shellwing {version} is out: {by} updates it ({command}).
-t270e30ba = shellwing { $version } が公開されました：{ $by } でアップデートします（{ $command }）。
+# authwing {version} is out: {by} updates it ({command}).
+t270e30ba = authwing { $version } が公開されました：{ $by } でアップデートします（{ $command }）。
 
-# shellwing {version} is out: {by} updates it.
-t34c8e3f2 = shellwing { $version } が公開されました：{ $by } でアップデートします。
+# authwing {version} is out: {by} updates it.
+t34c8e3f2 = authwing { $version } が公開されました：{ $by } でアップデートします。
 
 # No folder to download to.
 t2bfc1370 = ダウンロード先のフォルダーがありません。
 
-# shellwing {version} is ready: it is installed when you quit, or now with Restart.
-t4cc4357e = shellwing { $version } の準備ができました: 終了時にインストールされます。今すぐなら「再起動」を押してください。
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+t4cc4357e = authwing { $version } の準備ができました: 終了時にインストールされます。今すぐなら「再起動」を押してください。
 
 # Downloading… {got} of {total}
 taee668c2 = ダウンロード中… { $got } / { $total }
@@ -3301,8 +3301,8 @@ tbac763bb = { $n } 件の接続が開いています。閉じると切断され�
 # Cannot open a terminal: {e}
 t3ffc1c98 = ターミナルを開けません：{ $e }
 
-# shellwing cannot lock here: this system has no way to ask that it is you.
-t222eeef4 = ここでは shellwing をロックできません。このシステムには本人確認の手段がありません。
+# authwing cannot lock here: this system has no way to ask that it is you.
+t222eeef4 = ここでは authwing をロックできません。このシステムには本人確認の手段がありません。
 
 # A connection is open; quitting closes it.
 tf3732b18 = 接続が開いています。終了すると切断されます。
@@ -3316,8 +3316,8 @@ t2f44ed8c = 再起動
 # Restart to install the update?
 tdab4b0cf = 再起動してアップデートをインストールしますか？
 
-# Quit shellwing?
-tfa31f588 = shellwing を終了しますか？
+# Quit authwing?
+tfa31f588 = authwing を終了しますか？
 
 # Syncing the notes before quitting…
 tb66945de = 終了する前にノートを同期しています…
@@ -3397,8 +3397,8 @@ tdfc17c92 = 保存済みのパスワードとパスフレーズ…
 # Lock the vault
 tc05449a1 = 保管庫をロック
 
-# Lock shellwing
-ta4580143 = shellwing をロック
+# Lock authwing
+ta4580143 = authwing をロック
 
 # Sync now with {place}
 t8aad97ad = { $place } と今すぐ同期
@@ -3412,11 +3412,11 @@ tc73a9bf6 = サーバーとパスワードを同期…
 # Settings…
 t64d0d0b4 = 設定…
 
-# Restart to install shellwing {version}
-taadea299 = 再起動して shellwing { $version } をインストール
+# Restart to install authwing {version}
+taadea299 = 再起動して authwing { $version } をインストール
 
-# shellwing {version} is out…
-tab699ac8 = shellwing { $version } が公開されました…
+# authwing {version} is out…
+tab699ac8 = authwing { $version } が公開されました…
 
 # Check for updates
 t70ad7706 = アップデートを確認
@@ -3517,8 +3517,8 @@ te7d01782 = 確認のためです。
 # There is no system keychain to keep the vault's key
 t04970b55 = 保管庫の鍵を保存するシステムのキーチェーンがありません
 
-# A passphrase keeps it instead: you type it when shellwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
-t2fd0f1b3 = 代わりにパスフレーズで保護します。shellwing の起動時に入力します。{ $min } 文字以上。Esc：今回はパスワードの保存、鍵、同期を使いません。
+# A passphrase keeps it instead: you type it when authwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
+t2fd0f1b3 = 代わりにパスフレーズで保護します。authwing の起動時に入力します。{ $min } 文字以上。Esc：今回はパスワードの保存、鍵、同期を使いません。
 
 # A passphrase for the vault
 t25841dd8 = 保管庫のパスフレーズ
@@ -3631,8 +3631,8 @@ t24c15ff5 = { $device } がこのデバイスの参加を許可するか確認�
 # Waiting for a device that syncs
 t6e41520f = 同期中のデバイスを待っています
 
-# Open shellwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
-ted2b04ee = このフォルダと同期しているデバイスで shellwing を開くと、このデバイスの参加を許可するか確認されます。Esc でキャンセルします。
+# Open authwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
+ted2b04ee = このフォルダと同期しているデバイスで authwing を開くと、このデバイスの参加を許可するか確認されます。Esc でキャンセルします。
 
 # Sync with this folder
 t8eb0599a = このフォルダと同期

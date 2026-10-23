@@ -1,17 +1,17 @@
-# shellwing in zh. Each message is found by its English, the
+# authwing in zh. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
 # unlock its windows
 t7c69953e = 解锁其窗口
 
-# Confirm it is you to unlock shellwing.
-t31ace1f1 = 请确认是你本人，以解锁 shellwing。
+# Confirm it is you to unlock authwing.
+t31ace1f1 = 请确认是你本人，以解锁 authwing。
 
 # Checking…
 t87f62cb7 = 正在检查…
 
-# Not confirmed: shellwing stays locked.
-t1db04c44 = 未确认：shellwing 仍处于锁定状态。
+# Not confirmed: authwing stays locked.
+t1db04c44 = 未确认：authwing 仍处于锁定状态。
 
 # That is not the password.
 t06b4bdb7 = 密码不正确。
@@ -31,17 +31,17 @@ t8eeb5228 = 可使用你的登录密码解锁。
 # Unlock
 t9c799975 = 解锁
 
-# Quit shellwing
-t8857c967 = 退出 shellwing
+# Quit authwing
+t8857c967 = 退出 authwing
 
-# shellwing is locked
-t665c7b6c = shellwing 已锁定
+# authwing is locked
+t665c7b6c = authwing 已锁定
 
 # Your login password
 t2348e42c = 你的登录密码
 
-# shellwing is locked: unlock it in its main window.
-tf4ae07e3 = shellwing 已锁定：请在其主窗口中解锁。
+# authwing is locked: unlock it in its main window.
+tf4ae07e3 = authwing 已锁定：请在其主窗口中解锁。
 
 # An edit of {remote} was not written back to the server; the file is kept as {path}.
 t62769e5b = 对 { $remote } 的修改未回写到服务器；文件保留为 { $path }。
@@ -412,8 +412,8 @@ t85f5968b = 来自 ~/.ssh/config
 # Host from ~/.ssh/config
 t6a7dc843 = 来自 ~/.ssh/config 的主机
 
-# shellwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
-t509e342f = shellwing 会读取此文件，但从不写入。请在你的编辑器中编辑它，或在此处复制一份，以添加分组、主题、转发或保存的密码。
+# authwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
+t509e342f = authwing 会读取此文件，但从不写入。请在你的编辑器中编辑它，或在此处复制一份，以添加分组、主题、转发或保存的密码。
 
 # Open config file
 t54ea8995 = 打开配置文件
@@ -718,8 +718,8 @@ ta81ce4ca = 单独按 { $key } 用于输入文字：请同时按住 Cmd、Ctrl �
 # {key} alone is for typing: hold Ctrl or Alt with it.
 t834f7024 = 单独按 { $key } 用于输入文字：请同时按住 Ctrl 或 Alt。
 
-# {key} belongs to the system: it never reaches Shellwing.
-tcf75feb6 = { $key } 由系统占用：永远不会传到 Shellwing。
+# {key} belongs to the system: it never reaches Authwing.
+tcf75feb6 = { $key } 由系统占用：永远不会传到 Authwing。
 
 # {key} is {what}, which cannot be changed.
 t01906ac3 = { $key } 是“{ $what }”，无法更改。
@@ -1054,8 +1054,8 @@ td51093f3 = 此密钥文件设有密码短语。输入密码短语即可将密�
 # Save the passphrase of {path}
 ta6e38b23 = 保存 { $path } 的密码短语
 
-# Kept in the vault, encrypted, and synced: shellwing then signs in with this key without asking, here and on your other devices.
-tf45d84f1 = 加密保存在保险库中并同步：此后 shellwing 在此设备和你的其他设备上都会直接用此密钥登录，无需询问。
+# Kept in the vault, encrypted, and synced: authwing then signs in with this key without asking, here and on your other devices.
+tf45d84f1 = 加密保存在保险库中并同步：此后 authwing 在此设备和你的其他设备上都会直接用此密钥登录，无需询问。
 
 # Asking the agent…
 tabb2eee4 = 正在询问代理…
@@ -1081,8 +1081,8 @@ t650c9448 = 无法读取保险库：{ $p }
 # In the vault
 ta13ebcfd = 在保险库中
 
-# synced · used only by shellwing
-t0714e99d = 已同步 · 仅供 shellwing 使用
+# synced · used only by authwing
+t0714e99d = 已同步 · 仅供 authwing 使用
 
 # None yet: generate one, or copy one of your key files here.
 t95a0c0ba = 还没有：生成一个，或将你的某个密钥文件复制到这里。
@@ -1378,8 +1378,8 @@ tb31ba949 = 图片显示在 Markdown 笔记中；此笔记是纯文本。
 # Images go in while the note is edited.
 t6f2c9191 = 图片需在编辑笔记时插入。
 
-# shellwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
-t4f35c5e2 = shellwing 从 { $hosts } 下载这些图片，这些服务器会得知你的地址。图片随后加密保存在保险库中，笔记中的链接会被替换。
+# authwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
+t4f35c5e2 = authwing 从 { $hosts } 下载这些图片，这些服务器会得知你的地址。图片随后加密保存在保险库中，笔记中的链接会被替换。
 
 # Some come over plain http: they could be altered on the way.
 tfe0055bd = 部分图片通过未加密的 http 传输：可能在途中被篡改。
@@ -1630,8 +1630,8 @@ te39c67c2 = ↑↓ 移动   Enter 选择   Esc 取消
 # About
 t58e096de = 关于
 
-# © {year} HivePaaS. The shellwing name and logo are trademarks of HivePaaS.
-ta956e96f = © { $year } HivePaaS。shellwing 名称和标志是 HivePaaS 的商标。
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+ta956e96f = © { $year } HivePaaS。authwing 名称和标志是 HivePaaS 的商标。
 
 # A native SSH client for Linux, macOS and Windows.
 t182e3bec = 适用于 Linux、macOS 和 Windows 的原生 SSH 客户端。
@@ -1648,8 +1648,8 @@ t183c7f9f = 已复制：{ $info }
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = 此版本没有发布密钥，因此无法提示更新。
 
-# shellwing {version} is ready
-t3f4cfe3f = shellwing { $version } 已就绪
+# authwing {version} is ready
+t3f4cfe3f = authwing { $version } 已就绪
 
 # It is installed when you quit, or now with Restart.
 t6fecac86 = 退出时安装，或点击“重新启动”立即安装。
@@ -1657,8 +1657,8 @@ t6fecac86 = 退出时安装，或点击“重新启动”立即安装。
 # Restart now
 t54001a7c = 立即重新启动
 
-# shellwing {version}
-tfc977e10 = shellwing { $version }
+# authwing {version}
+tfc977e10 = authwing { $version }
 
 # Looking for a newer version…
 tf1905fe9 = 正在检查新版本…
@@ -1681,8 +1681,8 @@ tb46c0678 = 下载并校验后，在退出时安装。
 # Download it, and install it in place of this one.
 t39312eae = 下载后安装，替换当前版本。
 
-# shellwing {version} is out
-t5b33836c = shellwing { $version } 已发布
+# authwing {version} is out
+t5b33836c = authwing { $version } 已发布
 
 # The download failed: {why}
 t5e96c075 = 下载失败：{ $why }
@@ -1717,8 +1717,8 @@ tcc27ace1 = 每天检查一次更新
 # It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t258cdfd9 = 从 GitHub 读取版本列表，仅在其签名验证通过时才采信。未经你的同意，不会下载或安装任何内容。
 
-# Visit shellwing.app
-t1d2ed540 = 访问 shellwing.app
+# Visit authwing.app
+t1d2ed540 = 访问 authwing.app
 
 # Report a problem
 t7b1728e7 = 报告问题
@@ -1729,8 +1729,8 @@ tc52ab62f = 发行说明
 # Open source
 ta04619ce = 开源
 
-# shellwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
-tcde8081b = shellwing 是免费的开源软件，采用 GPL-3.0-or-later 许可证。欢迎阅读代码、自行构建、报告问题或提交修复。
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tcde8081b = authwing 是免费的开源软件，采用 GPL-3.0-or-later 许可证。欢迎阅读代码、自行构建、报告问题或提交修复。
 
 # Open source · Apache-2.0
 tf33a768c = 开源 · Apache-2.0
@@ -1921,8 +1921,8 @@ t4956cc50 = 跟随系统（{ $language }）
 # Language
 t9a73db9b = 语言
 
-# shellwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
-t74b71048 = shellwing 自身的文字：菜单、设置、提问和通知。终端中显示的内容来自服务器。仅对此设备生效：不会同步。
+# authwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
+t74b71048 = authwing 自身的文字：菜单、设置、提问和通知。终端中显示的内容来自服务器。仅对此设备生效：不会同步。
 
 # Text editor for remote files
 tdc31a941 = 远程文件的文本编辑器
@@ -1933,8 +1933,8 @@ t3110b5e8 = 在“文件”面板中选择“在文本编辑器中编辑”，�
 # Open the last tabs at start
 tf7087aa7 = 启动时打开上次的标签页
 
-# When shellwing starts without a host, it opens the tabs and splits it had.
-t2b27326b = shellwing 在未指定主机的情况下启动时，会打开上次的标签页和拆分窗格。
+# When authwing starts without a host, it opens the tabs and splits it had.
+t2b27326b = authwing 在未指定主机的情况下启动时，会打开上次的标签页和拆分窗格。
 
 # Hosts from another app
 tffafddac = 来自其他应用的主机
@@ -2134,8 +2134,8 @@ tab3a8a0a = 关闭
 # known_hosts file
 t2e38efc6 = known_hosts 文件
 
-# Shared with ssh. shellwing adds the keys you trust.
-t43d70395 = 与 ssh 共用。shellwing 会添加你信任的密钥。
+# Shared with ssh. authwing adds the keys you trust.
+t43d70395 = 与 ssh 共用。authwing 会添加你信任的密钥。
 
 # ssh config file
 t70767f0d = ssh 配置文件
@@ -2284,8 +2284,8 @@ tcd6d61d0 = 未打开。
 # In the system keychain, and kept by a passphrase too.
 tc986f88d = 保存在系统钥匙串中，同时受密码短语保护。
 
-# Kept by its passphrase: typed when shellwing starts.
-t31c62b2e = 受密码短语保护：shellwing 启动时输入。
+# Kept by its passphrase: typed when authwing starts.
+t31c62b2e = 受密码短语保护：authwing 启动时输入。
 
 # In the system keychain.
 te1cb09c0 = 保存在系统钥匙串中。
@@ -2320,17 +2320,17 @@ t0c43fb4a = 1 小时
 # {m} min
 t7eebb6a4 = { $m } 分钟
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-ta9231ed4 = shellwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到 Touch ID 或你的 Mac 密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+ta9231ed4 = authwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到 Touch ID 或你的 Mac 密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-t34186d03 = shellwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到 Windows Hello 或你的 Windows 密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+t34186d03 = authwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到 Windows Hello 或你的 Windows 密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-teb40e26b = shellwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到你的登录密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+teb40e26b = authwing 启动时，以及超过这段时间没有按键或点击时，其窗口会隐藏，直到你的登录密码确认是你本人。这是针对忘记锁屏的轻量防护：会话仍在后台继续运行。
 
-# Lock shellwing when away
-t7ad7e7d1 = 离开时锁定 shellwing
+# Lock authwing when away
+t7ad7e7d1 = 离开时锁定 authwing
 
 # Saved passwords and passphrases
 t4b07c4a2 = 已保存的密码和密码短语
@@ -2347,8 +2347,8 @@ td09ac71d = 保险库的密钥
 # What opens vault.db. A passphrase keeps it where there is no system keychain (or as well as one); the recovery key always opens it, if the passphrase is forgotten or the keychain loses it.
 t6a54a5a7 = 用于打开 vault.db。密码短语可在没有系统钥匙串的地方保护它（也可与钥匙串同时使用）；如果忘记了密码短语或钥匙串丢失了密钥，恢复密钥始终可以打开它。
 
-# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of shellwing.
-t056f7fb9 = 保险库锁定时，{ $name } 可将其打开，与密码短语的作用相同（密码短语仍然有效）。仅限当前已录入的指纹：添加新指纹会使其停用，直到再次开启。需要已签名的 shellwing 版本。
+# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of authwing.
+t056f7fb9 = 保险库锁定时，{ $name } 可将其打开，与密码短语的作用相同（密码短语仍然有效）。仅限当前已录入的指纹：添加新指纹会使其停用，直到再次开启。需要已签名的 authwing 版本。
 
 # When the vault is locked, {name} (a fingerprint, the face or this device's PIN) opens it, as its passphrase does (which still works). The key is kept by this device's security chip.
 t0baa8f35 = 保险库锁定时，{ $name }（指纹、面容或此设备的 PIN）可将其打开，与密码短语的作用相同（密码短语仍然有效）。密钥由此设备的安全芯片保存。
@@ -2401,8 +2401,8 @@ t0e963f08 = + 主机
 # + Group
 t9585c651 = + 分组
 
-# About shellwing
-t884dc61f = 关于 shellwing
+# About authwing
+t884dc61f = 关于 authwing
 
 # HOSTS
 t0d325d34 = 主机
@@ -2737,8 +2737,8 @@ t88dd5f11 = 你的主机，在每台设备上。只需登录。
 # Hosts, passwords, keys and snippets stay on this computer for now.
 td2cff7db = 主机、密码、密钥和代码片段目前只在这台电脑上。
 
-# See shellwing cloud
-t88cbb4e0 = 了解 shellwing cloud
+# See authwing cloud
+t88cbb4e0 = 了解 authwing cloud
 
 # A folder, WebDAV, S3 or Git of your own:
 t42ad626a = 使用你自己的文件夹、WebDAV、S3 或 Git：
@@ -2782,8 +2782,8 @@ t025d99af = 主机、已保存的密码、密钥和代码片段随你到每台�
 # Nothing to set up: no folder, no server, no key to type on a new device.
 tde7b1d58 = 无需任何设置：在新设备上不用文件夹、不用服务器、不用输入密钥。
 
-# Encrypted on your devices: shellwing never sees your secrets.
-t35aecaf3 = 在你的设备上加密：shellwing 永远看不到你的机密信息。
+# Encrypted on your devices: authwing never sees your secrets.
+t35aecaf3 = 在你的设备上加密：authwing 永远看不到你的机密信息。
 
 # Create an account
 td7f6c093 = 创建账户
@@ -2794,11 +2794,11 @@ t2f60c9bf = 或使用以下方式继续
 # Rather not keep it yourself?
 t616f184a = 不想自己保管？
 
-# shellwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
-t81dee99e = shellwing cloud 替你保管：在每台设备上登录即可。仍然端到端加密。
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t81dee99e = authwing cloud 替你保管：在每台设备上登录即可。仍然端到端加密。
 
-# shellwing cloud is coming: signing in opens with it.
-t8de35792 = shellwing cloud 即将推出：届时将开放登录。
+# authwing cloud is coming: signing in opens with it.
+t8de35792 = authwing cloud 即将推出：届时将开放登录。
 
 # {n} host · $3.99/mo | {n} hosts · $3.99/mo
 td1ec974a = { $n } 台主机 · $3.99/月
@@ -3226,17 +3226,17 @@ ta8cbd72e = App Store
 # the Microsoft Store
 t1df799a1 = Microsoft Store
 
-# shellwing {version} is out: {by} updates it ({command}).
-t270e30ba = shellwing { $version } 已发布：通过 { $by } 更新（{ $command }）。
+# authwing {version} is out: {by} updates it ({command}).
+t270e30ba = authwing { $version } 已发布：通过 { $by } 更新（{ $command }）。
 
-# shellwing {version} is out: {by} updates it.
-t34c8e3f2 = shellwing { $version } 已发布：通过 { $by } 更新。
+# authwing {version} is out: {by} updates it.
+t34c8e3f2 = authwing { $version } 已发布：通过 { $by } 更新。
 
 # No folder to download to.
 t2bfc1370 = 没有可用于下载的文件夹。
 
-# shellwing {version} is ready: it is installed when you quit, or now with Restart.
-t4cc4357e = shellwing { $version } 已就绪：退出时安装，或点击“重新启动”立即安装。
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+t4cc4357e = authwing { $version } 已就绪：退出时安装，或点击“重新启动”立即安装。
 
 # Downloading… {got} of {total}
 taee668c2 = 正在下载… { $got } / { $total }
@@ -3301,8 +3301,8 @@ tbac763bb = { $n } 个连接处于打开状态；关闭将断开这些连接。
 # Cannot open a terminal: {e}
 t3ffc1c98 = 无法打开终端：{ $e }
 
-# shellwing cannot lock here: this system has no way to ask that it is you.
-t222eeef4 = shellwing 无法在此锁定：此系统无法确认是你本人。
+# authwing cannot lock here: this system has no way to ask that it is you.
+t222eeef4 = authwing 无法在此锁定：此系统无法确认是你本人。
 
 # A connection is open; quitting closes it.
 tf3732b18 = 有一个连接处于打开状态；退出将关闭它。
@@ -3316,8 +3316,8 @@ t2f44ed8c = 重新启动
 # Restart to install the update?
 tdab4b0cf = 重新启动以安装更新？
 
-# Quit shellwing?
-tfa31f588 = 退出 shellwing？
+# Quit authwing?
+tfa31f588 = 退出 authwing？
 
 # Syncing the notes before quitting…
 tb66945de = 正在退出前同步笔记…
@@ -3397,8 +3397,8 @@ tdfc17c92 = 已保存的密码和密码短语…
 # Lock the vault
 tc05449a1 = 锁定保险库
 
-# Lock shellwing
-ta4580143 = 锁定 shellwing
+# Lock authwing
+ta4580143 = 锁定 authwing
 
 # Sync now with {place}
 t8aad97ad = 立即与 { $place } 同步
@@ -3412,11 +3412,11 @@ tc73a9bf6 = 与服务器同步密码…
 # Settings…
 t64d0d0b4 = 设置…
 
-# Restart to install shellwing {version}
-taadea299 = 重新启动以安装 shellwing { $version }
+# Restart to install authwing {version}
+taadea299 = 重新启动以安装 authwing { $version }
 
-# shellwing {version} is out…
-tab699ac8 = shellwing { $version } 已发布…
+# authwing {version} is out…
+tab699ac8 = authwing { $version } 已发布…
 
 # Check for updates
 t70ad7706 = 检查更新
@@ -3517,8 +3517,8 @@ te7d01782 = 以确保无误。
 # There is no system keychain to keep the vault's key
 t04970b55 = 没有可保存保险库密钥的系统钥匙串
 
-# A passphrase keeps it instead: you type it when shellwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
-t2fd0f1b3 = 改用密码短语保护：shellwing 启动时输入。至少 { $min } 个字符。按 Esc：本次不使用已保存的密码、密钥和同步。
+# A passphrase keeps it instead: you type it when authwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
+t2fd0f1b3 = 改用密码短语保护：authwing 启动时输入。至少 { $min } 个字符。按 Esc：本次不使用已保存的密码、密钥和同步。
 
 # A passphrase for the vault
 t25841dd8 = 保险库的密码短语
@@ -3631,8 +3631,8 @@ t24c15ff5 = { $device } 正在询问是否允许此设备加入。如果它显�
 # Waiting for a device that syncs
 t6e41520f = 正在等待同步设备
 
-# Open shellwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
-ted2b04ee = 在同步此文件夹的设备上打开 shellwing：它会询问是否允许此设备加入。按 Esc 取消。
+# Open authwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
+ted2b04ee = 在同步此文件夹的设备上打开 authwing：它会询问是否允许此设备加入。按 Esc 取消。
 
 # Sync with this folder
 t8eb0599a = 与此文件夹同步

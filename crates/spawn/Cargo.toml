@@ -1,5 +1,5 @@
 [package]
-name = "shellwing-spawn"
+name = "authwing-spawn"
 description = "Starting processes with no signals blocked, whatever thread starts them"
 version.workspace = true
 edition.workspace = true

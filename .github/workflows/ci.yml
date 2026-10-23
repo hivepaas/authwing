@@ -86,12 +86,12 @@ jobs:
         run: cargo test --release --workspace
 
       - name: Build
-        run: cargo build --release -p shellwing
+        run: cargo build --release -p authwing
 
       - uses: actions/upload-artifact@v4
         with:
-          name: shellwing-${{ matrix.name }}
-          path: target/release/shellwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+          name: authwing-${{ matrix.name }}
+          path: target/release/authwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
           if-no-files-found: error
           retention-days: 14
 
@@ -125,7 +125,7 @@ jobs:
           export ANDROID_NDK_HOME="$ndk"
           export CC_aarch64_linux_android="$bin/aarch64-linux-android24-clang"
           export AR_aarch64_linux_android="$bin/llvm-ar"
-          cargo clippy -p shellwing-core --target aarch64-linux-android -- -D warnings
+          cargo clippy -p authwing-core --target aarch64-linux-android -- -D warnings
 
   ios:
     name: ios-sim-arm64 (core)
@@ -148,7 +148,7 @@ jobs:
           key: ios-sim-arm64
 
       - name: Clippy (core, iOS Simulator)
-        run: cargo clippy -p shellwing-core --target aarch64-apple-ios-sim -- -D warnings
+        run: cargo clippy -p authwing-core --target aarch64-apple-ios-sim -- -D warnings
 
   releasesign:
     name: releasesign (Go)

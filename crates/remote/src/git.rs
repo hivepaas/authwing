@@ -1,6 +1,6 @@
 //! Syncing through a Git repository, with the system's own `git`: it signs
 //! in as the user does (Git Credential Manager, the keychain, `gh`, SSH keys
-//! and the agent), and needs nothing built into shellwing but a few
+//! and the agent), and needs nothing built into authwing but a few
 //! commands.
 //!
 //! The clone on this device is a cache, made again if lost; the vault holds
@@ -8,7 +8,7 @@
 //! Git merge ever: the engine merges, field by field); the engine reads and
 //! writes the files; commit and push. A push refused because another device
 //! pushed first starts the round again over theirs (see
-//! `shellwing_vault::transact`).
+//! `authwing_vault::transact`).
 
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -16,8 +16,8 @@ use std::process::{Command, Stdio};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-use shellwing_spawn::Unblocked;
-use shellwing_vault::{Backend, Folder};
+use authwing_spawn::Unblocked;
+use authwing_vault::{Backend, Folder};
 
 /// The oldest git taken: 2.31 reads settings from the environment
 /// (`GIT_CONFIG_COUNT`), which keeps a token out of the command line.
@@ -105,7 +105,7 @@ impl Git {
         // An empty home: ~/.gitconfig (a rewrite to SSH, a helper with the
         // user's password) must not sign in for us.
         let home = std::env::temp_dir().join(format!(
-            "shellwing-anonymous-{}-{:?}",
+            "authwing-anonymous-{}-{:?}",
             std::process::id(),
             Instant::now()
         ));
@@ -451,7 +451,7 @@ fn failed(stderr: &str) -> io::Error {
     let (kind, text) = if says(&["Host key verification failed"]) {
         (
             io::ErrorKind::PermissionDenied,
-            "SSH does not know the server's key yet: connect to it once with ssh (in a terminal, or in shellwing) and accept it".to_string(),
+            "SSH does not know the server's key yet: connect to it once with ssh (in a terminal, or in authwing) and accept it".to_string(),
         )
     } else if says(&["Permission denied (publickey"]) {
         (
@@ -694,13 +694,13 @@ impl Backend for GitRepo {
                     "--cached",
                     "--ignore-unmatch",
                     "--",
-                    "shellwing",
+                    "authwing",
                 ])?;
-                let _ = std::fs::remove_dir_all(self.dir.join("shellwing"));
+                let _ = std::fs::remove_dir_all(self.dir.join("authwing"));
             }
             Err(e) => return Err(failed(&e)),
         }
-        self.git(&["clean", "-fdxq", "--", "shellwing"])?;
+        self.git(&["clean", "-fdxq", "--", "authwing"])?;
         state.pending = false;
         state.fresh = Some(Instant::now());
         Ok(())
@@ -711,7 +711,7 @@ impl Backend for GitRepo {
         if !state.pending {
             return Ok(true);
         }
-        self.git(&["add", "-A", "--", "shellwing"])?;
+        self.git(&["add", "-A", "--", "authwing"])?;
         // Written back as it was: nothing to commit.
         if self.git(&["diff", "--cached", "--quiet"]).is_ok() {
             state.pending = false;
@@ -722,10 +722,10 @@ impl Backend for GitRepo {
             .chars()
             .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
             .collect();
-        let email = format!("user.email=shellwing@{device}");
+        let email = format!("user.email=authwing@{device}");
         self.git(&[
             "-c",
-            "user.name=shellwing",
+            "user.name=authwing",
             "-c",
             &email,
             // The user's own settings must not get in the way: no signing
@@ -882,7 +882,7 @@ mod tests {
 
     #[test]
     fn a_repository_served_to_anyone_is_found_readable() {
-        let dir = std::env::temp_dir().join(format!("shellwing-anyone-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-anyone-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         let git = Git::find().expect("git, to run these tests");
@@ -913,7 +913,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    use shellwing_vault::{MemoryKeys, Vault};
+    use authwing_vault::{MemoryKeys, Vault};
 
     /// A bare repository in `dir`, as a server's would be, and clones of it
     /// for two devices.
@@ -943,18 +943,18 @@ mod tests {
 
     #[test]
     fn two_devices_sync_through_a_repository() {
-        let dir = std::env::temp_dir().join(format!("shellwing-git-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-git-{}", std::process::id()));
         let (a_side, b_side) = two_clones(&dir);
         let a = Vault::open(&dir.join("a.db"), &MemoryKeys::default()).expect("a");
         let b = Vault::open(&dir.join("b.db"), &MemoryKeys::default()).expect("b");
         a.set_password("deploy@web", "from-a").expect("save");
-        let rk = shellwing_vault::transact(&a_side, |s| a.start_sync(s))
+        let rk = authwing_vault::transact(&a_side, |s| a.start_sync(s))
             .expect("start")
             .to_string();
         a.sync(&a_side).expect("sync a");
-        let state = shellwing_vault::transact(&b_side, |s| b.folder_state(s)).expect("state");
-        assert_eq!(state, shellwing_vault::FolderState::Other);
-        shellwing_vault::transact(&b_side, |s| b.join(s, &rk)).expect("join");
+        let state = authwing_vault::transact(&b_side, |s| b.folder_state(s)).expect("state");
+        assert_eq!(state, authwing_vault::FolderState::Other);
+        authwing_vault::transact(&b_side, |s| b.join(s, &rk)).expect("join");
         b.set_password("root@db", "from-b").expect("save");
         b.sync(&b_side).expect("sync b");
         a.sync(&a_side).expect("sync a again");
@@ -969,7 +969,7 @@ mod tests {
         for c in commits.lines() {
             let by_one_of_them = ["laptop", "desktop"]
                 .iter()
-                .any(|d| c.starts_with(&format!("shellwing|shellwing@{d}|Sync from {d}|")));
+                .any(|d| c.starts_with(&format!("authwing|authwing@{d}|Sync from {d}|")));
             assert!(by_one_of_them && c.ends_with("+0000"), "{c}");
         }
         // Nothing new: no commit.
@@ -1013,16 +1013,16 @@ mod tests {
 
     #[test]
     fn a_push_refused_is_done_again_over_theirs() {
-        let dir = std::env::temp_dir().join(format!("shellwing-git-race-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-git-race-{}", std::process::id()));
         let (a_side, b_side) = two_clones(&dir);
         let a = Vault::open(&dir.join("a.db"), &MemoryKeys::default()).expect("a");
         let b = Vault::open(&dir.join("b.db"), &MemoryKeys::default()).expect("b");
         a.set_password("deploy@web", "first").expect("save");
-        let rk = shellwing_vault::transact(&a_side, |s| a.start_sync(s))
+        let rk = authwing_vault::transact(&a_side, |s| a.start_sync(s))
             .expect("start")
             .to_string();
         a.sync(&a_side).expect("sync a");
-        shellwing_vault::transact(&b_side, |s| b.join(s, &rk)).expect("join");
+        authwing_vault::transact(&b_side, |s| b.join(s, &rk)).expect("join");
         b.sync(&b_side).expect("sync b");
 
         a.set_password("deploy@web", "from-a").expect("edit a");
@@ -1061,11 +1061,11 @@ mod tests {
         a.set_device_name("desk");
         b.set_device_name("laptop");
         let note = write_note(&a, "", "df -h");
-        let rk = shellwing_vault::transact(a_side, |s| a.start_sync(s))
+        let rk = authwing_vault::transact(a_side, |s| a.start_sync(s))
             .expect("start")
             .to_string();
         a.sync(a_side).expect("sync a");
-        shellwing_vault::transact(b_side, |s| b.join(s, &rk)).expect("join");
+        authwing_vault::transact(b_side, |s| b.join(s, &rk)).expect("join");
         b.sync(b_side).expect("sync b");
         write_note(&a, &note, "df -h /var");
         std::thread::sleep(Duration::from_millis(5));
@@ -1076,7 +1076,7 @@ mod tests {
     #[test]
     fn a_note_changed_on_two_devices_keeps_both_texts() {
         use crate::tests::{both_kept, notes_of};
-        let dir = std::env::temp_dir().join(format!("shellwing-git-note-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-git-note-{}", std::process::id()));
         let (a_side, b_side) = two_clones(&dir);
         let (a, b) = note_changed_on_both(&dir, &a_side, &b_side);
         assert!(a.sync(&a_side).expect("sync a").copies.is_empty());
@@ -1095,7 +1095,7 @@ mod tests {
     fn a_copy_made_in_a_round_whose_push_was_refused_is_kept_and_said() {
         use crate::tests::{both_kept, notes_of};
         let dir =
-            std::env::temp_dir().join(format!("shellwing-git-note-race-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-git-note-race-{}", std::process::id()));
         let (a_side, b_side) = two_clones(&dir);
         let (a, b) = note_changed_on_both(&dir, &a_side, &b_side);
         // B's text is out first: A finds the loss, then B pushes again

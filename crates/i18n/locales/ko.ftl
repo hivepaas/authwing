@@ -1,17 +1,17 @@
-# shellwing in ko. Each message is found by its English, the
+# authwing in ko. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
 # unlock its windows
 t7c69953e = 창 잠금 해제
 
-# Confirm it is you to unlock shellwing.
-t31ace1f1 = shellwing 잠금을 해제하려면 본인임을 확인하세요.
+# Confirm it is you to unlock authwing.
+t31ace1f1 = authwing 잠금을 해제하려면 본인임을 확인하세요.
 
 # Checking…
 t87f62cb7 = 확인 중…
 
-# Not confirmed: shellwing stays locked.
-t1db04c44 = 확인되지 않았습니다. shellwing은 잠긴 상태로 유지됩니다.
+# Not confirmed: authwing stays locked.
+t1db04c44 = 확인되지 않았습니다. authwing은 잠긴 상태로 유지됩니다.
 
 # That is not the password.
 t06b4bdb7 = 비밀번호가 올바르지 않습니다.
@@ -31,17 +31,17 @@ t8eeb5228 = 로그인 비밀번호로 잠금을 해제할 수 있습니다.
 # Unlock
 t9c799975 = 잠금 해제
 
-# Quit shellwing
-t8857c967 = shellwing 종료
+# Quit authwing
+t8857c967 = authwing 종료
 
-# shellwing is locked
-t665c7b6c = shellwing이 잠겨 있습니다
+# authwing is locked
+t665c7b6c = authwing이 잠겨 있습니다
 
 # Your login password
 t2348e42c = 로그인 비밀번호
 
-# shellwing is locked: unlock it in its main window.
-tf4ae07e3 = shellwing이 잠겨 있습니다. 기본 창에서 잠금을 해제하세요.
+# authwing is locked: unlock it in its main window.
+tf4ae07e3 = authwing이 잠겨 있습니다. 기본 창에서 잠금을 해제하세요.
 
 # An edit of {remote} was not written back to the server; the file is kept as {path}.
 t62769e5b = { $remote }의 편집 내용이 서버에 반영되지 않았습니다. 파일은 { $path }에 보관됩니다.
@@ -412,8 +412,8 @@ t85f5968b = ~/.ssh/config에서 가져옴
 # Host from ~/.ssh/config
 t6a7dc843 = ~/.ssh/config의 호스트
 
-# shellwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
-t509e342f = shellwing은 이 파일을 읽기만 하고 쓰지 않습니다. 편집기에서 편집하거나, 여기에 사본을 만들어 그룹, 테마, 포워딩, 저장된 비밀번호를 추가하세요.
+# authwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
+t509e342f = authwing은 이 파일을 읽기만 하고 쓰지 않습니다. 편집기에서 편집하거나, 여기에 사본을 만들어 그룹, 테마, 포워딩, 저장된 비밀번호를 추가하세요.
 
 # Open config file
 t54ea8995 = 설정 파일 열기
@@ -718,8 +718,8 @@ ta81ce4ca = { $key }만 누르면 입력이 됩니다. Cmd, Ctrl 또는 Option�
 # {key} alone is for typing: hold Ctrl or Alt with it.
 t834f7024 = { $key }만 누르면 입력이 됩니다. Ctrl 또는 Alt를 함께 누르세요.
 
-# {key} belongs to the system: it never reaches Shellwing.
-tcf75feb6 = { $key }은(는) 시스템이 사용합니다. Shellwing에는 전달되지 않습니다.
+# {key} belongs to the system: it never reaches Authwing.
+tcf75feb6 = { $key }은(는) 시스템이 사용합니다. Authwing에는 전달되지 않습니다.
 
 # {key} is {what}, which cannot be changed.
 t01906ac3 = { $key }은(는) '{ $what }'에 쓰이며 변경할 수 없습니다.
@@ -1054,8 +1054,8 @@ td51093f3 = 이 키 파일에는 암호 문구가 있습니다. 암호 문구를
 # Save the passphrase of {path}
 ta6e38b23 = { $path }의 암호 문구 저장
 
-# Kept in the vault, encrypted, and synced: shellwing then signs in with this key without asking, here and on your other devices.
-tf45d84f1 = 보관함에 암호화되어 보관되고 동기화됩니다. 이후 shellwing은 이 기기와 다른 기기에서 묻지 않고 이 키로 로그인합니다.
+# Kept in the vault, encrypted, and synced: authwing then signs in with this key without asking, here and on your other devices.
+tf45d84f1 = 보관함에 암호화되어 보관되고 동기화됩니다. 이후 authwing은 이 기기와 다른 기기에서 묻지 않고 이 키로 로그인합니다.
 
 # Asking the agent…
 tabb2eee4 = 에이전트에 요청하는 중…
@@ -1081,8 +1081,8 @@ t650c9448 = 보관함을 읽을 수 없습니다: { $p }
 # In the vault
 ta13ebcfd = 보관함
 
-# synced · used only by shellwing
-t0714e99d = 동기화됨 · shellwing 전용
+# synced · used only by authwing
+t0714e99d = 동기화됨 · authwing 전용
 
 # None yet: generate one, or copy one of your key files here.
 t95a0c0ba = 아직 없습니다. 키를 생성하거나 키 파일을 여기로 복사하세요.
@@ -1378,8 +1378,8 @@ tb31ba949 = 이미지는 Markdown 노트에서 표시됩니다. 이 노트는 �
 # Images go in while the note is edited.
 t6f2c9191 = 이미지는 노트를 편집하는 동안 넣을 수 있습니다.
 
-# shellwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
-t4f35c5e2 = shellwing은 { $hosts }에서 이미지를 내려받으며, 이 서버들은 사용자의 주소를 알게 됩니다. 이미지는 암호화되어 보관함에 저장되고 노트의 링크는 바뀝니다.
+# authwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
+t4f35c5e2 = authwing은 { $hosts }에서 이미지를 내려받으며, 이 서버들은 사용자의 주소를 알게 됩니다. 이미지는 암호화되어 보관함에 저장되고 노트의 링크는 바뀝니다.
 
 # Some come over plain http: they could be altered on the way.
 tfe0055bd = 일부는 암호화되지 않은 http로 오므로 도중에 변조될 수 있습니다.
@@ -1630,8 +1630,8 @@ te39c67c2 = ↑↓ 이동   Enter 선택   Esc 취소
 # About
 t58e096de = 정보
 
-# © {year} HivePaaS. The shellwing name and logo are trademarks of HivePaaS.
-ta956e96f = © { $year } HivePaaS. shellwing 이름과 로고는 HivePaaS의 상표입니다.
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+ta956e96f = © { $year } HivePaaS. authwing 이름과 로고는 HivePaaS의 상표입니다.
 
 # A native SSH client for Linux, macOS and Windows.
 t182e3bec = Linux, macOS, Windows용 네이티브 SSH 클라이언트.
@@ -1648,8 +1648,8 @@ t183c7f9f = 복사함: { $info }
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = 이 빌드에는 릴리스 키가 없어 업데이트를 알릴 수 없습니다.
 
-# shellwing {version} is ready
-t3f4cfe3f = shellwing { $version } 준비 완료
+# authwing {version} is ready
+t3f4cfe3f = authwing { $version } 준비 완료
 
 # It is installed when you quit, or now with Restart.
 t6fecac86 = 종료할 때 설치되며, 다시 시작을 누르면 지금 설치됩니다.
@@ -1657,8 +1657,8 @@ t6fecac86 = 종료할 때 설치되며, 다시 시작을 누르면 지금 설치
 # Restart now
 t54001a7c = 지금 다시 시작
 
-# shellwing {version}
-tfc977e10 = shellwing { $version }
+# authwing {version}
+tfc977e10 = authwing { $version }
 
 # Looking for a newer version…
 tf1905fe9 = 새 버전을 확인하는 중…
@@ -1681,8 +1681,8 @@ tb46c0678 = 다운로드하고 확인한 뒤, 종료할 때 설치합니다.
 # Download it, and install it in place of this one.
 t39312eae = 다운로드한 뒤 현재 버전 대신 설치하세요.
 
-# shellwing {version} is out
-t5b33836c = shellwing { $version } 출시
+# authwing {version} is out
+t5b33836c = authwing { $version } 출시
 
 # The download failed: {why}
 t5e96c075 = 다운로드 실패: { $why }
@@ -1717,8 +1717,8 @@ tcc27ace1 = 하루에 한 번 업데이트 확인
 # It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t258cdfd9 = GitHub에서 릴리스 목록을 읽고, 서명이 검증될 때만 신뢰합니다. 사용자 동의 없이는 아무것도 다운로드하거나 설치하지 않습니다.
 
-# Visit shellwing.app
-t1d2ed540 = shellwing.app 방문
+# Visit authwing.app
+t1d2ed540 = authwing.app 방문
 
 # Report a problem
 t7b1728e7 = 문제 신고
@@ -1729,8 +1729,8 @@ tc52ab62f = 릴리스 노트
 # Open source
 ta04619ce = 오픈 소스
 
-# shellwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
-tcde8081b = shellwing은 GPL-3.0-or-later 라이선스의 무료 오픈 소스 소프트웨어입니다. 코드를 읽고, 직접 빌드하고, 문제를 신고하거나 수정 사항을 보내 주세요.
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tcde8081b = authwing은 GPL-3.0-or-later 라이선스의 무료 오픈 소스 소프트웨어입니다. 코드를 읽고, 직접 빌드하고, 문제를 신고하거나 수정 사항을 보내 주세요.
 
 # Open source · Apache-2.0
 tf33a768c = 오픈 소스 · Apache-2.0
@@ -1921,8 +1921,8 @@ t4956cc50 = 시스템과 동일 ({ $language })
 # Language
 t9a73db9b = 언어
 
-# shellwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
-t74b71048 = shellwing 자체의 문구(메뉴, 설정, 질문, 알림)에 적용됩니다. 터미널에 표시되는 내용은 서버가 보낸 것입니다. 이 기기 전용 설정이며 동기화되지 않습니다.
+# authwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
+t74b71048 = authwing 자체의 문구(메뉴, 설정, 질문, 알림)에 적용됩니다. 터미널에 표시되는 내용은 서버가 보낸 것입니다. 이 기기 전용 설정이며 동기화되지 않습니다.
 
 # Text editor for remote files
 tdc31a941 = 원격 파일용 텍스트 편집기
@@ -1933,8 +1933,8 @@ t3110b5e8 = 파일 패널의 '텍스트 편집기에서 편집'은 이 편집기
 # Open the last tabs at start
 tf7087aa7 = 시작 시 마지막 탭 열기
 
-# When shellwing starts without a host, it opens the tabs and splits it had.
-t2b27326b = 호스트 없이 shellwing을 시작하면 이전의 탭과 분할 창을 다시 엽니다.
+# When authwing starts without a host, it opens the tabs and splits it had.
+t2b27326b = 호스트 없이 authwing을 시작하면 이전의 탭과 분할 창을 다시 엽니다.
 
 # Hosts from another app
 tffafddac = 다른 앱의 호스트
@@ -2134,8 +2134,8 @@ tab3a8a0a = 끔
 # known_hosts file
 t2e38efc6 = known_hosts 파일
 
-# Shared with ssh. shellwing adds the keys you trust.
-t43d70395 = ssh와 공유합니다. 신뢰한 키는 shellwing이 추가합니다.
+# Shared with ssh. authwing adds the keys you trust.
+t43d70395 = ssh와 공유합니다. 신뢰한 키는 authwing이 추가합니다.
 
 # ssh config file
 t70767f0d = ssh 설정 파일
@@ -2284,8 +2284,8 @@ tcd6d61d0 = 열리지 않음.
 # In the system keychain, and kept by a passphrase too.
 tc986f88d = 시스템 키체인에 보관되며, 암호 문구로도 보호됩니다.
 
-# Kept by its passphrase: typed when shellwing starts.
-t31c62b2e = 암호 문구로 보호됨: shellwing을 시작할 때 입력합니다.
+# Kept by its passphrase: typed when authwing starts.
+t31c62b2e = 암호 문구로 보호됨: authwing을 시작할 때 입력합니다.
 
 # In the system keychain.
 te1cb09c0 = 시스템 키체인에 보관됨.
@@ -2320,17 +2320,17 @@ t0c43fb4a = 1시간
 # {m} min
 t7eebb6a4 = { $m }분
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-ta9231ed4 = shellwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 Touch ID 또는 Mac 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+ta9231ed4 = authwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 Touch ID 또는 Mac 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-t34186d03 = shellwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 Windows Hello 또는 Windows 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+t34186d03 = authwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 Windows Hello 또는 Windows 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-teb40e26b = shellwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 로그인 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+teb40e26b = authwing이 시작될 때, 그리고 키 입력이나 클릭 없이 이 시간이 지나면 로그인 비밀번호로 본인임이 확인될 때까지 창이 숨겨집니다. 화면 잠금을 잊었을 때를 위한 가벼운 보호 장치이며, 세션은 그 아래에서 계속 실행됩니다.
 
-# Lock shellwing when away
-t7ad7e7d1 = 자리를 비우면 shellwing 잠그기
+# Lock authwing when away
+t7ad7e7d1 = 자리를 비우면 authwing 잠그기
 
 # Saved passwords and passphrases
 t4b07c4a2 = 저장된 비밀번호 및 암호 문구
@@ -2347,8 +2347,8 @@ td09ac71d = 보관함 키
 # What opens vault.db. A passphrase keeps it where there is no system keychain (or as well as one); the recovery key always opens it, if the passphrase is forgotten or the keychain loses it.
 t6a54a5a7 = vault.db를 여는 키입니다. 시스템 키체인이 없는 경우(또는 키체인과 함께) 암호 문구로 보호할 수 있습니다. 암호 문구를 잊거나 키체인에서 키가 사라져도 복구 키로는 항상 열 수 있습니다.
 
-# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of shellwing.
-t056f7fb9 = 보관함이 잠겨 있으면 암호 문구뿐 아니라 { $name }(으)로도 열 수 있습니다(암호 문구도 계속 사용 가능). 현재 등록된 지문만 사용할 수 있으며, 지문을 추가하면 다시 켤 때까지 사용이 중지됩니다. 서명된 shellwing 빌드가 필요합니다.
+# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of authwing.
+t056f7fb9 = 보관함이 잠겨 있으면 암호 문구뿐 아니라 { $name }(으)로도 열 수 있습니다(암호 문구도 계속 사용 가능). 현재 등록된 지문만 사용할 수 있으며, 지문을 추가하면 다시 켤 때까지 사용이 중지됩니다. 서명된 authwing 빌드가 필요합니다.
 
 # When the vault is locked, {name} (a fingerprint, the face or this device's PIN) opens it, as its passphrase does (which still works). The key is kept by this device's security chip.
 t0baa8f35 = 보관함이 잠겨 있으면 암호 문구뿐 아니라 { $name }(지문, 얼굴 또는 이 기기의 PIN)으로도 열 수 있습니다(암호 문구도 계속 사용 가능). 키는 이 기기의 보안 칩에 보관됩니다.
@@ -2401,8 +2401,8 @@ t0e963f08 = + 호스트
 # + Group
 t9585c651 = + 그룹
 
-# About shellwing
-t884dc61f = shellwing 정보
+# About authwing
+t884dc61f = authwing 정보
 
 # HOSTS
 t0d325d34 = 호스트
@@ -2737,8 +2737,8 @@ t88dd5f11 = 모든 기기에서 내 호스트를 사용하세요. 로그인만 �
 # Hosts, passwords, keys and snippets stay on this computer for now.
 td2cff7db = 호스트, 비밀번호, 키, 스니펫은 지금은 이 컴퓨터에만 있습니다.
 
-# See shellwing cloud
-t88cbb4e0 = shellwing cloud 보기
+# See authwing cloud
+t88cbb4e0 = authwing cloud 보기
 
 # A folder, WebDAV, S3 or Git of your own:
 t42ad626a = 직접 관리하는 폴더, WebDAV, S3 또는 Git:
@@ -2782,8 +2782,8 @@ t025d99af = 호스트, 저장된 비밀번호, 키, 스니펫을 모든 컴퓨�
 # Nothing to set up: no folder, no server, no key to type on a new device.
 tde7b1d58 = 설정할 것이 없습니다. 새 기기에서 폴더, 서버, 키를 입력할 필요가 없습니다.
 
-# Encrypted on your devices: shellwing never sees your secrets.
-t35aecaf3 = 기기에서 암호화되므로 shellwing은 비밀 정보를 볼 수 없습니다.
+# Encrypted on your devices: authwing never sees your secrets.
+t35aecaf3 = 기기에서 암호화되므로 authwing은 비밀 정보를 볼 수 없습니다.
 
 # Create an account
 td7f6c093 = 계정 만들기
@@ -2794,11 +2794,11 @@ t2f60c9bf = 또는 다음으로 계속
 # Rather not keep it yourself?
 t616f184a = 직접 관리하고 싶지 않으신가요?
 
-# shellwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
-t81dee99e = shellwing cloud가 대신 보관합니다. 각 기기에서 로그인만 하면 됩니다. 종단 간 암호화는 그대로 유지됩니다.
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t81dee99e = authwing cloud가 대신 보관합니다. 각 기기에서 로그인만 하면 됩니다. 종단 간 암호화는 그대로 유지됩니다.
 
-# shellwing cloud is coming: signing in opens with it.
-t8de35792 = shellwing cloud가 곧 출시됩니다. 출시와 함께 로그인할 수 있습니다.
+# authwing cloud is coming: signing in opens with it.
+t8de35792 = authwing cloud가 곧 출시됩니다. 출시와 함께 로그인할 수 있습니다.
 
 # {n} host · $3.99/mo | {n} hosts · $3.99/mo
 td1ec974a = 호스트 { $n }개 · $3.99/월
@@ -3226,17 +3226,17 @@ ta8cbd72e = App Store
 # the Microsoft Store
 t1df799a1 = Microsoft Store
 
-# shellwing {version} is out: {by} updates it ({command}).
-t270e30ba = shellwing { $version }이(가) 출시되었습니다: { $by }에서 업데이트합니다({ $command }).
+# authwing {version} is out: {by} updates it ({command}).
+t270e30ba = authwing { $version }이(가) 출시되었습니다: { $by }에서 업데이트합니다({ $command }).
 
-# shellwing {version} is out: {by} updates it.
-t34c8e3f2 = shellwing { $version }이(가) 출시되었습니다: { $by }에서 업데이트합니다.
+# authwing {version} is out: {by} updates it.
+t34c8e3f2 = authwing { $version }이(가) 출시되었습니다: { $by }에서 업데이트합니다.
 
 # No folder to download to.
 t2bfc1370 = 다운로드할 폴더가 없습니다.
 
-# shellwing {version} is ready: it is installed when you quit, or now with Restart.
-t4cc4357e = shellwing { $version } 준비 완료: 종료할 때 설치되며, 다시 시작을 누르면 지금 설치됩니다.
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+t4cc4357e = authwing { $version } 준비 완료: 종료할 때 설치되며, 다시 시작을 누르면 지금 설치됩니다.
 
 # Downloading… {got} of {total}
 taee668c2 = 다운로드 중… { $got } / { $total }
@@ -3301,8 +3301,8 @@ tbac763bb = 연결 { $n }개가 열려 있습니다. 닫으면 연결이 종료�
 # Cannot open a terminal: {e}
 t3ffc1c98 = 터미널을 열 수 없습니다: { $e }
 
-# shellwing cannot lock here: this system has no way to ask that it is you.
-t222eeef4 = 여기서는 shellwing을 잠글 수 없습니다. 이 시스템에는 본인임을 확인할 방법이 없습니다.
+# authwing cannot lock here: this system has no way to ask that it is you.
+t222eeef4 = 여기서는 authwing을 잠글 수 없습니다. 이 시스템에는 본인임을 확인할 방법이 없습니다.
 
 # A connection is open; quitting closes it.
 tf3732b18 = 연결이 열려 있습니다. 종료하면 연결이 닫힙니다.
@@ -3316,8 +3316,8 @@ t2f44ed8c = 다시 시작
 # Restart to install the update?
 tdab4b0cf = 다시 시작하여 업데이트를 설치하시겠습니까?
 
-# Quit shellwing?
-tfa31f588 = shellwing을 종료하시겠습니까?
+# Quit authwing?
+tfa31f588 = authwing을 종료하시겠습니까?
 
 # Syncing the notes before quitting…
 tb66945de = 종료하기 전에 노트를 동기화하는 중…
@@ -3397,8 +3397,8 @@ tdfc17c92 = 저장된 비밀번호 및 암호 문구…
 # Lock the vault
 tc05449a1 = 보관함 잠그기
 
-# Lock shellwing
-ta4580143 = shellwing 잠그기
+# Lock authwing
+ta4580143 = authwing 잠그기
 
 # Sync now with {place}
 t8aad97ad = 지금 { $place }과(와) 동기화
@@ -3412,11 +3412,11 @@ tc73a9bf6 = 서버와 비밀번호 동기화…
 # Settings…
 t64d0d0b4 = 설정…
 
-# Restart to install shellwing {version}
-taadea299 = 다시 시작하여 shellwing { $version } 설치
+# Restart to install authwing {version}
+taadea299 = 다시 시작하여 authwing { $version } 설치
 
-# shellwing {version} is out…
-tab699ac8 = shellwing { $version } 출시…
+# authwing {version} is out…
+tab699ac8 = authwing { $version } 출시…
 
 # Check for updates
 t70ad7706 = 업데이트 확인
@@ -3517,8 +3517,8 @@ te7d01782 = 확인을 위해 한 번 더 입력합니다.
 # There is no system keychain to keep the vault's key
 t04970b55 = 보관함 키를 보관할 시스템 키체인이 없습니다
 
-# A passphrase keeps it instead: you type it when shellwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
-t2fd0f1b3 = 대신 암호 문구로 보호하며, shellwing을 시작할 때 입력합니다. 최소 { $min }자. Esc: 이번에는 저장된 비밀번호, 키, 동기화를 사용하지 않습니다.
+# A passphrase keeps it instead: you type it when authwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
+t2fd0f1b3 = 대신 암호 문구로 보호하며, authwing을 시작할 때 입력합니다. 최소 { $min }자. Esc: 이번에는 저장된 비밀번호, 키, 동기화를 사용하지 않습니다.
 
 # A passphrase for the vault
 t25841dd8 = 보관함 암호 문구
@@ -3631,8 +3631,8 @@ t24c15ff5 = { $device }에서 이 기기의 참여를 허용할지 묻습니다.
 # Waiting for a device that syncs
 t6e41520f = 동기화 중인 기기를 기다리는 중
 
-# Open shellwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
-ted2b04ee = 이 폴더를 동기화하는 기기에서 shellwing을 여세요. 이 기기의 참여를 허용할지 묻습니다. Esc를 누르면 취소됩니다.
+# Open authwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
+ted2b04ee = 이 폴더를 동기화하는 기기에서 authwing을 여세요. 이 기기의 참여를 허용할지 묻습니다. Esc를 누르면 취소됩니다.
 
 # Sync with this folder
 t8eb0599a = 이 폴더와 동기화

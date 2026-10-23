@@ -1,6 +1,6 @@
 [package]
-name = "shellwing-config"
-description = "Settings, hosts and themes: the TOML files in shellwing's config directory"
+name = "authwing-config"
+description = "Settings: the TOML files in authwing's config directory"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,7 +12,6 @@ serde = { version = "1", features = ["derive"] }
 toml = "1"
 toml_edit = "0.25"
 serde_json = "1"
-getrandom = "0.3"
 thiserror.workspace = true
 
 [lints]

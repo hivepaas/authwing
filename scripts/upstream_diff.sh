@@ -1,5 +1,5 @@
 #!/bin/sh
-# What shellwing changed in a crate it took in: the crate as crates.io serves
+# What authwing changed in a crate it took in: the crate as crates.io serves
 # it, against ours (see each UPSTREAM.md).
 #
 #   scripts/upstream_diff.sh gpui-pre-linux 0.3.9 vendor/gpui-pre-linux

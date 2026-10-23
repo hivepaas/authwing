@@ -1,14 +1,14 @@
 //! Asking that it is the user at this computer, as the system does: for
-//! shellwing's lock, a light guard for a screen left unlocked. Nothing is
+//! authwing's lock, a light guard for a screen left unlocked. Nothing is
 //! kept or opened by it: the answer is a yes or a no.
 //!
 //! - **macOS**: LocalAuthentication, Touch ID or the login password. Unlike
 //!   the vault's Touch ID item, it needs no signed build.
 //! - **Windows**: Windows Hello (the face, a fingerprint or the PIN), else
 //!   the system's own password prompt.
-//! - **Linux**: the login password, typed in shellwing and checked by PAM's
+//! - **Linux**: the login password, typed in authwing and checked by PAM's
 //!   `login` service, as screen lockers check it: for the user running
-//!   shellwing only, with no rights of its own.
+//!   authwing only, with no rights of its own.
 //!
 //! Calls block until the user answers: never on the UI thread.
 
@@ -17,7 +17,7 @@
 pub enum How {
     /// The system asks, in its own dialog: [`ask`].
     System,
-    /// shellwing asks for the password, and the system checks it:
+    /// authwing asks for the password, and the system checks it:
     /// [`check_password`].
     Password,
 }
@@ -34,7 +34,7 @@ pub fn how() -> Option<How> {
 }
 
 /// The system asks the user: true when it is them, false when they
-/// cancelled or could not prove it. macOS says `reason` after "shellwing is
+/// cancelled or could not prove it. macOS says `reason` after "authwing is
 /// trying to"; Windows shows `description`.
 pub fn ask(reason: &str, description: &str) -> Result<bool, String> {
     #[cfg(any(target_os = "macos", windows))]
@@ -74,12 +74,12 @@ mod system {
             .ok_or("this system cannot ask that it is you")?;
         let text = Text {
             android: AndroidText {
-                title: "shellwing",
+                title: "authwing",
                 subtitle: None,
                 description: None,
             },
             apple: reason,
-            windows: WindowsText::new_truncated("shellwing", description),
+            windows: WindowsText::new_truncated("authwing", description),
         };
         let (tx, rx) = std::sync::mpsc::channel();
         Context::new(())
@@ -153,7 +153,7 @@ mod pam {
             .ok()
             .flatten()
             .map(|u| u.name)
-            .ok_or("the user running shellwing is not known")?;
+            .ok_or("the user running authwing is not known")?;
         let typed = Typed {
             user: &user,
             password,

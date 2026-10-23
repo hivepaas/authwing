@@ -1,6 +1,6 @@
 name: Release
 
-# A tag vX.Y.Z (or vX.Y.Z-betaN) builds shellwing for every platform, packages
+# A tag vX.Y.Z (or vX.Y.Z-betaN) builds authwing for every platform, packages
 # it (scripts/package_*.sh) and makes a draft release on GitHub with the files
 # and their SHA-256. Nothing reaches users until the draft is published and the
 # signed list of releases moves (docs/releasing.md).
@@ -95,7 +95,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - name: Build
-        run: cargo build --release --locked -p shellwing
+        run: cargo build --release --locked -p authwing
 
       - name: Package
         shell: bash
@@ -103,7 +103,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: shellwing-${{ matrix.name }}
+          name: authwing-${{ matrix.name }}
           path: dist/*
           if-no-files-found: error
           retention-days: 30
@@ -142,4 +142,4 @@ jobs:
           prerelease=()
           case "$TAG" in *-beta*) prerelease=(--prerelease) ;; esac
           gh release create "$TAG" dist/* --draft "${prerelease[@]}" \
-            --title "shellwing $VERSION" --notes-file "$notes" --verify-tag
+            --title "authwing $VERSION" --notes-file "$notes" --verify-tag

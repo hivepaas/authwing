@@ -1,10 +1,10 @@
 # Release signing keys
 
-The public keys shellwing believes its list of releases (`release.signed.json`)
+The public keys authwing believes its list of releases (`release.signed.json`)
 from. Every `<key-id>.pub.pem` here is built into the app (`build.rs`); its key
 id is its file name. The list must carry a valid **Ed25519** (Ed25519ctx) and a
 valid **ML-DSA-65** signature, each by a key here, under the context
-`shellwing-release-v1`.
+`authwing-release-v1`.
 
 A build with no key here cannot tell of updates: it does not look, and
 *Settings › About* says so.

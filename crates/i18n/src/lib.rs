@@ -1,4 +1,4 @@
-//! shellwing's words in the user's language.
+//! authwing's words in the user's language.
 //!
 //! The English is in the code, where it is said: `tr!("Sync now")`,
 //! `tr!("Cannot sync: {why}", why = e)`, `tr_n!(n, "{n} host", "{n} hosts")`.

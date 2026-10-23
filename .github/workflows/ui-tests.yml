@@ -84,11 +84,11 @@ jobs:
           exit 1
 
       - name: Clippy (with the UI tests)
-        run: cargo clippy -p shellwing --features ui-tests --all-targets -- -D warnings
+        run: cargo clippy -p authwing --features ui-tests --all-targets -- -D warnings
 
       # The ui-tests profile (Cargo.toml): release speed, as debug builds of
       # libghostty parse too slowly for the flood scenario on CI machines, with
       # debug assertions, which the clicking scenarios need.
       - name: UI scenarios
         shell: bash
-        run: cargo test --profile ui-tests -p shellwing --features ui-tests "ui_tests::${{ inputs.filter }}"
+        run: cargo test --profile ui-tests -p authwing --features ui-tests "ui_tests::${{ inputs.filter }}"

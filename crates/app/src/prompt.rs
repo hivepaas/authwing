@@ -202,7 +202,7 @@ pub fn render(
     handle.with_view(view, window, cx)
 }
 
-/// Answers every question open as Escape does: shellwing locking, nobody
+/// Answers every question open as Escape does: authwing locking, nobody
 /// may answer one drawn over the lock (letting a device into the vault,
 /// deleting a note).
 pub fn dismiss_all(cx: &mut App) {

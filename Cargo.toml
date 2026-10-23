@@ -8,30 +8,26 @@ exclude = ["vendor"]
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.95"
-repository = "https://github.com/hivepaas/shellwing"
+repository = "https://github.com/hivepaas/authwing"
 license = "GPL-3.0-or-later"
 publish = false
 
 [workspace.dependencies]
-shellwing-term = { path = "crates/term" }
-shellwing-ssh = { path = "crates/ssh" }
-shellwing-config = { path = "crates/config" }
-shellwing-vault = { path = "crates/vault" }
-shellwing-core = { path = "crates/core" }
-shellwing-remote = { path = "crates/remote" }
-shellwing-presence = { path = "crates/presence" }
-shellwing-i18n = { path = "crates/i18n" }
-shellwing-update = { path = "crates/update" }
-shellwing-spawn = { path = "crates/spawn" }
-shellwing-import = { path = "crates/import" }
+authwing-config = { path = "crates/config" }
+authwing-vault = { path = "crates/vault" }
+authwing-remote = { path = "crates/remote" }
+authwing-presence = { path = "crates/presence" }
+authwing-i18n = { path = "crates/i18n" }
+authwing-update = { path = "crates/update" }
+authwing-spawn = { path = "crates/spawn" }
+authwing-totp = { path = "crates/totp" }
+authwing-context = { path = "crates/context" }
+authwing-voice = { path = "crates/voice" }
+authwing-bridge = { path = "crates/bridge" }
 # GPUI as published by Longbridge (the same snapshot tern and gpui-kit use).
 gpui = { package = "gpui-pre", version = "=0.3.9" }
 # font-kit and runtime_shaders only affect macOS; the Linux backends are app features.
 gpui_platform = { package = "gpui-pre-platform", version = "=0.3.9", default-features = false, features = ["font-kit", "runtime_shaders"] }
-# Master tracks Zig 0.16; the 0.2.2 release still needs Zig 0.15.
-libghostty-vt = { git = "https://github.com/uzaaft/libghostty-rs", branch = "master" }
-# ring rather than the default aws-lc-rs: it builds on Windows without NASM or CMake.
-russh = { version = "0.64", default-features = false, features = ["ring", "rsa", "flate2"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net"] }
 async-channel = "2"
 anyhow = "1"
@@ -50,15 +46,13 @@ lto = "thin"
 codegen-units = 4
 strip = true
 
-# Dependencies optimised in dev builds too, so the terminal is usable while developing.
+# Dependencies optimised in dev builds too: GPUI and the crypto are slow unoptimised.
 [profile.dev.package."*"]
 opt-level = 2
 
-# The UI tests on CI (`--profile ui-tests`): release speed, as debug builds of
-# libghostty parse too slowly (its Zig build follows DEBUG and OPT_LEVEL, not
-# this), with debug assertions: GPUI records where elements are drawn only
-# with them, so the tests could not click without, and they catch what only a
-# debug build would.
+# The UI tests on CI (`--profile ui-tests`): release speed, with debug
+# assertions: GPUI records where elements are drawn only with them, so the
+# tests could not click without, and they catch what only a debug build would.
 [profile.ui-tests]
 inherits = "release"
 debug-assertions = true

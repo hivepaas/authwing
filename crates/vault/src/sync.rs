@@ -1,7 +1,7 @@
 //! Sync through any store of files (docs/design/sync.md).
 //!
-//! The store holds `shellwing/format.json` (which key the records use, and that
-//! key wrapped by the recovery key) and `shellwing/records/<id>.sw`, one sealed
+//! The store holds `authwing/format.json` (which key the records use, and that
+//! key wrapped by the recovery key) and `authwing/records/<id>.sw`, one sealed
 //! record per file. Merging is per field, by clock stamp, so it gives the same
 //! result in any order and on stores without locking: a write lost to a race is
 //! merged back at the next sync by the device that still has it.
@@ -22,7 +22,7 @@ use crate::{Error, Field, KEY_LEN, KEY_VERSION, Record, Result, SPACE, Vault, ci
 
 const FORMAT: &str = "format.json";
 const RECORDS: &str = "records";
-const RECOVERY_AAD: &[u8] = b"shellwing space key wrapped by the recovery key v1";
+const RECOVERY_AAD: &[u8] = b"authwing space key wrapped by the recovery key v1";
 
 /// Where synced files live. Names are relative: `format.json`,
 /// `records/<file>`, `pairing/<file>`.
@@ -77,7 +77,7 @@ pub fn transact<T>(b: &dyn Backend, mut op: impl FnMut(&dyn Backend) -> Result<T
 const REPLACE_TRIES: usize = 3;
 
 /// A folder on disk: iCloud Drive, Syncthing, a Dropbox or OneDrive folder, a
-/// network share. Files go in `<folder>/shellwing/`.
+/// network share. Files go in `<folder>/authwing/`.
 pub struct Folder {
     root: PathBuf,
 }
@@ -85,7 +85,7 @@ pub struct Folder {
 impl Folder {
     pub fn new(folder: &Path) -> Self {
         Folder {
-            root: folder.join("shellwing"),
+            root: folder.join("authwing"),
         }
     }
 }
@@ -155,8 +155,7 @@ struct FolderPassphrase {
     sealed: String,
 }
 
-const FOLDER_PASSPHRASE_AAD: &[u8] =
-    b"shellwing space and recovery keys wrapped by a passphrase v1";
+const FOLDER_PASSPHRASE_AAD: &[u8] = b"authwing space and recovery keys wrapped by a passphrase v1";
 
 /// One record in the store: the clear part and the sealed payload (absent for
 /// a deleted record).
@@ -318,7 +317,7 @@ fn copy_of(note: &str, text: &Record) -> Option<(String, Record)> {
     let lost = text.f.get("text")?;
     let ms: u64 = lost.t.split('-').next()?.parse().ok()?;
     let hash = Sha256::new()
-        .chain_update(b"shellwing note copy\0")
+        .chain_update(b"authwing note copy\0")
         .chain_update(note)
         .chain_update(b"\0")
         .chain_update(&lost.t)
@@ -854,7 +853,7 @@ impl Vault {
     /// for a file that is not one of this space's records.
     fn version_in(&self, id: &str, bytes: &[u8]) -> Result<Option<(String, Version)>> {
         let env: Envelope = serde_json::from_slice(bytes)?;
-        if env.id != id || env.space != SPACE || !matches!(env.kind.as_str(), "host" | "other") {
+        if env.id != id || env.space != SPACE || !matches!(env.kind.as_str(), "code" | "other") {
             return Ok(None);
         }
         let version = match env.data {
@@ -970,8 +969,7 @@ mod tests {
     }
 
     fn temp(name: &str) -> PathBuf {
-        let dir =
-            std::env::temp_dir().join(format!("shellwing-sync-{}-{name}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-sync-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         dir
@@ -1059,7 +1057,7 @@ mod tests {
         assert_eq!(pw(&b, "root@db"), None);
 
         // Nothing readable in the folder.
-        for entry in std::fs::read_dir(dir.join("shared/shellwing/records")).expect("dir") {
+        for entry in std::fs::read_dir(dir.join("shared/authwing/records")).expect("dir") {
             let raw = std::fs::read(entry.expect("entry").path()).expect("read");
             let has = |s: &str| raw.windows(s.len()).any(|w| w == s.as_bytes());
             assert!(!has("changed-on-b") && !has("deploy@web"));
@@ -1084,7 +1082,7 @@ mod tests {
         a.sync(&folder).expect("sync a");
         assert!(!b.passphrase_joins(&folder).expect("read"));
 
-        for weak in ["password123456", "qwertyuiop", "shellwing"] {
+        for weak in ["password123456", "qwertyuiop", "authwing"] {
             assert!(
                 matches!(
                     a.let_passphrase_join(&folder, Some(weak)),
@@ -1098,7 +1096,7 @@ mod tests {
         a.let_passphrase_join(&folder, Some(strong)).expect("let");
         assert!(b.passphrase_joins(&folder).expect("read"));
         let format =
-            std::fs::read_to_string(dir.join("shared/shellwing/format.json")).expect("format");
+            std::fs::read_to_string(dir.join("shared/authwing/format.json")).expect("format");
         assert!(!format.contains("tangerine"), "{format}");
 
         assert!(matches!(
@@ -1303,7 +1301,7 @@ mod tests {
         note_showing(&a, &[&id]);
         a.sync(&folder).expect("sync a");
         // Lost from the store (a sync tool's mistake, a cleanup by hand).
-        std::fs::remove_file(dir.join(format!("shared/shellwing/attachments/{id}.sw")))
+        std::fs::remove_file(dir.join(format!("shared/authwing/attachments/{id}.sw")))
             .expect("remove");
         let report = b.sync(&folder).expect("sync b");
         assert_eq!(report.images_missing, 1, "the note came; its image not");
@@ -1320,7 +1318,7 @@ mod tests {
         let id = a.add_attachment(&png(3)).expect("image");
         note_showing(&a, &[&id]);
         a.sync(&folder).expect("sync a");
-        let path = dir.join(format!("shared/shellwing/attachments/{id}.sw"));
+        let path = dir.join(format!("shared/authwing/attachments/{id}.sw"));
         let mut data = std::fs::read(&path).expect("read");
         let last = data.len() - 1;
         data[last] ^= 1;
@@ -1349,7 +1347,7 @@ mod tests {
         let (folder, a, b) = two_devices(&dir);
         // A PNG holding a text chunk, then bytes no file holds by chance.
         let mut image = b"\x89PNG\r\n\x1a\n\0\0\0\x1btEXtComment\0".to_vec();
-        image.extend_from_slice(b"shellwing-plaintext-canary");
+        image.extend_from_slice(b"authwing-plaintext-canary");
         image.extend((0..200u32).map(|i| (i * 37 + 11) as u8));
         let id = a.add_attachment(&image).expect("image");
         note_showing(&a, &[&id]);
@@ -1411,7 +1409,7 @@ mod tests {
         let id = a.add_attachment(&png(5)).expect("image");
         let note = note_showing(&a, &[&id]);
         a.sync(&folder).expect("sync a");
-        let stored = dir.join(format!("shared/shellwing/attachments/{id}.sw"));
+        let stored = dir.join(format!("shared/authwing/attachments/{id}.sw"));
         assert!(stored.exists());
         a.delete(&note).expect("delete the note");
         a.sync(&folder).expect("sync a");
@@ -1665,8 +1663,8 @@ mod tests {
         let report = b.sync(&Folder::new(&dir.join("shared-b"))).expect("sync b");
         assert!(report.copies.is_empty());
         std::fs::copy(
-            dir.join(format!("shared-b/shellwing/records/{note}.sw")),
-            shared.join(format!("shellwing/records/{note} (conflicted copy).sw")),
+            dir.join(format!("shared-b/authwing/records/{note}.sw")),
+            shared.join(format!("authwing/records/{note} (conflicted copy).sw")),
         )
         .expect("conflicted copy");
     }
@@ -1778,7 +1776,7 @@ mod tests {
             .expect("age");
         a.sync(&folder).expect("sync a");
         assert!(a.attachment(&image).expect("read").is_some());
-        let stored = dir.join(format!("shared/shellwing/attachments/{image}.sw"));
+        let stored = dir.join(format!("shared/authwing/attachments/{image}.sw"));
         assert!(stored.exists());
         let _ = std::fs::remove_dir_all(&dir);
     }

@@ -1,14 +1,14 @@
 # Configuration
 
-shellwing reads TOML files from its config directory:
+authwing reads TOML files from its config directory:
 
 | OS | Directory |
 | --- | --- |
-| Linux | `$XDG_CONFIG_HOME/shellwing` (usually `~/.config/shellwing`) |
-| macOS | `~/Library/Application Support/shellwing` |
-| Windows | `%APPDATA%\shellwing` |
+| Linux | `$XDG_CONFIG_HOME/authwing` (usually `~/.config/authwing`) |
+| macOS | `~/Library/Application Support/authwing` |
+| Windows | `%APPDATA%\authwing` |
 
-`$SHELLWING_CONFIG_DIR` points it somewhere else.
+`$AUTHWING_CONFIG_DIR` points it somewhere else.
 
 How the files behave:
 
@@ -19,7 +19,7 @@ How the files behave:
   keeps the last good values.
 - **Unknown keys are ignored**, so a file written by a newer version still loads.
 
-The `state/` folder holds what shellwing remembers by itself, such as the window's
+The `state/` folder holds what authwing remembers by itself, such as the window's
 size, place and maximised state, and the host list's width and fold
 (`state/window.json`) and the hosts opened lately
 (`state/recent.json`, shown in the palette), and the tabs and panes that were open
@@ -68,15 +68,15 @@ keepalive = 30               # seconds between keepalives; 0: none
 
 [log]                        # see Session logs
 always = false               # log every session from its start
-folder = "~/logs/shellwing"  # default: shellwing/logs in your data folder
+folder = "~/logs/authwing"  # default: authwing/logs in your data folder
 format = "text"              # "text" or "raw"
 timestamps = true            # each line of a text log starts with the time
 
 [vault]                      # this device's own; does not sync
 lock_after = 15              # minutes idle before the vault locks; 0: never
 
-[lock]                       # see Locking shellwing; this device's own
-after = 5                    # minutes idle before shellwing locks; 0: never (the default)
+[lock]                       # see Locking authwing; this device's own
+after = 5                    # minutes idle before authwing locks; 0: never (the default)
 ```
 
 When a connection ends, the pane shows a bar saying why and offers to connect
@@ -102,17 +102,17 @@ Fonts:
 
 - **No family, or one that is not installed:** the first installed of JetBrains
   Mono and the platform's monospace fonts.
-- **`$SHELLWING_FONT`** overrides the family.
+- **`$AUTHWING_FONT`** overrides the family.
 - **Zoom one window:** <kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd>
   change the font size of that window, and <kbd>Ctrl</kbd>+<kbd>0</kbd> goes back to
   `size` (<kbd>Cmd</kbd> on macOS). The zoom is not saved.
 
-When shellwing changes this file itself (the theme shortcut below), it edits
+When authwing changes this file itself (the theme shortcut below), it edits
 only that key, so your comments and layout stay as you wrote them.
 
 ## Language
 
-shellwing speaks the system's language where it has it, else English; *Settings ›
+authwing speaks the system's language where it has it, else English; *Settings ›
 General › Language* (`language` under `[general]`) picks another. Each device
 keeps its own: it does not sync. What the terminal shows is the server's, and
 stays as it is.
@@ -277,7 +277,7 @@ theme = "crimson-ember"     # for the group's hosts that set none
 
 [[host]]
 name = "api-1"
-alias = "api1"              # shellwing api1
+alias = "api1"              # authwing api1
 address = "10.0.1.11"
 port = 2222                 # default 22
 user = "deploy"             # default: from ~/.ssh/config, else your login name
@@ -319,7 +319,7 @@ so turn it on only for hosts you trust. It is off by default, as in `ssh`;
 to gets the agent, never the jump hosts on the way, and a server that opens an
 agent channel without it being asked for is refused.
 
-**How `shellwing <name>` finds a host:**
+**How `authwing <name>` finds a host:**
 
 1. A host here with that alias, then with that name.
 2. An alias in `~/.ssh/config`.
@@ -375,7 +375,7 @@ There are four ways to forward:
   hosts.toml host adds its own to those its address gets. Jump hosts forward
   nothing.
 - **From the command line,** for the tab it opens:
-  `shellwing -L 8080:localhost:80 -D 1080 api1`.
+  `authwing -L 8080:localhost:80 -D 1080 api1`.
 - **In a running tab:** *Forward a port through …* in the palette. It lasts for
   that tab, reconnects included.
 
@@ -384,7 +384,7 @@ localhost:80]`, or in red why a forward could not start (a port in use, a
 server that refuses). The session goes on either way, as with `ssh`. A second
 tab to the same host finds the first tab's ports taken and says so quietly.
 
-Forwards under a `Match` block in `~/.ssh/config` are not applied: shellwing
+Forwards under a `Match` block in `~/.ssh/config` are not applied: authwing
 does not read `Match` conditions.
 
 ## Files (SFTP)
@@ -422,7 +422,7 @@ on a channel of its own, so the terminal keeps working while files move.
   Settings > General (`[files] editor`), else the system's editor for plain
   text, whatever kind of file it is. **Open with default app** opens it in the
   system's app for its kind instead. Either way, each time you save it there,
-  it is written back to the server; before that, shellwing checks that nobody else
+  it is written back to the server; before that, authwing checks that nobody else
   changed it on the server since, and asks before writing over their change.
   The copy lives in a folder of its own under your cache folder (only you can
   read it) until you press *Stop*.
@@ -478,7 +478,7 @@ hold the key:
   passphrase is typed again. Open connections stay; new ones ask for their
   passwords.
 - *Lock when idle* (`lock_after` under `[vault]`, in minutes) locks it after
-  that long without a key pressed or a click in shellwing, and asks for the
+  that long without a key pressed or a click in authwing, and asks for the
   passphrase, waiting for your return. Each device has its own.
 
 **Windows Hello and Touch ID** open the locked vault too, once turned on in
@@ -493,13 +493,13 @@ working.
 - **Touch ID** (macOS): the key is a Keychain item that opens only to Touch ID
   with the fingers enrolled now; adding one stops it until it is turned on
   again. Apple lets only signed apps keep such items: an unsigned build of
-  shellwing says so.
+  authwing says so.
 - Linux has no such thing for keys: the passphrase it is.
 
-## Locking shellwing
+## Locking authwing
 
-For a screen left unlocked: with *Settings › Vault › Lock shellwing when away*
-(`after` under `[lock]`, in minutes), shellwing's windows hide when it starts,
+For a screen left unlocked: with *Settings › Vault › Lock authwing when away*
+(`after` under `[lock]`, in minutes), authwing's windows hide when it starts,
 and after that long without a key pressed or a click in it, until the system
 says it is you:
 
@@ -512,9 +512,9 @@ says it is you:
   fingerprint first, the lock says so. A wrong password counts toward the
   system's own limit, where it has one (`pam_faillock`).
 
-*Lock shellwing* in the palette locks it at once. While it is locked, notes
+*Lock authwing* in the palette locks it at once. While it is locked, notes
 and the snippet library hide too, keys and shortcuts reach only the lock, and
-*Quit shellwing* on it quits (asking first if tabs are connected).
+*Quit authwing* on it quits (asking first if tabs are connected).
 
 It is a light guard, not encryption: connections, port forwards and logs go
 on underneath, and anyone using your account can still read your files or run
@@ -525,14 +525,14 @@ secrets it keeps. Each device has its own setting: it does not sync.
 
 *This computer › Local terminal*, at the top of the host list (and of the
 palette), opens a shell on this computer in a tab, beside the SSH ones;
-`shellwing --local` opens one from the command line.
+`authwing --local` opens one from the command line.
 
 - **Splitting**, finding, snippets and typing in every pane work as with SSH.
   The Files panel and port forwarding do not: they are SSH's.
 - **The shell** is yours: `$SHELL` (a login shell on macOS, as Terminal starts
   it), and on Windows PowerShell 7, else Windows PowerShell, else `cmd`. It
   starts in your home folder with `TERM=xterm-256color`, `COLORTERM=truecolor`
-  and `TERM_PROGRAM=shellwing`.
+  and `TERM_PROGRAM=authwing`.
 - **Another shell:** set `local_shell` under `[terminal]` (*Settings ›
   Terminal › Local shell*), with its arguments:
 
@@ -569,7 +569,7 @@ which host it is (`user@address:port`) and when it started.
   - `raw`: every byte as it came, escape sequences and all. `cat` or `less -R`
     plays it back in color.
 - **The folder:** `folder` (`~/` allowed), or *Change…* in Settings; by
-  default `shellwing/logs` in your data folder (`~/.local/share` on Linux,
+  default `authwing/logs` in your data folder (`~/.local/share` on Linux,
   `~/Library/Application Support` on macOS, `%LOCALAPPDATA%` on Windows).
   Logs hold whatever the sessions showed, so on Linux and macOS only you can
   read them (the folder is `0700`, each file `0600`).
@@ -583,8 +583,8 @@ colors, on the pane's background.
 
 ## Known hosts
 
-shellwing trusts host keys the way ssh does, through the same
-`~/.ssh/known_hosts` (`$SHELLWING_KNOWN_HOSTS` replaces it).
+authwing trusts host keys the way ssh does, through the same
+`~/.ssh/known_hosts` (`$AUTHWING_KNOWN_HOSTS` replaces it).
 
 **A host whose key changed is refused.** Its pane says so in red, with the key
 known_hosts has (and its line) next to the one the server shows now. If the
@@ -602,7 +602,7 @@ as it was in `known_hosts.old`, and comments and other lines stay as they are.
 
 ## Certificates
 
-shellwing takes OpenSSH certificates both ways, as `ssh` does, for setups where
+authwing takes OpenSSH certificates both ways, as `ssh` does, for setups where
 a certificate authority (Teleport, Vault SSH, smallstep, `ssh-keygen -s`) signs
 keys instead of every key being listed on every server.
 
@@ -612,7 +612,7 @@ keys instead of every key being listed on every server.
 @cert-authority *.example.com,[*.example.com]:2222 ssh-ed25519 AAAA… ca@example.com
 ```
 
-in known_hosts makes shellwing ask those hosts for a host certificate and trust
+in known_hosts makes authwing ask those hosts for a host certificate and trust
 one that:
 
 - the authority signed;
@@ -741,7 +741,7 @@ Nothing is loaded by itself. You choose when, and what:
 - A snippet that **needs** environments runs in a subshell that has them, and
   they are gone when it ends; the pane's shell never gets them.
 
-To load, shellwing types a command that turns the terminal's echo off, says it
+To load, authwing types a command that turns the terminal's echo off, says it
 is ready (with an escape sequence its terminal reads and never shows), and only
 then sends the values for `read` to take: as lines of printable ASCII, with a
 newline, a control character or a byte past ASCII written `\0ooo` for the
@@ -752,7 +752,7 @@ needed; not while a full-screen program runs; fish is not supported yet.
 
 **Limits.** A shell takes an exported variable of 128 KB at most on Linux, and
 all of them with a command's arguments in about 2 MB: past that, every program
-it starts fails ("Argument list too long"). So shellwing keeps well within: a
+it starts fails ("Argument list too long"). So authwing keeps well within: a
 variable's name takes 128 characters, a value 32 KB (a PEM key is 3–4 KB), an
 environment 100 variables and 64 KB, and the environments loaded into one
 shell 256 KB together. A snippet's command takes 64 KB.
@@ -793,7 +793,7 @@ need be), then how, the file's *When placed* first (Enter):
 - **To stay**: it is left there.
 
 If a file is there already (and differs), it asks: replace it until the tab
-closes (the one there is set aside beside it, as `….shellwing-saved`, and comes
+closes (the one there is set aside beside it, as `….authwing-saved`, and comes
 back), replace it and keep the old one as `….bak`, or replace it.
 
 The file is written whole: to a file beside it first, with its permissions from
@@ -854,7 +854,7 @@ network (this computer, a LAN) are not downloaded. Design:
 [docs/design/note-images.md](design/note-images.md).
 
 The editor is [zorite-editor](https://crates.io/crates/zorite-editor), taken
-into shellwing (`crates/note-editor`, see its `UPSTREAM.md`): a note loads as
+into authwing (`crates/note-editor`, see its `UPSTREAM.md`): a note loads as
 it is, and Obsidian's constructs (`[[links]]`, `#tags`, `key:: value`) and
 math (`$`, `$$`) are plain text, as commands and paths are. The read-only view
 is the same editor, read-only.
@@ -909,7 +909,7 @@ While it is on:
 - a pane's badge leaves it out (dimmed) or brings it back.
 
 Ctrl+Shift+I again, *Stop* on the strip, or leaving the tab with one pane
-stops it. Passwords and passphrases that shellwing itself asks for are never
+stops it. Passwords and passphrases that authwing itself asks for are never
 copied to other panes.
 
 ## SSH keys
@@ -955,20 +955,20 @@ in the vault, then a password. A host that names a key offers only that key.
 
 ```toml
 [sync]
-folder = "~/Library/Mobile Documents/com~apple~CloudDocs/shellwing"   # any synced folder
+folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"   # any synced folder
 settings = true             # sync the settings that are not this device's own
 ```
 
 *Settings › Sync* is where sync is set up and followed: how it stands (when it
 last synced, or why not, with Sync now or Try again), what travels, the place
-and its recovery key, and the options; shellwing cloud beside them. The cloud
+and its recovery key, and the options; authwing cloud beside them. The cloud
 in the header says the same in brief, in its color (green synced, orange
 failed, a light orange not set up), and opens Settings › Sync.
 
 Choose *Sync passwords with a folder…* in the palette, or set the folder here.
 Any folder another tool keeps in sync works: iCloud Drive, Syncthing, a Dropbox
-or OneDrive folder, a network share. shellwing writes `shellwing/format.json` and
-one encrypted file per saved secret in `shellwing/records/`; nothing in them is
+or OneDrive folder, a network share. authwing writes `authwing/format.json` and
+one encrypted file per saved secret in `authwing/records/`; nothing in them is
 readable without the key.
 
 **A server instead of a folder:** *Settings › Sync* (or *Sync passwords with a
@@ -989,13 +989,13 @@ s3 = { endpoint = "https://<account>.r2.cloudflarestorage.com", bucket = "vault"
   the vault, sealed, as this device's own, and never synced. Each device
   signs in with its own; *Stop syncing* forgets it. An app password, or a key
   limited to the bucket, is the safer choice.
-- The files are the same as in a folder, under `shellwing/` at the address
+- The files are the same as in a folder, under `authwing/` at the address
   (or under the prefix). The server only ever sees them encrypted.
 - Each sync lists the records and fetches only those that changed since
   (by their ETag), so a minute's sync with nothing new is a few small
   requests.
 - A record another device wrote a moment ago is not written over: the
-  server refuses the write (`If-Match`), and shellwing merges theirs in
+  server refuses the write (`If-Match`), and authwing merges theirs in
   and writes again.
 - Joining from another device works as with a folder: pairing, the recovery
   key, or the sync passphrase.
@@ -1018,10 +1018,10 @@ git = { url = "git@github.com:me/vault.git" }   # or https://…; branch = "…"
   Line Tools on macOS (in Apple's own dialog), winget on Windows (which asks to
   allow it), or the command for your distribution on Linux, to run in a
   terminal. A git that is too old or does not work is said too.
-- shellwing keeps a clone of its own in the cache folder and never merges with
+- authwing keeps a clone of its own in the cache folder and never merges with
   Git: each sync fetches, sets the clone to what the repository has, merges
   field by field as with a folder, then commits (`Sync from <id>`, as
-  `shellwing`) and pushes. A push refused because another device pushed first
+  `authwing`) and pushes. A push refused because another device pushed first
   is done again over theirs. The commits name each device by a random id, not
   its name, and carry the time in UTC, not your time zone.
 - **A repository anyone can read** is asked about at Connect: the vault is
@@ -1040,7 +1040,7 @@ git = { url = "git@github.com:me/vault.git" }   # or https://…; branch = "…"
 - **Another device** choosing the same folder joins the vault one of two ways;
   either way what it had saved is kept and merged:
   - **Approve it on a device that syncs** (pairing). The new device asks; on a
-    device that syncs the folder (with shellwing open), *Let … into this
+    device that syncs the folder (with authwing open), *Let … into this
     vault?* comes up. Both show a six-digit code: approve only if they are the
     same. The keys travel encrypted, through the folder; the new device can
     show the recovery key afterwards too. A request left 10 minutes is dropped.
@@ -1048,7 +1048,7 @@ git = { url = "git@github.com:me/vault.git" }   # or https://…; branch = "…"
   - **Type the sync passphrase**, if a device that syncs set one
     (*Settings › Sync › Let a passphrase join new devices*). It is kept in
     the folder, sealed by itself, so anyone who can read the folder can guess
-    at it: it must be hard to guess (several unrelated words; shellwing
+    at it: it must be hard to guess (several unrelated words; authwing
     refuses easy ones). Turning the option off removes it.
 - Syncing runs every minute, right after a secret is saved or forgotten, and on
   *Sync now*. Edits merge field by field, so two devices offline never lose

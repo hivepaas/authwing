@@ -40,10 +40,10 @@ use crate::{Error, KEY_LEN, Result, Vault, cipher, random};
 const DIR: &str = "pairing";
 /// How long a request stays open.
 pub const LIFETIME_MS: u64 = 10 * 60 * 1000;
-const COMMIT: &[u8] = b"shellwing pairing commit v1";
-const CODE: &[u8] = b"shellwing pairing code v1";
-const SESSION: &[u8] = b"shellwing pairing key v1";
-const SEALED: &[u8] = b"shellwing pairing keys v1";
+const COMMIT: &[u8] = b"authwing pairing commit v1";
+const CODE: &[u8] = b"authwing pairing code v1";
+const SESSION: &[u8] = b"authwing pairing key v1";
+const SEALED: &[u8] = b"authwing pairing keys v1";
 
 type Key = [u8; KEY_LEN];
 
@@ -474,8 +474,7 @@ mod tests {
     }
 
     fn temp(name: &str) -> std::path::PathBuf {
-        let dir =
-            std::env::temp_dir().join(format!("shellwing-pair-{}-{name}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-pair-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         dir

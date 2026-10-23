@@ -1,6 +1,6 @@
 # Importing hosts from other apps
 
-Someone moving to shellwing has their hosts in another SSH client, often
+Someone moving to authwing has their hosts in another SSH client, often
 dozens of them in folders. Typing them again is the first reason not to
 switch. *Import hosts…* reads them from the other app's files and writes them
 into `hosts.toml`, from where they sync as any host does. Questions still to
@@ -12,7 +12,7 @@ settle are marked **Open**.
   forwards, agent forwarding, colors and descriptions.
 - **Does not read passwords.** A host asks for its password the first time,
   and the pane offers to keep it in the vault, as it does today.
-- **Does not nest groups.** shellwing's groups are one level: a folder
+- **Does not nest groups.** authwing's groups are one level: a folder
   `Prod › EU` becomes the group `Prod / EU`.
 - **Leaves out** what is not SSH (RDP, VNC, telnet, serial), saying so.
 
@@ -43,7 +43,7 @@ All fields are optional except the address. What is not listed is not read.
 - **`~/.ssh/config`:** each `Host` name without a pattern (`*`, `?`, `!`):
   `HostName`, `Port`, `User`, the first `IdentityFile`, `ProxyJump`,
   `LocalForward`, `RemoteForward`, `DynamicForward`, `ForwardAgent`. The name
-  is also the host's alias, so `shellwing <name>` keeps working. Hosts read
+  is also the host's alias, so `authwing <name>` keeps working. Hosts read
   from `~/.ssh/config` do not sync; imported, they do.
 - **PuTTY / KiTTY:**
   - Only sessions with `Protocol` `ssh`; `Default Settings` is left out.
@@ -117,12 +117,12 @@ All fields are optional except the address. What is not listed is not read.
 | Agent forwarding | `forward_agent = true` |
 | Jump hosts | `jump`, by the names the jump hosts got in this import; one named but not found is left out, said so; one given by its address (MobaXterm, PuTTY, an ssh config) is the host with that address, port and user, here or imported, or else a host of its own, added |
 | Forwards | `forward`, as `ssh` writes them: `-L 8080:localhost:80`, `-R …`, `-D 1080` |
-| A color | `color`: one of shellwing's names when close, else `#rrggbb` |
+| A color | `color`: one of authwing's names when close, else `#rrggbb` |
 | A description | a Markdown note titled after the host, with the host set on it |
 | — | `tags = ["imported:<app>"]` |
 
 A PuTTY `.ppk` key file is kept as the host's key path, and the host is
-marked: shellwing reads OpenSSH keys, so the key needs converting (`puttygen
+marked: authwing reads OpenSSH keys, so the key needs converting (`puttygen
 key.ppk -O private-openssh`). Converting it here is phase 2.
 
 ## Before writing: the preview
@@ -158,7 +158,7 @@ to find them later.
     and description), what was left out and why, and what to look at;
   - `plan()`: those hosts as `hosts.toml`'s, against the hosts there (names,
     groups, jump names, duplicates).
-- **`shellwing-config`:** `Store::import` writes the groups and hosts in one
+- **`authwing-config`:** `Store::import` writes the groups and hosts in one
   edit, and `Store::unimport` takes them out.
 - **The app:** *Import hosts from another app…* in the palette, in the
   empty host list and in Settings › General (the drawer then shows over

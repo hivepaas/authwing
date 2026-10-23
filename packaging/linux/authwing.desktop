@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=shellwing
+Name=authwing
 GenericName=SSH Client
 Comment=A native SSH client
-Exec=shellwing
-Icon=shellwing
+Exec=authwing
+Icon=authwing
 Terminal=false
 Categories=Network;RemoteAccess;
 Keywords=ssh;terminal;sftp;remote;
-StartupWMClass=shellwing
+StartupWMClass=authwing

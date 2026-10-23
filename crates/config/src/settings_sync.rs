@@ -1,7 +1,7 @@
-//! The settings that sync between devices, as vault fields: `appearance.theme`
-//! = `"nord"`, a key's dotted path and its value as JSON. The rest of
-//! `config.toml` is this device's own: the sync folder, the log folder, the
-//! local shell, the editor, which name things of this computer.
+//! The settings that sync between devices, as vault fields: `appearance.mode`
+//! = `"dark"`, a key's dotted path and its value as JSON. The rest of
+//! `config.toml` is this device's own: the sync place, the language, the
+//! shortcuts, which differ between computers.
 
 use std::collections::BTreeMap;
 
@@ -12,27 +12,10 @@ use crate::store::{SettingValue, set_in};
 
 /// What syncs, by dotted path.
 pub const SYNCED: &[&str] = &[
-    "general.restore_tabs",
     "appearance.mode",
-    "appearance.theme",
-    "appearance.light_theme",
-    "appearance.font.family",
-    "appearance.font.size",
-    "appearance.line_height",
-    "appearance.cursor.style",
-    "appearance.scrollbar",
-    "appearance.padding.x",
-    "appearance.padding.y",
     "appearance.ui_font.family",
     "appearance.ui_font.size",
-    "appearance.theme_accent",
-    "terminal.scrollback",
-    "terminal.on_disconnect",
-    "ssh.host_key",
-    "ssh.keepalive",
-    "log.always",
-    "log.format",
-    "log.timestamps",
+    "codes.clear_clipboard",
 ];
 
 /// The synced settings `text` (config.toml) sets, by path, as JSON. Those it
@@ -100,40 +83,42 @@ mod tests {
 
     #[test]
     fn the_synced_settings_are_read_and_written_back_keeping_the_rest() {
-        let mine = "# mine\n[appearance]\ntheme = \"nord\" # dark\nfont = { family = \"Fira Code\", size = 14.0 }\n\n[sync]\nfolder = \"~/Sync\"\n\n[terminal]\nlocal_shell = \"fish\"\n";
+        let mine = "# mine\n[appearance]\nmode = \"dark\" # at night too\nui_font = { family = \"Inter\", size = 14.0 }\n\n[sync]\nfolder = \"~/Sync\"\n\n[general]\nlanguage = \"vi\"\n";
         let fields = fields_of(mine).expect("read");
         assert_eq!(
             fields,
             BTreeMap::from([
-                ("appearance.theme".into(), "\"nord\"".into()),
-                ("appearance.font.family".into(), "\"Fira Code\"".into()),
-                ("appearance.font.size".into(), "14".into()),
+                ("appearance.mode".into(), "\"dark\"".into()),
+                ("appearance.ui_font.family".into(), "\"Inter\"".into()),
+                ("appearance.ui_font.size".into(), "14".into()),
             ]),
-            "this device's own (the folder, the shell) are not among them"
+            "this device's own (the folder, the language) are not among them"
         );
 
         let theirs = BTreeMap::from([
-            ("appearance.theme".to_string(), "\"dracula\"".to_string()),
-            ("appearance.font.size".into(), "16".into()),
-            ("terminal.scrollback".into(), "50000".into()),
-            // A newer version's mode: left out, not written.
-            ("appearance.mode".into(), "\"sepia\"".into()),
+            ("appearance.mode".to_string(), "\"light\"".to_string()),
+            ("appearance.ui_font.size".into(), "16".into()),
+            ("codes.clear_clipboard".into(), "45".into()),
         ]);
         let mut doc: DocumentMut = mine.parse().expect("doc");
         assert!(apply(&mut doc, &theirs));
         let text = doc.to_string();
         assert!(text.starts_with("# mine\n"), "{text}");
-        assert!(text.contains("theme = \"dracula\" # dark"), "{text}");
+        assert!(text.contains("mode = \"light\" # at night too"), "{text}");
         assert!(
-            !text.contains("Fira Code"),
+            !text.contains("Inter"),
             "absent there: back to the default\n{text}"
         );
         assert!(text.contains("size = 16"), "{text}");
         assert!(text.contains("folder = \"~/Sync\""), "{text}");
-        assert!(text.contains("local_shell = \"fish\""), "{text}");
-        assert!(!text.contains("sepia"), "{text}");
+        assert!(text.contains("language = \"vi\""), "{text}");
         let s: Settings = toml::from_str(&text).expect("still valid");
-        assert_eq!(s.terminal.scrollback, 50_000);
+        assert_eq!(s.codes.clear_clipboard, 45);
         assert!(!apply(&mut doc, &theirs), "nothing more to change");
+
+        // A newer version's mode: left out, not written.
+        let newer = BTreeMap::from([("appearance.mode".to_string(), "\"sepia\"".to_string())]);
+        assert!(!apply(&mut doc, &newer) || !doc.to_string().contains("sepia"));
+        assert!(!doc.to_string().contains("sepia"));
     }
 }

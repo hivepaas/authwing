@@ -5,7 +5,7 @@
 //! the window.
 
 use gpui::{App, Bounds, Pixels, WindowBounds, point, px, size};
-use shellwing_config::{WindowMode, WindowState};
+use authwing_config::{WindowMode, WindowState};
 
 const DEFAULT_SIZE: (f32, f32) = (1100., 720.);
 const MIN_SIZE: (f32, f32) = (400., 240.);

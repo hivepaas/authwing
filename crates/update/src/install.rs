@@ -13,7 +13,7 @@ pub enum Install {
     AppImage(PathBuf),
     /// An app bundle on macOS, this `.app`: replaced whole.
     MacBundle(PathBuf),
-    /// Put there by shellwing's installer on Windows: the next one installs
+    /// Put there by authwing's installer on Windows: the next one installs
     /// over it.
     WindowsInstaller,
     /// Put there by hand (a binary run from a folder): the app says where
@@ -52,7 +52,7 @@ pub fn install_of(exe: &Path, var: impl Fn(&str) -> Option<String>) -> Install {
         return managed("Flatpak", Some("flatpak update"));
     }
     if var("SNAP").is_some() {
-        return managed("Snap", Some("sudo snap refresh shellwing"));
+        return managed("Snap", Some("sudo snap refresh authwing"));
     }
     // An AppImage runs from a mount of itself; it names its file.
     if let Some(image) = var("APPIMAGE").filter(|p| !p.is_empty()) {
@@ -60,10 +60,10 @@ pub fn install_of(exe: &Path, var: impl Fn(&str) -> Option<String>) -> Install {
     }
     let p = exe.to_string_lossy().replace('\\', "/").to_lowercase();
     if p.contains("/cellar/") || p.contains("/homebrew/") || p.contains("/linuxbrew/") {
-        return managed("Homebrew", Some("brew upgrade shellwing"));
+        return managed("Homebrew", Some("brew upgrade authwing"));
     }
     if p.contains("/scoop/apps/") {
-        return managed("Scoop", Some("scoop update shellwing"));
+        return managed("Scoop", Some("scoop update authwing"));
     }
     if p.contains("/windowsapps/") {
         return managed("the Microsoft Store", None);
@@ -74,10 +74,10 @@ pub fn install_of(exe: &Path, var: impl Fn(&str) -> Option<String>) -> Install {
         }
         return Install::MacBundle(bundle);
     }
-    // Where shellwing's installer puts it: for the user, or for everyone.
+    // Where authwing's installer puts it: for the user, or for everyone.
     if p.ends_with(".exe")
-        && (p.contains("/appdata/local/programs/shellwing/")
-            || p.contains("/program files/shellwing/"))
+        && (p.contains("/appdata/local/programs/authwing/")
+            || p.contains("/program files/authwing/"))
     {
         return Install::WindowsInstaller;
     }
@@ -104,51 +104,48 @@ mod tests {
 
     #[test]
     fn what_updates_the_app_is_told_by_where_it_runs() {
-        assert_eq!(install("/home/me/bin/shellwing", &[]), Install::Manual);
+        assert_eq!(install("/home/me/bin/authwing", &[]), Install::Manual);
         assert_eq!(
             install(
-                "/tmp/.mount_x/usr/bin/shellwing",
-                &[("APPIMAGE", "/home/me/Apps/shellwing.AppImage")]
+                "/tmp/.mount_x/usr/bin/authwing",
+                &[("APPIMAGE", "/home/me/Apps/authwing.AppImage")]
             ),
-            Install::AppImage("/home/me/Apps/shellwing.AppImage".into())
+            Install::AppImage("/home/me/Apps/authwing.AppImage".into())
         );
         assert_eq!(
-            install("/Applications/Shellwing.app/Contents/MacOS/shellwing", &[]),
-            Install::MacBundle("/Applications/Shellwing.app".into())
+            install("/Applications/Authwing.app/Contents/MacOS/authwing", &[]),
+            Install::MacBundle("/Applications/Authwing.app".into())
         );
         assert_eq!(
             install(
-                r"C:\Users\me\AppData\Local\Programs\shellwing\shellwing.exe",
+                r"C:\Users\me\AppData\Local\Programs\authwing\authwing.exe",
                 &[]
             ),
             Install::WindowsInstaller
         );
         assert!(matches!(
-            install("/app/bin/shellwing", &[("FLATPAK_ID", "dev.shellwing")]),
+            install("/app/bin/authwing", &[("FLATPAK_ID", "dev.authwing")]),
             Install::Managed { by: "Flatpak", .. }
         ));
         assert!(matches!(
-            install("/opt/homebrew/Cellar/shellwing/0.2.0/bin/shellwing", &[]),
+            install("/opt/homebrew/Cellar/authwing/0.2.0/bin/authwing", &[]),
             Install::Managed {
                 by: "Homebrew",
-                command: Some("brew upgrade shellwing")
+                command: Some("brew upgrade authwing")
             }
         ));
         assert!(matches!(
-            install(
-                r"C:\Users\me\scoop\apps\shellwing\current\shellwing.exe",
-                &[]
-            ),
+            install(r"C:\Users\me\scoop\apps\authwing\current\authwing.exe", &[]),
             Install::Managed { by: "Scoop", .. }
         ));
         assert!(matches!(
-            install("/usr/bin/shellwing", &[]),
+            install("/usr/bin/authwing", &[]),
             Install::Managed {
                 by: "the system's package manager",
                 ..
             }
         ));
-        assert_eq!(install("/usr/local/bin/shellwing", &[]), Install::Manual);
+        assert_eq!(install("/usr/local/bin/authwing", &[]), Install::Manual);
         assert!(Install::AppImage("/x".into()).updates_itself());
         assert!(!Install::Manual.updates_itself());
     }

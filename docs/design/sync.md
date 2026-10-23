@@ -1,6 +1,6 @@
 # Accounts and sync
 
-## Accounts (shellwing portal)
+## Accounts (authwing portal)
 
 The portal is a web app where people sign in (Google, GitHub, …) and buy plans.
 The desktop app works fully without it.
@@ -10,7 +10,7 @@ The desktop app works fully without it.
 1. The app opens the browser at the portal.
 2. The portal does the Google/GitHub OAuth. The app never sees those tokens.
 3. The portal redirects to `http://127.0.0.1:<port>/callback` with a code.
-4. The app exchanges the code, with PKCE, for shellwing tokens.
+4. The app exchanges the code, with PKCE, for authwing tokens.
 
 The device-code flow is the fallback when no browser can open. The refresh
 token is kept in the OS keychain.
@@ -30,7 +30,7 @@ secrets.
 
 ## Host limits
 
-Individual plans limit how many hosts sync through **shellwing cloud**. Draft
+Individual plans limit how many hosts sync through **authwing cloud**. Draft
 numbers:
 
 | Plan | Hosts synced |
@@ -81,7 +81,7 @@ trait Backend {
 Layout on a backend:
 
 ```
-shellwing/
+authwing/
   format.json            format version, key ids (never keys)
   records/<ulid>.sw      one encrypted record per host, group, snippet, secret
   devices/<id>.json      last sync per device, to know when tombstones can go
@@ -116,7 +116,7 @@ counter and the device id.
 
 ### When it runs
 
-- **shellwing cloud and the self-hosted server** push changes over a WebSocket.
+- **authwing cloud and the self-hosted server** push changes over a WebSocket.
 - **Other backends:**
   - Sync when the window gains focus.
   - Sync every few minutes.
@@ -130,9 +130,9 @@ counter and the device id.
 | Git (GitHub, GitLab, Gitea, any host) | Developers | Private repo URL; git signs in (token optional) | Rejected push | Medium (the system's `git`) |
 | S3-compatible (AWS, R2, B2, MinIO, Wasabi) | Self-hosters | Endpoint, bucket, keys | `If-Match` | Low ([OpenDAL](https://opendal.apache.org)) |
 | WebDAV (Nextcloud, Synology, Koofr) | Self-hosters | URL, user, password | ETag | Low (OpenDAL) |
-| Google Drive, OneDrive, Dropbox | Everyone | OAuth sign-in | Weak | Medium: shellwing must register an OAuth app with each |
-| shellwing cloud | Paying users | Portal sign-in | Full | High (server + portal) |
-| shellwing-server, self-hosted | Teams, self-hosters | URL + sign-in | Full | Shared with the cloud ([teams.md](teams.md)) |
+| Google Drive, OneDrive, Dropbox | Everyone | OAuth sign-in | Weak | Medium: authwing must register an OAuth app with each |
+| authwing cloud | Paying users | Portal sign-in | Full | High (server + portal) |
+| authwing-server, self-hosted | Teams, self-hosters | URL + sign-in | Full | Shared with the cloud ([teams.md](teams.md)) |
 
 Notes:
 
@@ -153,7 +153,7 @@ Build order:
 2. S3 and WebDAV, through OpenDAL (built: `crates/remote`). Moved ahead of
    the cloud: no server of ours is needed.
 3. Git, through the system's `git` (built: `crates/remote/src/git.rs`).
-4. shellwing cloud and the portal.
+4. authwing cloud and the portal.
 5. Drive, OneDrive and Dropbox.
 
 **S3 and WebDAV as built.**
@@ -204,12 +204,12 @@ Build order:
   Windows, and a time limit.
 - **The clone** (in the cache folder, per repository and branch) is a cache:
   `git init` with the remote, then each round `fetch --depth 1`, `reset
-  --hard` to the remote branch, the engine over its `shellwing/` folder,
-  `add`, `commit --no-verify` (no signing, as `shellwing`), `push`. Never a
+  --hard` to the remote branch, the engine over its `authwing/` folder,
+  `add`, `commit --no-verify` (no signing, as `authwing`), `push`. Never a
   Git merge: a refused push starts the round again over the new commits
   (`Backend::refresh` / `publish`, run by `transact`).
 - **Commits say nothing of the device:** `Sync from <id>` by
-  `shellwing@<id>`, the vault's random device id (its clock stamps' own),
+  `authwing@<id>`, the vault's random device id (its clock stamps' own),
   never the host name, which pairing still shows; and `TZ=UTC`, as a local
   offset says where the device is. A repository may be public, or made so
   later.

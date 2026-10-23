@@ -5,9 +5,9 @@
 use std::sync::Arc;
 
 use gpui::{App, Global, Keystroke};
-use shellwing_config::shortcuts::{Fixed, Refusal, ShortcutProblem};
-use shellwing_config::{Chord, Hotkey, Keymap, Mods, Os};
-use shellwing_i18n::tr;
+use authwing_config::shortcuts::{Fixed, Refusal, ShortcutProblem};
+use authwing_config::{Chord, Hotkey, Keymap, Mods, Os};
+use authwing_i18n::tr;
 
 /// The shortcuts in effect.
 pub struct Bound(pub Arc<Keymap>);
@@ -91,7 +91,7 @@ pub fn refusal(r: &Refusal, key: &str) -> String {
             key = key
         ),
         Refusal::System => tr!(
-            "{key} belongs to the system: it never reaches Shellwing.",
+            "{key} belongs to the system: it never reaches Authwing.",
             key = key
         ),
         Refusal::Fixed(f) => tr!(

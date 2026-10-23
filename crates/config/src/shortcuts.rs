@@ -4,15 +4,15 @@
 //!
 //! ```toml
 //! [shortcuts]
-//! palette = ["ctrl+shift+p"]
-//! find = "ctrl+shift+f"
-//! broadcast = []          # no key
+//! find = ["ctrl+k", "ctrl+f"]
+//! add_code = "ctrl+shift+n"
+//! lock = []               # no key
 //! ```
 //!
 //! A key is written as its modifiers and then the key, joined by `+`:
 //! `ctrl`, `alt` (`option`), `shift`, `cmd` (`super`, `win`), then a letter,
 //! a digit, a symbol, or a named key (`left`, `pageup`, `tab`, `f5`, ...).
-//! `digit` stands for 1 to 9, for going to a tab by its number.
+//! `digit` stands for 1 to 9, for copying a code by its place in the list.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -21,81 +21,36 @@ use serde::Deserialize;
 /// What a shortcut does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Hotkey {
-    Palette,
-    NewTab,
-    ClosePane,
-    SplitRight,
-    SplitDown,
-    PaneLeft,
-    PaneRight,
-    PaneUp,
-    PaneDown,
-    NextTab,
-    PreviousTab,
-    /// Tab 1 to 9, by the digit pressed.
-    GoToTab,
-    /// Every open tab, by host.
-    Tabs,
-    HostList,
-    Files,
+    /// To the search field, to find a code.
     Find,
-    /// Type in every pane of the tab, or stop.
-    Broadcast,
+    AddCode,
+    /// The code at place 1 to 9 of the list, by the digit pressed.
+    CopyCode,
+    /// Closes the vault until it is opened again.
+    Lock,
     Settings,
-    NextTheme,
-    PreviousTheme,
     Quit,
 }
 
 impl Hotkey {
     /// In the order the Keyboard page lists them.
-    pub const ALL: [Hotkey; 21] = [
-        Hotkey::Palette,
-        Hotkey::NewTab,
-        Hotkey::ClosePane,
-        Hotkey::SplitRight,
-        Hotkey::SplitDown,
-        Hotkey::PaneLeft,
-        Hotkey::PaneRight,
-        Hotkey::PaneUp,
-        Hotkey::PaneDown,
-        Hotkey::NextTab,
-        Hotkey::PreviousTab,
-        Hotkey::GoToTab,
-        Hotkey::Tabs,
-        Hotkey::HostList,
-        Hotkey::Files,
+    pub const ALL: [Hotkey; 6] = [
         Hotkey::Find,
-        Hotkey::Broadcast,
+        Hotkey::AddCode,
+        Hotkey::CopyCode,
+        Hotkey::Lock,
         Hotkey::Settings,
-        Hotkey::NextTheme,
-        Hotkey::PreviousTheme,
         Hotkey::Quit,
     ];
 
     /// Its name in `[shortcuts]`.
     pub fn name(self) -> &'static str {
         match self {
-            Hotkey::Palette => "palette",
-            Hotkey::NewTab => "new_tab",
-            Hotkey::ClosePane => "close_pane",
-            Hotkey::SplitRight => "split_right",
-            Hotkey::SplitDown => "split_down",
-            Hotkey::PaneLeft => "pane_left",
-            Hotkey::PaneRight => "pane_right",
-            Hotkey::PaneUp => "pane_up",
-            Hotkey::PaneDown => "pane_down",
-            Hotkey::NextTab => "next_tab",
-            Hotkey::PreviousTab => "previous_tab",
-            Hotkey::GoToTab => "go_to_tab",
-            Hotkey::Tabs => "tabs",
-            Hotkey::HostList => "host_list",
-            Hotkey::Files => "files",
             Hotkey::Find => "find",
-            Hotkey::Broadcast => "broadcast",
+            Hotkey::AddCode => "add_code",
+            Hotkey::CopyCode => "copy_code",
+            Hotkey::Lock => "lock",
             Hotkey::Settings => "settings",
-            Hotkey::NextTheme => "next_theme",
-            Hotkey::PreviousTheme => "previous_theme",
             Hotkey::Quit => "quit",
         }
     }
@@ -106,61 +61,26 @@ impl Hotkey {
 
     /// Takes `digit` (1 to 9) rather than one key.
     pub fn numbered(self) -> bool {
-        self == Hotkey::GoToTab
+        self == Hotkey::CopyCode
     }
 
-    /// The keys it takes when `[shortcuts]` does not name it. Ctrl+Shift on
-    /// Linux and Windows, as for copy and paste in a terminal (Ctrl alone is
-    /// the shell's: Ctrl+K kills the line); Cmd on macOS.
+    /// The keys it takes when `[shortcuts]` does not name it: Cmd on macOS,
+    /// Ctrl elsewhere, as in most apps.
     pub fn defaults(self, os: Os) -> &'static [&'static str] {
         let mac = os == Os::Mac;
         match self {
-            Hotkey::Palette if mac => &["cmd+k"],
-            Hotkey::Palette => &["ctrl+shift+k", "ctrl+shift+p"],
-            Hotkey::NewTab if mac => &["cmd+t"],
-            Hotkey::NewTab => &["ctrl+shift+t"],
-            Hotkey::ClosePane if mac => &["cmd+w"],
-            Hotkey::ClosePane => &["ctrl+shift+w"],
-            // Cmd+D and Cmd+Shift+D on macOS, as in iTerm.
-            Hotkey::SplitRight if mac => &["cmd+d"],
-            Hotkey::SplitRight => &["ctrl+shift+d"],
-            Hotkey::SplitDown if mac => &["cmd+shift+d"],
-            Hotkey::SplitDown => &["ctrl+shift+e"],
-            // Alt+arrows, as in Windows Terminal; Cmd+Option on macOS.
-            Hotkey::PaneLeft if mac => &["cmd+alt+left"],
-            Hotkey::PaneLeft => &["alt+left"],
-            Hotkey::PaneRight if mac => &["cmd+alt+right"],
-            Hotkey::PaneRight => &["alt+right"],
-            Hotkey::PaneUp if mac => &["cmd+alt+up"],
-            Hotkey::PaneUp => &["alt+up"],
-            Hotkey::PaneDown if mac => &["cmd+alt+down"],
-            Hotkey::PaneDown => &["alt+down"],
-            Hotkey::NextTab if mac => &["ctrl+tab", "ctrl+pagedown", "cmd+}"],
-            Hotkey::NextTab => &["ctrl+tab", "ctrl+pagedown"],
-            Hotkey::PreviousTab if mac => &["ctrl+shift+tab", "ctrl+pageup", "cmd+{"],
-            Hotkey::PreviousTab => &["ctrl+shift+tab", "ctrl+pageup"],
-            Hotkey::GoToTab if mac => &["cmd+digit"],
-            Hotkey::GoToTab => &["alt+digit"],
-            // Cmd+Shift+A on macOS, as Chrome's tab search: Cmd+A selects all.
-            Hotkey::Tabs if mac => &["cmd+shift+a"],
-            Hotkey::Tabs => &["ctrl+shift+a"],
-            Hotkey::HostList if mac => &["cmd+b"],
-            Hotkey::HostList => &["ctrl+shift+b"],
-            Hotkey::Files if mac => &["cmd+o"],
-            Hotkey::Files => &["ctrl+shift+o"],
-            Hotkey::Find if mac => &["cmd+f"],
-            Hotkey::Find => &["ctrl+shift+f"],
-            Hotkey::Broadcast if mac => &["cmd+shift+i"],
-            Hotkey::Broadcast => &["ctrl+shift+i"],
-            // Ctrl+, sends nothing to a terminal, so it is free, as in most apps.
+            Hotkey::Find if mac => &["cmd+k", "cmd+f"],
+            Hotkey::Find => &["ctrl+k", "ctrl+f"],
+            Hotkey::AddCode if mac => &["cmd+n"],
+            Hotkey::AddCode => &["ctrl+n"],
+            Hotkey::CopyCode if mac => &["cmd+digit"],
+            Hotkey::CopyCode => &["ctrl+digit"],
+            Hotkey::Lock if mac => &["cmd+l"],
+            Hotkey::Lock => &["ctrl+l"],
             Hotkey::Settings if mac => &["cmd+,"],
             Hotkey::Settings => &["ctrl+,"],
-            Hotkey::NextTheme if mac => &["cmd+]"],
-            Hotkey::NextTheme => &["ctrl+}"],
-            Hotkey::PreviousTheme if mac => &["cmd+["],
-            Hotkey::PreviousTheme => &["ctrl+{"],
             Hotkey::Quit if mac => &["cmd+q"],
-            Hotkey::Quit => &[],
+            Hotkey::Quit => &["ctrl+q"],
         }
     }
 
@@ -431,9 +351,6 @@ impl std::str::FromStr for Chord {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Verdict {
     Fine,
-    /// Programs in the terminal use it (Ctrl+R, Alt+B, F5): with it here,
-    /// they would not get it.
-    Shell,
     Refused(Refusal),
 }
 
@@ -443,51 +360,33 @@ pub enum Refusal {
     Typing,
     /// The system takes it before the app sees it.
     System,
-    /// One of the shortcuts that cannot be changed (copy, paste, zoom).
+    /// One of the shortcuts that cannot be changed (copy, paste).
     Fixed(Fixed),
 }
 
-/// The shortcuts of a pane that cannot be changed.
+/// The text fields' shortcuts, which cannot be changed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Fixed {
     Copy,
+    Cut,
     Paste,
-    ZoomIn,
-    ZoomOut,
-    ZoomReset,
-    PageUp,
-    PageDown,
-    Bottom,
+    SelectAll,
 }
 
 impl Fixed {
-    pub const ALL: [Fixed; 8] = [
-        Fixed::Copy,
-        Fixed::Paste,
-        Fixed::ZoomIn,
-        Fixed::ZoomOut,
-        Fixed::ZoomReset,
-        Fixed::PageUp,
-        Fixed::PageDown,
-        Fixed::Bottom,
-    ];
+    pub const ALL: [Fixed; 4] = [Fixed::Copy, Fixed::Cut, Fixed::Paste, Fixed::SelectAll];
 
     pub fn keys(self, os: Os) -> &'static [&'static str] {
         let mac = os == Os::Mac;
         match self {
             Fixed::Copy if mac => &["cmd+c"],
-            Fixed::Copy => &["ctrl+shift+c"],
-            Fixed::Paste if mac => &["cmd+v", "shift+insert"],
-            Fixed::Paste => &["ctrl+shift+v", "shift+insert"],
-            Fixed::ZoomIn if mac => &["cmd+=", "cmd++"],
-            Fixed::ZoomIn => &["ctrl+=", "ctrl++"],
-            Fixed::ZoomOut if mac => &["cmd+-"],
-            Fixed::ZoomOut => &["ctrl+-"],
-            Fixed::ZoomReset if mac => &["cmd+0"],
-            Fixed::ZoomReset => &["ctrl+0"],
-            Fixed::PageUp => &["shift+pageup"],
-            Fixed::PageDown => &["shift+pagedown"],
-            Fixed::Bottom => &["shift+end"],
+            Fixed::Copy => &["ctrl+c"],
+            Fixed::Cut if mac => &["cmd+x"],
+            Fixed::Cut => &["ctrl+x"],
+            Fixed::Paste if mac => &["cmd+v"],
+            Fixed::Paste => &["ctrl+v", "shift+insert"],
+            Fixed::SelectAll if mac => &["cmd+a"],
+            Fixed::SelectAll => &["ctrl+a"],
         }
     }
 
@@ -557,27 +456,12 @@ pub fn verdict(chord: &Chord, os: Os) -> Verdict {
     if system_key {
         return Verdict::Refused(Refusal::System);
     }
-    if let Some(f) = Fixed::ALL
+    match Fixed::ALL
         .into_iter()
         .find(|f| f.chords(os).contains(chord))
     {
-        return Verdict::Refused(Refusal::Fixed(f));
-    }
-    let letter = key.len() == 1 && key.as_bytes()[0].is_ascii_alphabetic();
-    let symbol = key.len() == 1 && !letter;
-    // Ctrl+letter and the like are control characters (Ctrl+R searches the
-    // history, Ctrl+[ is Escape); Alt+key is Meta (Alt+B goes back a word,
-    // Option+key types a symbol on macOS); F-keys drive htop and mc.
-    let control = m.ctrl
-        && !m.shift
-        && !m.cmd
-        && (letter || matches!(key, "[" | "]" | "\\" | "/" | "_" | "@" | "^" | "space"));
-    let meta = m.alt && !m.ctrl && !m.cmd && (letter || symbol || key == DIGIT);
-    let plain_fkey = fkey && !m.ctrl && !m.alt && !m.cmd;
-    if control || meta || plain_fkey {
-        Verdict::Shell
-    } else {
-        Verdict::Fine
+        Some(f) => Verdict::Refused(Refusal::Fixed(f)),
+        None => Verdict::Fine,
     }
 }
 
@@ -622,8 +506,8 @@ pub enum ShortcutProblem {
         kept: Hotkey,
         lost: Hotkey,
     },
-    /// `digit` for a shortcut that takes one key, or one key for going to a
-    /// tab by number.
+    /// `digit` for a shortcut that takes one key, or one key for copying a
+    /// code by its place.
     Misfit { name: String, key: String },
 }
 
@@ -748,8 +632,8 @@ impl Keymap {
         !self.custom.is_empty()
     }
 
-    /// The shortcut a key pressed is, and for [`Hotkey::GoToTab`] the tab
-    /// (0 for 1).
+    /// The shortcut a key pressed is, and for [`Hotkey::CopyCode`] the
+    /// place (0 for 1).
     pub fn find(&self, pressed: &Chord) -> Option<(Hotkey, Option<usize>)> {
         if let Some(h) = self.holder(pressed) {
             return Some((h, None));
@@ -864,42 +748,38 @@ mod tests {
     fn a_key_pressed_finds_its_shortcut() {
         let map = Keymap::defaults(Os::Linux);
         let find = |s: &str| map.find(&chord(s));
-        assert_eq!(find("ctrl+shift+k"), Some((Hotkey::Palette, None)));
-        assert_eq!(find("ctrl+shift+p"), Some((Hotkey::Palette, None)));
-        assert_eq!(find("alt+3"), Some((Hotkey::GoToTab, Some(2))));
-        assert_eq!(find("ctrl+}"), Some((Hotkey::NextTheme, None)));
-        assert_eq!(find("ctrl+shift+tab"), Some((Hotkey::PreviousTab, None)));
-        assert_eq!(find("ctrl+k"), None, "the shell's kill-line");
-        assert_eq!(find("alt+0"), None);
+        assert_eq!(find("ctrl+k"), Some((Hotkey::Find, None)));
+        assert_eq!(find("ctrl+f"), Some((Hotkey::Find, None)));
+        assert_eq!(find("ctrl+3"), Some((Hotkey::CopyCode, Some(2))));
+        assert_eq!(find("ctrl+n"), Some((Hotkey::AddCode, None)));
+        assert_eq!(find("ctrl+0"), None);
+        assert_eq!(find("alt+n"), None);
         let mac = Keymap::defaults(Os::Mac);
-        assert_eq!(mac.find(&chord("cmd+k")), Some((Hotkey::Palette, None)));
-        assert_eq!(mac.find(&chord("cmd+}")), Some((Hotkey::NextTab, None)));
-        assert_eq!(mac.find(&chord("cmd+]")), Some((Hotkey::NextTheme, None)));
-        assert_eq!(mac.find(&chord("cmd+1")), Some((Hotkey::GoToTab, Some(0))));
+        assert_eq!(mac.find(&chord("cmd+k")), Some((Hotkey::Find, None)));
+        assert_eq!(mac.find(&chord("cmd+l")), Some((Hotkey::Lock, None)));
+        assert_eq!(mac.find(&chord("cmd+1")), Some((Hotkey::CopyCode, Some(0))));
     }
 
     #[test]
     fn the_settings_give_keys_and_take_them_from_the_defaults() {
         let set: ShortcutSettings = toml::from_str(
             r#"
-            palette = "ctrl+shift+t"
-            find = ["ctrl+shift+g", "nonsense+x", "ctrl+shift+c", "ctrl+shift+g"]
-            broadcast = []
-            go_to_tab = "ctrl+k"
-            files = "ctrl+shift+g"
+            find = "ctrl+n"
+            add_code = ["ctrl+shift+g", "nonsense+x", "ctrl+c", "ctrl+shift+g"]
+            lock = []
+            copy_code = "ctrl+y"
+            settings = "ctrl+shift+g"
             renamed = "ctrl+shift+y"
             "#,
         )
         .expect("toml");
         let (map, problems) = Keymap::new(&set, Os::Linux);
-        assert_eq!(map.chords(Hotkey::Palette), [chord("ctrl+shift+t")]);
-        // New tab loses its default to the palette, without a word.
-        assert_eq!(map.chords(Hotkey::NewTab), []);
-        assert_eq!(map.chords(Hotkey::Files), [chord("ctrl+shift+g")]);
-        assert_eq!(map.chords(Hotkey::Broadcast), []);
-        assert_eq!(map.chords(Hotkey::GoToTab), []);
-        assert_eq!(map.chords(Hotkey::Find), [], "Files has it first");
-        assert!(map.is_custom(Hotkey::Find) && !map.is_custom(Hotkey::ClosePane));
+        assert_eq!(map.chords(Hotkey::Find), [chord("ctrl+n")]);
+        assert_eq!(map.chords(Hotkey::Lock), []);
+        assert_eq!(map.chords(Hotkey::CopyCode), []);
+        assert_eq!(map.chords(Hotkey::AddCode), [chord("ctrl+shift+g")]);
+        assert_eq!(map.chords(Hotkey::Settings), [], "Add code has it first");
+        assert!(map.is_custom(Hotkey::Settings) && !map.is_custom(Hotkey::Quit));
         assert!(problems.contains(&ShortcutProblem::Unknown("renamed".into())));
         assert!(
             problems
@@ -907,35 +787,32 @@ mod tests {
                 .any(|p| matches!(p, ShortcutProblem::BadKey { key, .. } if key == "nonsense+x"))
         );
         assert!(problems.contains(&ShortcutProblem::Refused {
-            name: "find".into(),
-            key: "ctrl+shift+c".into(),
+            name: "add_code".into(),
+            key: "ctrl+c".into(),
             refusal: Refusal::Fixed(Fixed::Copy),
         }));
         assert!(problems.contains(&ShortcutProblem::Misfit {
-            name: "go_to_tab".into(),
-            key: "ctrl+k".into(),
+            name: "copy_code".into(),
+            key: "ctrl+y".into(),
         }));
         assert!(problems.contains(&ShortcutProblem::Twice {
             key: "ctrl+shift+g".into(),
-            kept: Hotkey::Files,
-            lost: Hotkey::Find,
+            kept: Hotkey::AddCode,
+            lost: Hotkey::Settings,
         }));
         // Back to the defaults: left out.
         assert_eq!(
-            map.entry_for(
-                Hotkey::Palette,
-                &[chord("ctrl+shift+k"), chord("ctrl+shift+p")]
-            ),
+            map.entry_for(Hotkey::Find, &[chord("ctrl+k"), chord("ctrl+f")]),
             None
         );
         assert_eq!(
-            map.entry_for(Hotkey::Palette, &[chord("ctrl+shift+p")]),
-            Some(vec!["ctrl+shift+p".to_string()])
+            map.entry_for(Hotkey::Find, &[chord("ctrl+f")]),
+            Some(vec!["ctrl+f".to_string()])
         );
     }
 
     #[test]
-    fn keys_the_shell_or_the_system_has_are_told() {
+    fn keys_that_cannot_be_taken_are_told() {
         let v = |s: &str, os| verdict(&chord(s), os);
         assert_eq!(v("k", Os::Linux), Verdict::Refused(Refusal::Typing));
         assert_eq!(v("shift+k", Os::Linux), Verdict::Refused(Refusal::Typing));
@@ -947,17 +824,12 @@ mod tests {
         );
         assert_eq!(v("cmd+h", Os::Mac), Verdict::Refused(Refusal::System));
         assert_eq!(
-            v("ctrl+shift+v", Os::Linux),
+            v("ctrl+v", Os::Linux),
             Verdict::Refused(Refusal::Fixed(Fixed::Paste))
         );
-        assert_eq!(v("ctrl+r", Os::Linux), Verdict::Shell);
-        assert_eq!(v("ctrl+[", Os::Linux), Verdict::Shell);
-        assert_eq!(v("alt+b", Os::Linux), Verdict::Shell);
-        assert_eq!(v("f5", Os::Linux), Verdict::Shell);
-        assert_eq!(v("ctrl+r", Os::Mac), Verdict::Shell);
-        assert_eq!(v("ctrl+shift+r", Os::Linux), Verdict::Fine);
+        assert_eq!(v("ctrl+r", Os::Linux), Verdict::Fine);
+        assert_eq!(v("f5", Os::Linux), Verdict::Fine);
         assert_eq!(v("cmd+r", Os::Mac), Verdict::Fine);
-        assert_eq!(v("ctrl+f5", Os::Linux), Verdict::Fine);
         assert_eq!(v("alt+left", Os::Linux), Verdict::Fine);
     }
 }

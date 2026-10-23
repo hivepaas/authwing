@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- shellwing.app's Info.plist: scripts/package_macos.sh puts the version in. -->
+<!-- authwing.app's Info.plist: scripts/package_macos.sh puts the version in. -->
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>shellwing</string>
+	<string>authwing</string>
 	<key>CFBundleExecutable</key>
-	<string>shellwing</string>
+	<string>authwing</string>
 	<key>CFBundleIconFile</key>
-	<string>shellwing</string>
+	<string>authwing</string>
 	<key>CFBundleIdentifier</key>
-	<string>app.shellwing</string>
+	<string>app.authwing</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>shellwing</string>
+	<string>authwing</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

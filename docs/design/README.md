@@ -1,6 +1,6 @@
 # Design notes
 
-How shellwing stores, syncs and protects data, as agreed in October 2026. These
+How authwing stores, syncs and protects data, as agreed in October 2026. These
 are decisions to build against, not descriptions of code that exists: none of
 it is implemented yet. Questions still to settle are marked **Open**.
 
@@ -16,11 +16,11 @@ it is implemented yet. Questions still to settle are marked **Open**.
 
 Principles shared by all of them:
 
-- **Works without an account.** Signing in only adds shellwing's own cloud sync
+- **Works without an account.** Signing in only adds authwing's own cloud sync
   and team features.
 - **End-to-end encrypted sync.** Servers and storage backends hold ciphertext.
   Signing in proves who you are; it never unlocks data.
-- **One sync engine.** shellwing cloud, a self-hosted server, Git, S3 and a
+- **One sync engine.** authwing cloud, a self-hosted server, Git, S3 and a
   plain folder are all backends of the same engine.
 - **OpenSSH stays the reference.** `~/.ssh/config` and `~/.ssh/known_hosts` are
   read as `ssh` reads them; `~/.ssh/config` is never written.

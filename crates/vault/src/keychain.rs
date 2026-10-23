@@ -26,7 +26,7 @@ pub struct OsKeychain {
 impl Default for OsKeychain {
     fn default() -> Self {
         OsKeychain {
-            service: "shellwing".into(),
+            service: "authwing".into(),
         }
     }
 }

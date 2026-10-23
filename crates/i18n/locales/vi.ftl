@@ -1,17 +1,17 @@
-# shellwing in Vietnamese. Each message is found by its English, the
+# authwing in Vietnamese. Each message is found by its English, the
 # comment above it; scripts/i18n.py keeps this file in step with the code.
 
 # unlock its windows
 t7c69953e = mở khoá các cửa sổ của nó
 
-# Confirm it is you to unlock shellwing.
-t31ace1f1 = Xác nhận đó là bạn để mở khoá shellwing.
+# Confirm it is you to unlock authwing.
+t31ace1f1 = Xác nhận đó là bạn để mở khoá authwing.
 
 # Checking…
 t87f62cb7 = Đang kiểm tra…
 
-# Not confirmed: shellwing stays locked.
-t1db04c44 = Chưa xác nhận: shellwing vẫn khoá.
+# Not confirmed: authwing stays locked.
+t1db04c44 = Chưa xác nhận: authwing vẫn khoá.
 
 # That is not the password.
 t06b4bdb7 = Mật khẩu không đúng.
@@ -31,17 +31,17 @@ t8eeb5228 = Mật khẩu đăng nhập của bạn sẽ mở khoá.
 # Unlock
 t9c799975 = Mở khoá
 
-# Quit shellwing
-t8857c967 = Thoát shellwing
+# Quit authwing
+t8857c967 = Thoát authwing
 
-# shellwing is locked
-t665c7b6c = shellwing đang khoá
+# authwing is locked
+t665c7b6c = authwing đang khoá
 
 # Your login password
 t2348e42c = Mật khẩu đăng nhập của bạn
 
-# shellwing is locked: unlock it in its main window.
-tf4ae07e3 = shellwing đang khoá: hãy mở khoá ở cửa sổ chính của nó.
+# authwing is locked: unlock it in its main window.
+tf4ae07e3 = authwing đang khoá: hãy mở khoá ở cửa sổ chính của nó.
 
 # An edit of {remote} was not written back to the server; the file is kept as {path}.
 t62769e5b = Bản sửa của { $remote } chưa được ghi lại lên máy chủ; tệp được giữ ở { $path }.
@@ -412,8 +412,8 @@ t85f5968b = Từ ~/.ssh/config
 # Host from ~/.ssh/config
 t6a7dc843 = Máy chủ từ ~/.ssh/config
 
-# shellwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
-t509e342f = shellwing đọc tệp này nhưng không bao giờ ghi vào. Hãy sửa nó bằng trình soạn thảo của bạn, hoặc tạo một bản sao ở đây để thêm nhóm, chủ đề, chuyển tiếp cổng hay mật khẩu đã lưu.
+# authwing reads this file but never writes to it. Edit it in your editor, or make a copy here to add a group, a theme, forwards or a saved password.
+t509e342f = authwing đọc tệp này nhưng không bao giờ ghi vào. Hãy sửa nó bằng trình soạn thảo của bạn, hoặc tạo một bản sao ở đây để thêm nhóm, chủ đề, chuyển tiếp cổng hay mật khẩu đã lưu.
 
 # Open config file
 t54ea8995 = Mở tệp cấu hình
@@ -718,8 +718,8 @@ ta81ce4ca = { $key } riêng lẻ là để gõ chữ: hãy giữ kèm Cmd, Ctrl 
 # {key} alone is for typing: hold Ctrl or Alt with it.
 t834f7024 = { $key } riêng lẻ là để gõ chữ: hãy giữ kèm Ctrl hoặc Alt.
 
-# {key} belongs to the system: it never reaches Shellwing.
-tcf75feb6 = { $key } thuộc về hệ thống: nó không bao giờ tới được Shellwing.
+# {key} belongs to the system: it never reaches Authwing.
+tcf75feb6 = { $key } thuộc về hệ thống: nó không bao giờ tới được Authwing.
 
 # {key} is {what}, which cannot be changed.
 t01906ac3 = { $key } là { $what }, phím này không đổi được.
@@ -1054,8 +1054,8 @@ td51093f3 = Tệp khoá này có cụm mật khẩu. Nhập nó để giao khoá
 # Save the passphrase of {path}
 ta6e38b23 = Lưu cụm mật khẩu của { $path }
 
-# Kept in the vault, encrypted, and synced: shellwing then signs in with this key without asking, here and on your other devices.
-tf45d84f1 = Giữ trong kho, đã mã hoá, và được đồng bộ: shellwing sẽ đăng nhập bằng khoá này mà không hỏi, ở đây và trên các thiết bị khác của bạn.
+# Kept in the vault, encrypted, and synced: authwing then signs in with this key without asking, here and on your other devices.
+tf45d84f1 = Giữ trong kho, đã mã hoá, và được đồng bộ: authwing sẽ đăng nhập bằng khoá này mà không hỏi, ở đây và trên các thiết bị khác của bạn.
 
 # Asking the agent…
 tabb2eee4 = Đang hỏi agent…
@@ -1081,8 +1081,8 @@ t650c9448 = Không đọc được kho: { $p }
 # In the vault
 ta13ebcfd = Trong kho
 
-# synced · used only by shellwing
-t0714e99d = đã đồng bộ · chỉ shellwing dùng
+# synced · used only by authwing
+t0714e99d = đã đồng bộ · chỉ authwing dùng
 
 # None yet: generate one, or copy one of your key files here.
 t95a0c0ba = Chưa có: hãy tạo một khoá, hoặc sao chép một tệp khoá của bạn vào đây.
@@ -1378,8 +1378,8 @@ tb31ba949 = Ảnh chỉ hiện trong ghi chú Markdown; ghi chú này là văn b
 # Images go in while the note is edited.
 t6f2c9191 = Chỉ chèn được ảnh khi đang sửa ghi chú.
 
-# shellwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
-t4f35c5e2 = shellwing tải ảnh từ { $hosts }, và các máy chủ này sẽ biết địa chỉ của bạn. Sau đó ảnh được lưu trong kho, có mã hoá, và các liên kết trong ghi chú được thay thế.
+# authwing downloads them from {hosts}, which learn your address. They are then kept in the vault, encrypted, and the links in the note are replaced.
+t4f35c5e2 = authwing tải ảnh từ { $hosts }, và các máy chủ này sẽ biết địa chỉ của bạn. Sau đó ảnh được lưu trong kho, có mã hoá, và các liên kết trong ghi chú được thay thế.
 
 # Some come over plain http: they could be altered on the way.
 tfe0055bd = Một số ảnh đến qua http thường: chúng có thể bị sửa trên đường đi.
@@ -1630,8 +1630,8 @@ te39c67c2 = ↑↓ di chuyển   Enter chọn   Esc huỷ
 # About
 t58e096de = Giới thiệu
 
-# © {year} HivePaaS. The shellwing name and logo are trademarks of HivePaaS.
-ta956e96f = © { $year } HivePaaS. Tên và logo shellwing là nhãn hiệu của HivePaaS.
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+ta956e96f = © { $year } HivePaaS. Tên và logo authwing là nhãn hiệu của HivePaaS.
 
 # A native SSH client for Linux, macOS and Windows.
 t182e3bec = Ứng dụng SSH gốc cho Linux, macOS và Windows.
@@ -1648,8 +1648,8 @@ t183c7f9f = Đã sao chép: { $info }
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = Bản build này không có khoá phát hành, nên không thể báo khi có bản cập nhật.
 
-# shellwing {version} is ready
-t3f4cfe3f = shellwing { $version } đã sẵn sàng
+# authwing {version} is ready
+t3f4cfe3f = authwing { $version } đã sẵn sàng
 
 # It is installed when you quit, or now with Restart.
 t6fecac86 = Bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
@@ -1657,8 +1657,8 @@ t6fecac86 = Bản mới được cài khi bạn thoát app, hoặc ngay bây gi�
 # Restart now
 t54001a7c = Khởi động lại ngay
 
-# shellwing {version}
-tfc977e10 = shellwing { $version }
+# authwing {version}
+tfc977e10 = authwing { $version }
 
 # Looking for a newer version…
 tf1905fe9 = Đang tìm phiên bản mới hơn…
@@ -1681,8 +1681,8 @@ tb46c0678 = Bản mới được tải xuống và kiểm tra, rồi cài khi b�
 # Download it, and install it in place of this one.
 t39312eae = Tải về và cài đè lên bản này.
 
-# shellwing {version} is out
-t5b33836c = Đã có shellwing { $version }
+# authwing {version} is out
+t5b33836c = Đã có authwing { $version }
 
 # The download failed: {why}
 t5e96c075 = Tải xuống thất bại: { $why }
@@ -1717,8 +1717,8 @@ tcc27ace1 = Kiểm tra cập nhật mỗi ngày một lần
 # It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t258cdfd9 = App đọc danh sách bản phát hành từ GitHub, và chỉ tin khi chữ ký của nó hợp lệ. Không có gì được tải xuống hay cài đặt nếu bạn không đồng ý.
 
-# Visit shellwing.app
-t1d2ed540 = Xem shellwing.app
+# Visit authwing.app
+t1d2ed540 = Xem authwing.app
 
 # Report a problem
 t7b1728e7 = Báo lỗi
@@ -1729,8 +1729,8 @@ tc52ab62f = Ghi chú phát hành
 # Open source
 ta04619ce = Mã nguồn mở
 
-# shellwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
-tcde8081b = shellwing là phần mềm miễn phí, mã nguồn mở theo giấy phép GPL-3.0-or-later. Bạn có thể đọc mã, tự build, báo lỗi hoặc gửi bản sửa.
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tcde8081b = authwing là phần mềm miễn phí, mã nguồn mở theo giấy phép GPL-3.0-or-later. Bạn có thể đọc mã, tự build, báo lỗi hoặc gửi bản sửa.
 
 # Open source · Apache-2.0
 tf33a768c = Mã nguồn mở · Apache-2.0
@@ -1921,8 +1921,8 @@ t4956cc50 = Theo hệ thống ({ $language })
 # Language
 t9a73db9b = Ngôn ngữ
 
-# shellwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
-t74b71048 = Chữ của shellwing: menu, Cài đặt, câu hỏi và thông báo. Nội dung terminal là của máy chủ. Riêng thiết bị này: không đồng bộ.
+# authwing's own words: menus, Settings, questions and notices. What the terminal shows is the server's. This device's own: it does not sync.
+t74b71048 = Chữ của authwing: menu, Cài đặt, câu hỏi và thông báo. Nội dung terminal là của máy chủ. Riêng thiết bị này: không đồng bộ.
 
 # Text editor for remote files
 tdc31a941 = Trình soạn thảo cho tệp từ xa
@@ -1933,8 +1933,8 @@ t3110b5e8 = Sửa bằng trình soạn thảo, trong bảng Tệp, mở một b�
 # Open the last tabs at start
 tf7087aa7 = Mở lại các tab lần trước khi khởi động
 
-# When shellwing starts without a host, it opens the tabs and splits it had.
-t2b27326b = Khi shellwing khởi động mà không có máy chủ, nó mở lại các tab và các khung chia đã có.
+# When authwing starts without a host, it opens the tabs and splits it had.
+t2b27326b = Khi authwing khởi động mà không có máy chủ, nó mở lại các tab và các khung chia đã có.
 
 # Hosts from another app
 tffafddac = Máy chủ từ app khác
@@ -2134,8 +2134,8 @@ tab3a8a0a = tắt
 # known_hosts file
 t2e38efc6 = Tệp known_hosts
 
-# Shared with ssh. shellwing adds the keys you trust.
-t43d70395 = Dùng chung với ssh. shellwing thêm các khoá bạn tin tưởng.
+# Shared with ssh. authwing adds the keys you trust.
+t43d70395 = Dùng chung với ssh. authwing thêm các khoá bạn tin tưởng.
 
 # ssh config file
 t70767f0d = Tệp cấu hình ssh
@@ -2284,8 +2284,8 @@ tcd6d61d0 = Chưa mở.
 # In the system keychain, and kept by a passphrase too.
 tc986f88d = Trong kho khoá của hệ thống, và cũng được giữ bằng cụm mật khẩu.
 
-# Kept by its passphrase: typed when shellwing starts.
-t31c62b2e = Được giữ bằng cụm mật khẩu: nhập khi shellwing khởi động.
+# Kept by its passphrase: typed when authwing starts.
+t31c62b2e = Được giữ bằng cụm mật khẩu: nhập khi authwing khởi động.
 
 # In the system keychain.
 te1cb09c0 = Trong kho khoá của hệ thống.
@@ -2320,17 +2320,17 @@ t0c43fb4a = 1 giờ
 # {m} min
 t7eebb6a4 = { $m } phút
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-ta9231ed4 = Khi shellwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi Touch ID hoặc mật khẩu máy Mac xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Touch ID or your Mac's password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+ta9231ed4 = Khi authwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi Touch ID hoặc mật khẩu máy Mac xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-t34186d03 = Khi shellwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi Windows Hello hoặc mật khẩu Windows xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until Windows Hello or your Windows password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+t34186d03 = Khi authwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi Windows Hello hoặc mật khẩu Windows xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
 
-# When shellwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
-teb40e26b = Khi shellwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi mật khẩu đăng nhập xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
+# When authwing starts, and after this long without a key pressed or a click, its windows hide until your login password says it is you. A light guard for a screen left unlocked: the sessions go on underneath.
+teb40e26b = Khi authwing khởi động, và sau khoảng thời gian này không có phím nào được nhấn hay cú nhấp nào, các cửa sổ của nó sẽ ẩn đi cho tới khi mật khẩu đăng nhập xác nhận đó là bạn. Một lớp bảo vệ nhẹ khi quên khoá màn hình: các phiên vẫn tiếp tục chạy bên dưới.
 
-# Lock shellwing when away
-t7ad7e7d1 = Khoá shellwing khi vắng mặt
+# Lock authwing when away
+t7ad7e7d1 = Khoá authwing khi vắng mặt
 
 # Saved passwords and passphrases
 t4b07c4a2 = Mật khẩu và cụm mật khẩu đã lưu
@@ -2347,8 +2347,8 @@ td09ac71d = Khoá của kho
 # What opens vault.db. A passphrase keeps it where there is no system keychain (or as well as one); the recovery key always opens it, if the passphrase is forgotten or the keychain loses it.
 t6a54a5a7 = Thứ mở được vault.db. Cụm mật khẩu giữ nó ở nơi không có kho khoá của hệ thống (hoặc cùng với kho khoá đó); khoá khôi phục luôn mở được, khi quên cụm mật khẩu hoặc kho khoá làm mất nó.
 
-# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of shellwing.
-t056f7fb9 = Khi kho bị khoá, { $name } sẽ mở nó, như cụm mật khẩu (vẫn dùng được). Theo các ngón tay đang đăng ký: thêm một ngón thì cách này ngừng hoạt động, cho tới khi bật lại. Cần bản shellwing đã được ký.
+# When the vault is locked, {name} opens it, as its passphrase does (which still works). The fingers enrolled now: adding one stops it, until it is turned on again. Needs a signed build of authwing.
+t056f7fb9 = Khi kho bị khoá, { $name } sẽ mở nó, như cụm mật khẩu (vẫn dùng được). Theo các ngón tay đang đăng ký: thêm một ngón thì cách này ngừng hoạt động, cho tới khi bật lại. Cần bản authwing đã được ký.
 
 # When the vault is locked, {name} (a fingerprint, the face or this device's PIN) opens it, as its passphrase does (which still works). The key is kept by this device's security chip.
 t0baa8f35 = Khi kho bị khoá, { $name } (vân tay, khuôn mặt hoặc mã PIN của thiết bị này) sẽ mở nó, như cụm mật khẩu (vẫn dùng được). Khoá được chip bảo mật của thiết bị này giữ.
@@ -2401,8 +2401,8 @@ t0e963f08 = + Máy chủ
 # + Group
 t9585c651 = + Nhóm
 
-# About shellwing
-t884dc61f = Giới thiệu shellwing
+# About authwing
+t884dc61f = Giới thiệu authwing
 
 # HOSTS
 t0d325d34 = MÁY CHỦ
@@ -2737,8 +2737,8 @@ t88dd5f11 = Máy chủ của bạn trên mọi thiết bị. Chỉ cần đăng 
 # Hosts, passwords, keys and snippets stay on this computer for now.
 td2cff7db = Máy chủ, mật khẩu, khoá và đoạn lệnh hiện chỉ nằm trên máy này.
 
-# See shellwing cloud
-t88cbb4e0 = Xem shellwing cloud
+# See authwing cloud
+t88cbb4e0 = Xem authwing cloud
 
 # A folder, WebDAV, S3 or Git of your own:
 t42ad626a = Thư mục, WebDAV, S3 hoặc Git của riêng bạn:
@@ -2782,8 +2782,8 @@ t025d99af = Máy chủ, mật khẩu đã lưu, khoá và đoạn lệnh theo b�
 # Nothing to set up: no folder, no server, no key to type on a new device.
 tde7b1d58 = Không phải cài đặt gì: không thư mục, không máy chủ, không khoá nào phải nhập trên thiết bị mới.
 
-# Encrypted on your devices: shellwing never sees your secrets.
-t35aecaf3 = Được mã hoá trên thiết bị của bạn: shellwing không bao giờ thấy bí mật của bạn.
+# Encrypted on your devices: authwing never sees your secrets.
+t35aecaf3 = Được mã hoá trên thiết bị của bạn: authwing không bao giờ thấy bí mật của bạn.
 
 # Create an account
 td7f6c093 = Tạo tài khoản
@@ -2794,11 +2794,11 @@ t2f60c9bf = hoặc tiếp tục với
 # Rather not keep it yourself?
 t616f184a = Không muốn tự giữ?
 
-# shellwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
-t81dee99e = shellwing cloud giữ giúp bạn: đăng nhập trên mỗi thiết bị, vậy là xong. Vẫn mã hoá đầu-cuối.
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t81dee99e = authwing cloud giữ giúp bạn: đăng nhập trên mỗi thiết bị, vậy là xong. Vẫn mã hoá đầu-cuối.
 
-# shellwing cloud is coming: signing in opens with it.
-t8de35792 = shellwing cloud sắp ra mắt: đăng nhập sẽ mở cùng lúc.
+# authwing cloud is coming: signing in opens with it.
+t8de35792 = authwing cloud sắp ra mắt: đăng nhập sẽ mở cùng lúc.
 
 # {n} host · $3.99/mo | {n} hosts · $3.99/mo
 td1ec974a = { $n } máy chủ · $3.99/tháng
@@ -3226,17 +3226,17 @@ ta8cbd72e = App Store
 # the Microsoft Store
 t1df799a1 = Microsoft Store
 
-# shellwing {version} is out: {by} updates it ({command}).
-t270e30ba = Đã có shellwing { $version }: { $by } sẽ cập nhật nó ({ $command }).
+# authwing {version} is out: {by} updates it ({command}).
+t270e30ba = Đã có authwing { $version }: { $by } sẽ cập nhật nó ({ $command }).
 
-# shellwing {version} is out: {by} updates it.
-t34c8e3f2 = Đã có shellwing { $version }: { $by } sẽ cập nhật nó.
+# authwing {version} is out: {by} updates it.
+t34c8e3f2 = Đã có authwing { $version }: { $by } sẽ cập nhật nó.
 
 # No folder to download to.
 t2bfc1370 = Không có thư mục để tải xuống.
 
-# shellwing {version} is ready: it is installed when you quit, or now with Restart.
-t4cc4357e = shellwing { $version } đã sẵn sàng: bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+t4cc4357e = authwing { $version } đã sẵn sàng: bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
 
 # Downloading… {got} of {total}
 taee668c2 = Đang tải xuống… { $got } / { $total }
@@ -3301,8 +3301,8 @@ tbac763bb = { $n } kết nối đang mở; đóng sẽ ngắt các kết nối �
 # Cannot open a terminal: {e}
 t3ffc1c98 = Không mở được terminal: { $e }
 
-# shellwing cannot lock here: this system has no way to ask that it is you.
-t222eeef4 = shellwing không thể khoá ở đây: hệ thống này không có cách nào để xác nhận đó là bạn.
+# authwing cannot lock here: this system has no way to ask that it is you.
+t222eeef4 = authwing không thể khoá ở đây: hệ thống này không có cách nào để xác nhận đó là bạn.
 
 # A connection is open; quitting closes it.
 tf3732b18 = Một kết nối đang mở; thoát sẽ đóng nó.
@@ -3316,8 +3316,8 @@ t2f44ed8c = Khởi động lại
 # Restart to install the update?
 tdab4b0cf = Khởi động lại để cài bản cập nhật?
 
-# Quit shellwing?
-tfa31f588 = Thoát shellwing?
+# Quit authwing?
+tfa31f588 = Thoát authwing?
 
 # Syncing the notes before quitting…
 tb66945de = Đang đồng bộ ghi chú trước khi thoát…
@@ -3397,8 +3397,8 @@ tdfc17c92 = Mật khẩu và cụm mật khẩu đã lưu…
 # Lock the vault
 tc05449a1 = Khoá kho
 
-# Lock shellwing
-ta4580143 = Khoá shellwing
+# Lock authwing
+ta4580143 = Khoá authwing
 
 # Sync now with {place}
 t8aad97ad = Đồng bộ ngay với { $place }
@@ -3412,11 +3412,11 @@ tc73a9bf6 = Đồng bộ mật khẩu qua một máy chủ…
 # Settings…
 t64d0d0b4 = Cài đặt…
 
-# Restart to install shellwing {version}
-taadea299 = Khởi động lại để cài shellwing { $version }
+# Restart to install authwing {version}
+taadea299 = Khởi động lại để cài authwing { $version }
 
-# shellwing {version} is out…
-tab699ac8 = Đã có shellwing { $version }…
+# authwing {version} is out…
+tab699ac8 = Đã có authwing { $version }…
 
 # Check for updates
 t70ad7706 = Kiểm tra cập nhật
@@ -3517,8 +3517,8 @@ te7d01782 = Để chắc chắn.
 # There is no system keychain to keep the vault's key
 t04970b55 = Không có kho khoá của hệ thống để giữ khoá của kho
 
-# A passphrase keeps it instead: you type it when shellwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
-t2fd0f1b3 = Thay vào đó, một cụm mật khẩu sẽ giữ nó: bạn nhập khi shellwing khởi động. Ít nhất { $min } ký tự. Esc: lần này không có mật khẩu đã lưu, khoá hay đồng bộ.
+# A passphrase keeps it instead: you type it when authwing starts. At least {min} characters. Esc: no saved passwords, keys or sync this time.
+t2fd0f1b3 = Thay vào đó, một cụm mật khẩu sẽ giữ nó: bạn nhập khi authwing khởi động. Ít nhất { $min } ký tự. Esc: lần này không có mật khẩu đã lưu, khoá hay đồng bộ.
 
 # A passphrase for the vault
 t25841dd8 = Cụm mật khẩu cho kho
@@ -3631,8 +3631,8 @@ t24c15ff5 = { $device } hỏi có cho thiết bị này vào không. Hãy đồn
 # Waiting for a device that syncs
 t6e41520f = Đang chờ một thiết bị đang đồng bộ
 
-# Open shellwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
-ted2b04ee = Mở shellwing trên một thiết bị đồng bộ thư mục này: nó sẽ hỏi có cho thiết bị này vào không. Esc để huỷ.
+# Open authwing on a device that syncs this folder: it asks whether to let this one in. Esc cancels.
+ted2b04ee = Mở authwing trên một thiết bị đồng bộ thư mục này: nó sẽ hỏi có cho thiết bị này vào không. Esc để huỷ.
 
 # Sync with this folder
 t8eb0599a = Đồng bộ với thư mục này
