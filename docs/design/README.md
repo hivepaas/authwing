@@ -1,26 +1,29 @@
 # Design notes
 
-How authwing stores, syncs and protects data, as agreed in October 2026. These
-are decisions to build against, not descriptions of code that exists: none of
-it is implemented yet. Questions still to settle are marked **Open**.
+How authwing stores, syncs and protects data. The vault, its sync and the
+devices joining it come from shellwing, where these notes were agreed in
+October 2026, and are built; where a note still says *host*, authwing's
+counterpart is a *code*. Questions still to settle are marked **Open**.
 
 | Note | Covers |
 | --- | --- |
 | [config.md](config.md) | Files on disk, their formats, settings precedence |
-| [import.md](import.md) | Hosts read from other SSH clients into `hosts.toml` |
-| [note-conflicts.md](note-conflicts.md) | A note changed on two devices: both texts kept |
-| [note-images.md](note-images.md) | Images in notes: attachments, their sync and removal |
-| [sync.md](sync.md) | Accounts, the sync engine, backends, host limits |
-| [teams.md](teams.md) | Organizations, sharing, the self-hosted server |
+| [sync.md](sync.md) | Accounts, the sync engine, backends, plan limits |
 | [vault.md](vault.md) | Secrets, the key hierarchy, encryption, local storage |
+| [teams.md](teams.md) | Organizations, sharing, the self-hosted server |
+| [note-conflicts.md](note-conflicts.md), [note-images.md](note-images.md) | shellwing's notes: how the vault keeps both texts of one changed on two devices, and its attachments. authwing has no notes; the vault keeps the mechanisms. |
 
 Principles shared by all of them:
 
 - **Works without an account.** Signing in only adds authwing's own cloud sync
   and team features.
-- **End-to-end encrypted sync.** Servers and storage backends hold ciphertext.
-  Signing in proves who you are; it never unlocks data.
+- **End-to-end encrypted sync.** Servers and storage backends hold ciphertext,
+  the services' names included. Signing in proves who you are; it never
+  unlocks data.
 - **One sync engine.** authwing cloud, a self-hosted server, Git, S3 and a
   plain folder are all backends of the same engine.
-- **OpenSSH stays the reference.** `~/.ssh/config` and `~/.ssh/known_hosts` are
-  read as `ssh` reads them; `~/.ssh/config` is never written.
+- **A code goes only where it belongs.** It is typed only into a site saved
+  with it; a page that looks like one is said to, and gets nothing.
+- **What the app learns stays on the device.** The windows in use, the pages
+  open and what was said aloud are read on the device and never sent; names
+  the user teaches sync encrypted, like the codes.

@@ -22,8 +22,8 @@ mod store;
 
 pub use color::Color;
 pub use settings::{
-    Appearance, Codes, ColorMode, General, GitSync, LockSettings, S3Sync, Settings, Sync,
-    SyncPlace, UI_FONT_SIZE, UiFont, Updates, VaultSettings, WebDavSync,
+    Appearance, Codes, ColorMode, General, GitSync, S3Sync, Settings, Sync, SyncPlace,
+    UI_FONT_SIZE, UiFont, Updates, WebDavSync,
 };
 pub use shortcuts::{Chord, Hotkey, Keymap, Mods, Os, ShortcutSettings};
 pub use state::{UpdateState, WindowMode, WindowState};

@@ -9,8 +9,6 @@ pub struct Settings {
     pub sync: Sync,
     pub appearance: Appearance,
     pub codes: Codes,
-    pub vault: VaultSettings,
-    pub lock: LockSettings,
     pub updates: Updates,
     /// `[shortcuts]`: keys for the window's shortcuts, by name, over the
     /// defaults. This device's own: keys differ between systems.
@@ -30,28 +28,6 @@ impl Default for Updates {
     fn default() -> Self {
         Updates { check: true }
     }
-}
-
-/// The vault on this device.
-#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
-#[serde(default)]
-pub struct VaultSettings {
-    /// Minutes without a key pressed or a click before the vault locks, when
-    /// its key is not in the keychain (only its passphrase opens it). None
-    /// or 0: it stays open.
-    pub lock_after: Option<u32>,
-}
-
-/// authwing locked while its user is away: a light guard for a screen left
-/// unlocked. This device's own.
-#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
-#[serde(default)]
-pub struct LockSettings {
-    /// Minutes without a key pressed or a click before authwing hides its
-    /// windows until the system says it is the user (Touch ID or the login
-    /// password, Windows Hello, the Linux password); it asks when authwing
-    /// starts too. None or 0: it never locks by itself.
-    pub after: Option<u32>,
 }
 
 /// Codes on this device: what happens to one that is used.

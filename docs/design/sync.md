@@ -16,7 +16,7 @@ The device-code flow is the fallback when no browser can open. The refresh
 token is kept in the OS keychain.
 
 **License.** The portal issues a token signed with Ed25519. It carries the
-account, plan, `host_limit` and expiry.
+account, plan, `code_limit` and expiry.
 
 - The app checks the signature offline and refreshes the token daily.
 - After about 14 days without reaching the portal, cloud sync pauses. Nothing
@@ -25,43 +25,22 @@ account, plan, `host_limit` and expiry.
   raise it.
 
 **Signing in never unlocks data.** Encryption keys come from the user's devices
-or recovery key ([vault.md](vault.md)). A compromised portal exposes no hosts or
+or recovery key ([vault.md](vault.md)). A compromised portal exposes no codes or
 secrets.
 
-## Host limits
+## Plan limits
 
-Individual plans limit how many hosts sync through **authwing cloud**. Draft
-numbers:
+Individual plans may limit how many codes sync through **authwing cloud**
+(**Open:** whether to limit at all, the plans and prices).
 
-| Plan | Hosts synced |
-| --- | --- |
-| Free | None |
-| Pro 1 | 10 |
-| Pro 2 | 20 |
-| Pro 3 | Unlimited |
-
-**Open:** plan names and prices.
-
-What counts toward the limit:
-
-- **Only hosts count.** Groups, snippets, themes and settings sync free. So do
-  secrets used by synced hosts. A fair-use storage cap applies, tens of MB.
-- **A jump host counts.** Syncing `api-1` through `bastion` uses two slots, and
-  the app says so before enabling it.
-- **Hosts that never count:**
-  - `local_only` hosts.
-  - Hosts from `~/.ssh/config`.
-  - Hosts synced through any other backend (Git, S3, folder…), which is
-    unlimited and free.
-- **Team plans** are per seat with unlimited hosts ([teams.md](teams.md)).
+- **Only codes count.** Groups, names taught for voice and settings sync free.
+- **Codes synced through any other backend** (Git, S3, folder…) never count:
+  that is unlimited and free.
 - **When over the limit** (for example after a downgrade), nothing is deleted:
-  1. The user picks which hosts keep syncing.
-  2. The rest become local-only on the devices that have them.
-  3. Their server copies stay read-only for a grace period, then are removed.
+  the user picks which codes keep syncing through the cloud; the rest stay
+  on the devices that have them.
 - **Counting without reading.** The server counts by the record's clear `kind`
-  field. It learns how many hosts there are, not which.
-
-The sidebar shows a cloud mark on synced hosts and a "Synced 8/10" counter.
+  field (`code` or `other`). It learns how many codes there are, not whose.
 
 ## Engine
 
@@ -83,11 +62,11 @@ Layout on a backend:
 ```
 authwing/
   format.json            format version, key ids (never keys)
-  records/<ulid>.sw      one encrypted record per host, group, snippet, secret
+  records/<ulid>.sw      one encrypted record per code, group, setting
   devices/<id>.json      last sync per device, to know when tombstones can go
 ```
 
-One file per record means two devices editing different hosts never touch the
+One file per record means two devices editing different codes never touch the
 same file.
 
 ### Merging

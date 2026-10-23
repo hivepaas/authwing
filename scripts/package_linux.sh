@@ -122,12 +122,12 @@ Maintainer: HivePaaS <support@hivepaas.com>
 Installed-Size: $(du -sk --exclude=DEBIAN "$DEB" | cut -f1)
 Depends: $DEPENDS
 Recommends: libwayland-client0, libxcb1, libx11-xcb1, libvulkan1, mesa-vulkan-drivers
-Section: net
+Section: utils
 Priority: optional
-Homepage: https://authwing.app
-Description: Fast, native SSH client
- Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs
- between devices, in a GPU-rendered terminal built with Rust and Zig.
+Homepage: https://github.com/hivepaas/authwing
+Description: Two-factor codes that know the window you are in
+ TOTP, HOTP and Steam Guard codes, offered first for the app or site in
+ use, in an encrypted vault that syncs between devices. Built with Rust.
 EOF
 chmod -R go-w "$DEB"
 dpkg-deb --root-owner-group --build "$DEB" "$DIST/authwing_${VERSION}_${DEB_ARCH}.deb"

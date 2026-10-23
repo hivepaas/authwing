@@ -1,6 +1,6 @@
 # Building authwing in one word: `make build`, `make run`; `make` alone lists
-# the rest. Needs Rust (rustup) and Zig 0.16 on PATH, plus each platform's
-# tools (docs/platforms.md). On Windows, run it from Git Bash or MSYS2.
+# the rest. Needs Rust (rustup), plus each platform's tools
+# (docs/platforms.md). On Windows, run it from Git Bash or MSYS2.
 #
 # The desktop app does not cross-compile (GPUI links each system's own window
 # libraries), so build-linux runs on Linux and build-windows on Windows;
@@ -11,10 +11,6 @@
 # path too.
 CARGO_BIN := $(HOME)/.cargo/bin
 export PATH := $(CARGO_BIN):$(PATH)
-# Zig 0.16 elsewhere than on PATH: make build ZIG_DIR=/path/to/zig-0.16
-ifdef ZIG_DIR
-export PATH := $(ZIG_DIR):$(PATH)
-endif
 
 CARGO ?= $(if $(wildcard $(CARGO_BIN)/cargo),$(CARGO_BIN)/cargo,cargo)
 RUSTUP ?= $(if $(wildcard $(CARGO_BIN)/rustup),$(CARGO_BIN)/rustup,rustup)
@@ -30,8 +26,8 @@ endif
 ARCH := $(shell uname -m 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help build run dev build-mac build-linux build-windows build-ios-core \
-	build-android-core test lint fmt check install-desktop package doctor clean zig
+.PHONY: help build run dev build-mac build-linux build-windows test lint fmt check \
+	install-desktop package doctor clean
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-20s %s\n", $$1, $$2}'
@@ -49,13 +45,13 @@ else
 	@echo "no desktop build for $(HOST)"; exit 1
 endif
 
-run: zig ## Build (debug) and start the app
+run: ## Build (debug) and start the app
 	$(CARGO) run -p authwing
 
-dev: zig ## Debug build: quicker to make, slower to run
+dev: ## Debug build: quicker to make, slower to run
 	$(CARGO) build -p authwing
 
-build-mac: zig ## macOS release build -> dist/authwing-macos-<arch>
+build-mac: ## macOS release build -> dist/authwing-macos-<arch>
 ifneq ($(HOST),Darwin)
 	@echo "build-mac runs on a Mac (this is $(HOST)); CI: Run workflow > macos"; exit 1
 endif
@@ -63,7 +59,7 @@ endif
 	@mkdir -p $(DIST) && cp target/release/authwing $(DIST)/authwing-macos-$(ARCH)
 	@echo "built $(DIST)/authwing-macos-$(ARCH)"
 
-build-linux: zig ## Linux release build -> dist/authwing-linux-<arch>
+build-linux: ## Linux release build -> dist/authwing-linux-<arch>
 ifneq ($(HOST),Linux)
 	@echo "build-linux runs on Linux (this is $(HOST)): GPUI links the system's Wayland and X11"
 	@echo "libraries. Build in a Linux VM or container, or CI: Run workflow > linux."; exit 1
@@ -72,7 +68,7 @@ endif
 	@mkdir -p $(DIST) && cp target/release/authwing $(DIST)/authwing-linux-$(ARCH)
 	@echo "built $(DIST)/authwing-linux-$(ARCH)"
 
-build-windows: zig ## Windows release build -> dist/authwing-windows-<arch>.exe
+build-windows: ## Windows release build -> dist/authwing-windows-<arch>.exe
 ifneq ($(HOST),Windows)
 	@echo "build-windows runs on Windows (this is $(HOST)), with Visual Studio Build Tools;"
 	@echo "see docs/platforms.md, or CI: Run workflow > windows."; exit 1
@@ -93,34 +89,16 @@ else
 	scripts/package_windows.sh
 endif
 
-## The core for phones (no app yet: checks that it builds)
-
-# Xcode rather than the Command Line Tools, which have no iOS SDK.
-build-ios-core: export DEVELOPER_DIR ?= /Applications/Xcode.app/Contents/Developer
-build-ios-core: zig ## authwing-core for the iOS Simulator (needs Xcode)
-	$(RUSTUP) target add aarch64-apple-ios-sim
-	$(CARGO) build -p authwing-core --target aarch64-apple-ios-sim
-
-ANDROID_NDK_HOME ?= $(firstword $(wildcard /opt/homebrew/share/android-ndk $(HOME)/Library/Android/sdk/ndk/* $(HOME)/Android/Sdk/ndk/*))
-NDK_BIN = $(ANDROID_NDK_HOME)/toolchains/llvm/prebuilt/$(if $(filter Darwin,$(HOST)),darwin,linux)-x86_64/bin
-build-android-core: export ANDROID_NDK_HOME := $(ANDROID_NDK_HOME)
-build-android-core: export CC_aarch64_linux_android = $(NDK_BIN)/aarch64-linux-android24-clang
-build-android-core: export AR_aarch64_linux_android = $(NDK_BIN)/llvm-ar
-build-android-core: zig ## authwing-core for Android arm64 (needs the NDK)
-	@test -d "$(ANDROID_NDK_HOME)" || { echo "no Android NDK found: set ANDROID_NDK_HOME (docs/platforms.md)"; exit 1; }
-	$(RUSTUP) target add aarch64-linux-android
-	$(CARGO) build -p authwing-core --target aarch64-linux-android
-
 ## Before a pull request (CONTRIBUTING.md)
 
 fmt: ## Format the code
 	$(CARGO) fmt --all
 
-lint: zig ## Formatting and clippy, as CI checks them
+lint: ## Formatting and clippy, as CI checks them
 	$(CARGO) fmt --all -- --check
 	$(CARGO) clippy --workspace --all-targets -- -D warnings
 
-test: zig ## All tests
+test: ## All tests
 	$(CARGO) test --workspace
 
 check: lint test ## lint, then test
@@ -129,17 +107,7 @@ check: lint test ## lint, then test
 
 doctor: ## Which tools are here, and which are missing
 	@printf "%-12s " cargo; $(CARGO) --version 2>/dev/null || echo "missing: https://rustup.rs"
-	@printf "%-12s " zig; zig version 2>/dev/null || echo "missing: Zig 0.16 from https://ziglang.org/download/"
-ifeq ($(HOST),Darwin)
-	@printf "%-12s " xcode; DEVELOPER_DIR=$${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer} xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null | sed 's/^/iOS SDK /' || echo "no iOS SDK (only for build-ios-core)"
-endif
-	@printf "%-12s " android-ndk; test -d "$(ANDROID_NDK_HOME)" && echo "$(ANDROID_NDK_HOME)" || echo "none (only for build-android-core)"
 
 clean: ## Remove build output
 	$(CARGO) clean
 	rm -rf $(DIST)
-
-# Zig must be on PATH and 0.16: other versions fail deep in libghostty's build.
-zig:
-	@command -v zig >/dev/null 2>&1 || { echo "zig not found: install Zig 0.16 (docs/platforms.md) or pass ZIG_DIR=/path/to/zig"; exit 1; }
-	@zig version | grep -q '^0\.16\.' || { echo "zig $$(zig version) found; libghostty-vt needs 0.16.x"; exit 1; }

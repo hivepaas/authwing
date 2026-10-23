@@ -612,7 +612,6 @@ dependencies = [
  "authwing-presence",
  "authwing-remote",
  "authwing-totp",
- "authwing-update",
  "authwing-vault",
  "gpui-pre",
  "gpui-pre-platform",

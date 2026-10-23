@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=authwing
-GenericName=SSH Client
-Comment=A native SSH client
+GenericName=Authenticator
+Comment=Two-factor codes that know the window you are in
 Exec=authwing
 Icon=authwing
 Terminal=false
-Categories=Network;RemoteAccess;
-Keywords=ssh;terminal;sftp;remote;
+Categories=Utility;Security;
+Keywords=2fa;totp;otp;authenticator;two-factor;mfa;
 StartupWMClass=authwing

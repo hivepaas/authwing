@@ -24,7 +24,6 @@ authwing-vault.workspace = true
 authwing-remote.workspace = true
 authwing-i18n.workspace = true
 authwing-presence.workspace = true
-authwing-update.workspace = true
 authwing-totp.workspace = true
 authwing-context.workspace = true
 gpui.workspace = true
