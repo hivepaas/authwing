@@ -38,6 +38,7 @@ t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` does not fit; only co
 t5561fd0b = General
 t89a71bba = Sync
 tc2fe21db = Security
+t06bfc1ff = Backup
 td580efd4 = Browsers
 t58e096de = About
 t27689c98 = A folder another app keeps in sync
@@ -47,6 +48,8 @@ t837b43b8 = Access key
 t4893a866 = Kept in the vault, on this device only
 tea4f3495 = At least 10 characters, hard to guess
 t3d35edbe = The same again
+t8f817889 = A passphrase for this backup
+teef70b9d = The file's password
 t0804c32b = Fill in { $what }.
 t48f6f260 = the folder
 t5f845286 = the repository's address
@@ -66,6 +69,27 @@ t848f2c32 = A passphrase needs at least 10 characters.
 teb0402b1 = The two passphrases differ.
 tc80e0d6d = Too easy to guess: try several unrelated words.
 t1c4d5a62 = The passphrase is set.
+tac1104ef = Saved: { $path }
+t0e74f33a = There are no codes to save yet.
+td1b35071 = Save unencrypted
+tfb35b299 = Save the codes unencrypted?
+tf4321e21 = Anyone who sees the file can make your codes. Use it to move to another app, then delete it.
+t573e0af4 = Import
+tcb4c07d0 =
+    { $n ->
+        [one] { $n } code added.
+       *[other] { $n } codes added.
+    }
+tebfc485d =
+    { $n ->
+        [one] { $n } was here already.
+       *[other] { $n } were here already.
+    }
+t9292bf58 =
+    { $n ->
+        [one] { $n } left out: authwing cannot use it.
+       *[other] { $n } left out: authwing cannot use them.
+    }
 tbdee3baa = No browser the extension runs in was found.
 t29f671f7 = As the system
 t45570065 = Dark
@@ -132,6 +156,19 @@ t5b1f668d = Needs a passphrase set. The system asks when you change it.
 t1aa78686 = Lock now
 tba4f5365 = Closes the vault until its passphrase is typed.
 t71b42d62 = Lock
+t3635feb7 = { $file } is an encrypted { $app } file.
+t538b10e9 = Open
+t2e1d133a = A backup
+t4d83bdf7 = Every code, its group and its sites, sealed with a passphrase of its own: keep it somewhere else than this computer. Restoring it needs only the file and the passphrase.
+teeca199d = Backup passphrase
+tbc59ad3d = Save a backup…
+tea7de02f = Restore, or move from another app
+t4f923eb7 = An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
+t28a576c9 = Choose a file…
+t39b38862 = Unencrypted
+tc2fb9143 = Save as plain text
+te3b8adae = One otpauth link per code, which other apps import. Anyone who sees the file can make your codes.
+t6dec18f4 = Save…
 ta9f58dac = Linked to this authwing
 t92cd5320 = Linked to another copy: { $path }
 ta8dc0817 = Not linked
@@ -149,6 +186,11 @@ t483075a5 = Updates
 t208f65bc = Not looked for: this build has no release keys to check them with.
 t07a52335 = Open config.toml
 t8dd31791 = Done
+t90cd5647 = That password does not open this file.
+t95bba871 = The file is damaged: { $why }
+td41d3da6 = This is not a backup or an export authwing can read.
+t67c24024 = The passphrase is too short: at least { $n } characters.
+t1aa6da9b = This { $app } file is encrypted: enter its password.
 tbb504d9f = XXXX-XXXX-…, 13 groups
 t82f98ccc = Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
 t33ac6aa2 = Waiting for a device that syncs: open authwing there.
@@ -192,11 +234,6 @@ tcc341778 = Sync failed: { $e }
 t6b25e007 = Joined: this device syncs the vault now.
 tb28eb5cc = The counter was not saved: { $e }
 t6cd84653 = A code was not saved: { $e }
-tcb4c07d0 =
-    { $n ->
-        [one] { $n } code added.
-       *[other] { $n } codes added.
-    }
 t1690127f = Delete the code for { $name }?
 t28110a8b = Turn two-factor sign-in off at { $name } first, or sign in there with a recovery code: without this code you cannot sign in. Your other devices lose it too.
 t5797ea6a = Delete
@@ -230,4 +267,3 @@ te97e7be1 = The vault cannot open
 td46e3d6c = Opening the vault…
 t99b658f7 = Open with Touch ID or Windows Hello
 tc40f2321 = Opening…
-t538b10e9 = Open

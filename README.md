@@ -46,6 +46,13 @@ from there; the SSH client does not.
   Dropbox…) or a Git repository; a new device joins with the recovery key or
   by approving six digits on a device that syncs. Only ciphertext leaves the
   device, the services' names included.
+* **Settings:** language, light or dark, text size, the clipboard's time;
+  where the vault syncs (folder, Git, WebDAV, S3); the recovery key, a
+  passphrase, opening only with it or Touch ID / Windows Hello, Lock;
+  linking the browsers.
+* **Backup and moving in:** an encrypted backup and restoring it; importing
+  Aegis, 2FAS, Ente Auth and Bitwarden exports and lists of `otpauth://`
+  links; a plain-text export after a question.
 * **Languages:** English and Vietnamese in full; German, Spanish, French,
   Portuguese, Russian, Japanese, Korean and Chinese in part.
 
@@ -55,9 +62,8 @@ from there; the SSH client does not.
   the device, the name matched in any language.
 
 **Next:** a quick panel over any app (a global shortcut), voice in it,
-Settings (sync places with their passwords, the vault's passphrase, Touch ID,
-the browsers), import from other authenticators, the extension in the stores,
-release signing.
+scanning a QR code on the screen, the extension in the stores, release
+signing.
 
 ---
 
@@ -93,7 +99,8 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 
 | Crate | Role |
 | --- | --- |
-| `crates/app` | The GPUI window: codes, adding them, the Sync panel |
+| `crates/app` | The GPUI window: codes, adding them, Settings, the Sync panel |
+| `crates/backup` | authwing's encrypted backup, the plain export, other apps' exports |
 | `crates/totp` | One-time codes, `otpauth://` links, Google Authenticator's export |
 | `crates/context` | The active app and window, sites against look-alikes, codes ranked for a context |
 | `crates/voice` | Matching a spoken name to a code; Whisper and the microphone as features |

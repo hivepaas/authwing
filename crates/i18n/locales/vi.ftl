@@ -103,6 +103,9 @@ t89a71bba = Đồng bộ
 # Security
 tc2fe21db = Bảo mật
 
+# Backup
+t06bfc1ff = Sao lưu
+
 # Browsers
 td580efd4 = Trình duyệt
 
@@ -129,6 +132,12 @@ tea4f3495 = Ít nhất 10 ký tự, khó đoán
 
 # The same again
 t3d35edbe = Nhập lại lần nữa
+
+# A passphrase for this backup
+t8f817889 = Mật khẩu cho bản sao lưu này
+
+# The file's password
+teef70b9d = Mật khẩu của file
 
 # Fill in {what}.
 t0804c32b = Hãy điền { $what }.
@@ -186,6 +195,42 @@ tc80e0d6d = Quá dễ đoán: hãy dùng vài từ không liên quan đến nhau
 
 # The passphrase is set.
 t1c4d5a62 = Đã đặt mật khẩu.
+
+# Saved: {path}
+tac1104ef = Đã lưu: { $path }
+
+# There are no codes to save yet.
+t0e74f33a = Chưa có mã nào để lưu.
+
+# Save unencrypted
+td1b35071 = Lưu không mã hoá
+
+# Save the codes unencrypted?
+tfb35b299 = Lưu các mã mà không mã hoá?
+
+# Anyone who sees the file can make your codes. Use it to move to another app, then delete it.
+tf4321e21 = Ai thấy file này cũng tạo được mã của bạn. Chỉ dùng để chuyển sang app khác, rồi xoá nó đi.
+
+# Import
+t573e0af4 = Nhập
+
+# {n} code added. | {n} codes added.
+tcb4c07d0 =
+    { $n ->
+       *[other] Đã thêm { $n } mã.
+    }
+
+# {n} was here already. | {n} were here already.
+tebfc485d =
+    { $n ->
+       *[other] { $n } mã đã có sẵn.
+    }
+
+# {n} left out: authwing cannot use it. | {n} left out: authwing cannot use them.
+t9292bf58 =
+    { $n ->
+       *[other] { $n } mã bị bỏ qua: authwing không dùng được.
+    }
 
 # No browser the extension runs in was found.
 tbdee3baa = Không tìm thấy trình duyệt nào chạy được tiện ích.
@@ -385,6 +430,45 @@ tba4f5365 = Đóng vault cho tới khi gõ mật khẩu.
 # Lock
 t71b42d62 = Khoá
 
+# {file} is an encrypted {app} file.
+t3635feb7 = { $file } là file { $app } đã mã hoá.
+
+# Open
+t538b10e9 = Mở
+
+# A backup
+t2e1d133a = Bản sao lưu
+
+# Every code, its group and its sites, sealed with a passphrase of its own: keep it somewhere else than this computer. Restoring it needs only the file and the passphrase.
+t4d83bdf7 = Mọi mã, cùng nhóm và các trang web của nó, được niêm phong bằng một mật khẩu riêng: hãy cất ở nơi khác ngoài máy này. Khôi phục chỉ cần file và mật khẩu.
+
+# Backup passphrase
+teeca199d = Mật khẩu bản sao lưu
+
+# Save a backup…
+tbc59ad3d = Lưu bản sao lưu…
+
+# Restore, or move from another app
+tea7de02f = Khôi phục, hoặc chuyển từ app khác
+
+# An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
+t4f923eb7 = Một bản sao lưu authwing, file export từ Aegis, 2FAS, Ente Auth hoặc Bitwarden, hoặc một danh sách link otpauth. Mã đã có sẵn được giữ nguyên. Authy không xuất được mã.
+
+# Choose a file…
+t28a576c9 = Chọn file…
+
+# Unencrypted
+t39b38862 = Không mã hoá
+
+# Save as plain text
+tc2fb9143 = Lưu dạng văn bản thường
+
+# One otpauth link per code, which other apps import. Anyone who sees the file can make your codes.
+te3b8adae = Mỗi mã một link otpauth, các app khác nhập được. Ai thấy file này cũng tạo được mã của bạn.
+
+# Save…
+t6dec18f4 = Lưu…
+
 # Linked to this authwing
 ta9f58dac = Đã liên kết với authwing này
 
@@ -435,6 +519,21 @@ t07a52335 = Mở config.toml
 
 # Done
 t8dd31791 = Xong
+
+# That password does not open this file.
+t90cd5647 = Mật khẩu đó không mở được file này.
+
+# The file is damaged: {why}
+t95bba871 = File bị hỏng: { $why }
+
+# This is not a backup or an export authwing can read.
+td41d3da6 = Đây không phải bản sao lưu hay file export mà authwing đọc được.
+
+# The passphrase is too short: at least {n} characters.
+t67c24024 = Mật khẩu quá ngắn: cần ít nhất { $n } ký tự.
+
+# This {app} file is encrypted: enter its password.
+t1aa6da9b = File { $app } này đã được mã hoá: hãy nhập mật khẩu.
 
 # XXXX-XXXX-…, 13 groups
 tbb504d9f = XXXX-XXXX-…, 13 nhóm
@@ -556,12 +655,6 @@ tb28eb5cc = Bộ đếm chưa được lưu: { $e }
 # A code was not saved: {e}
 t6cd84653 = Một mã chưa được lưu: { $e }
 
-# {n} code added. | {n} codes added.
-tcb4c07d0 =
-    { $n ->
-       *[other] Đã thêm { $n } mã.
-    }
-
 # Delete the code for {name}?
 t1690127f = Xoá mã của { $name }?
 
@@ -660,6 +753,3 @@ t99b658f7 = Mở bằng Touch ID hoặc Windows Hello
 
 # Opening…
 tc40f2321 = Đang mở…
-
-# Open
-t538b10e9 = Mở

@@ -106,6 +106,9 @@ t89a71bba = Синхронизация
 # Security
 # tc2fe21db =
 
+# Backup
+# t06bfc1ff =
+
 # Browsers
 # td580efd4 =
 
@@ -132,6 +135,12 @@ t89a71bba = Синхронизация
 
 # The same again
 # t3d35edbe =
+
+# A passphrase for this backup
+# t8f817889 =
+
+# The file's password
+# teef70b9d =
 
 # Fill in {what}.
 # t0804c32b =
@@ -189,6 +198,39 @@ t89a71bba = Синхронизация
 
 # The passphrase is set.
 # t1c4d5a62 =
+
+# Saved: {path}
+# tac1104ef =
+
+# There are no codes to save yet.
+# t0e74f33a =
+
+# Save unencrypted
+# td1b35071 =
+
+# Save the codes unencrypted?
+# tfb35b299 =
+
+# Anyone who sees the file can make your codes. Use it to move to another app, then delete it.
+# tf4321e21 =
+
+# Import
+# t573e0af4 =
+
+# {n} code added. | {n} codes added.
+tcb4c07d0 =
+    { $n ->
+        [one] Добавлен { $n } код.
+        [few] Добавлено { $n } кода.
+        [many] Добавлено { $n } кодов.
+       *[other] Добавлено { $n } кода.
+    }
+
+# {n} was here already. | {n} were here already.
+# tebfc485d =
+
+# {n} left out: authwing cannot use it. | {n} left out: authwing cannot use them.
+# t9292bf58 =
 
 # No browser the extension runs in was found.
 # tbdee3baa =
@@ -388,6 +430,45 @@ t89a71bba = Синхронизация
 # Lock
 # t71b42d62 =
 
+# {file} is an encrypted {app} file.
+# t3635feb7 =
+
+# Open
+t538b10e9 = Открыть
+
+# A backup
+# t2e1d133a =
+
+# Every code, its group and its sites, sealed with a passphrase of its own: keep it somewhere else than this computer. Restoring it needs only the file and the passphrase.
+# t4d83bdf7 =
+
+# Backup passphrase
+# teeca199d =
+
+# Save a backup…
+# tbc59ad3d =
+
+# Restore, or move from another app
+# tea7de02f =
+
+# An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
+# t4f923eb7 =
+
+# Choose a file…
+# t28a576c9 =
+
+# Unencrypted
+# t39b38862 =
+
+# Save as plain text
+# tc2fb9143 =
+
+# One otpauth link per code, which other apps import. Anyone who sees the file can make your codes.
+# te3b8adae =
+
+# Save…
+# t6dec18f4 =
+
 # Linked to this authwing
 # ta9f58dac =
 
@@ -438,6 +519,21 @@ t89a71bba = Синхронизация
 
 # Done
 # t8dd31791 =
+
+# That password does not open this file.
+# t90cd5647 =
+
+# The file is damaged: {why}
+# t95bba871 =
+
+# This is not a backup or an export authwing can read.
+# td41d3da6 =
+
+# The passphrase is too short: at least {n} characters.
+# t67c24024 =
+
+# This {app} file is encrypted: enter its password.
+# t1aa6da9b =
 
 # XXXX-XXXX-…, 13 groups
 # tbb504d9f =
@@ -562,15 +658,6 @@ tc7922c74 =
 # A code was not saved: {e}
 # t6cd84653 =
 
-# {n} code added. | {n} codes added.
-tcb4c07d0 =
-    { $n ->
-        [one] Добавлен { $n } код.
-        [few] Добавлено { $n } кода.
-        [many] Добавлено { $n } кодов.
-       *[other] Добавлено { $n } кода.
-    }
-
 # Delete the code for {name}?
 # t1690127f =
 
@@ -669,6 +756,3 @@ t78b7a6ee = Хранилище заблокировано
 
 # Opening…
 # tc40f2321 =
-
-# Open
-t538b10e9 = Открыть

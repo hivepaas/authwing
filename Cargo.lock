@@ -606,6 +606,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-channel",
+ "authwing-backup",
  "authwing-bridge",
  "authwing-config",
  "authwing-context",

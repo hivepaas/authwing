@@ -707,6 +707,10 @@ impl Workspace {
                 }
                 SettingsEvent::Changed => ws.poll_config(cx),
                 SettingsEvent::Say(n) => ws.say(n.clone()),
+                SettingsEvent::CodesChanged => {
+                    ws.reload();
+                    ws.sync_now();
+                }
                 SettingsEvent::Lock => {
                     ws.lock(cx);
                     if ws.vault.ready().is_none() {

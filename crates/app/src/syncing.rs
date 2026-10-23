@@ -662,6 +662,40 @@ mod tests {
     }
 
     #[test]
+    fn settings_stay_as_set_through_a_passphrase_and_a_lock() {
+        let root =
+            std::env::temp_dir().join(format!("authwing-settings-lock-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let folder = Folder::new(&root.join("sync"));
+        let mut a = Device::new(&root, "a");
+        // Changed back before syncing ever started: the last one counts.
+        a.set_config("[appearance]\nmode = \"light\"\n");
+        a.set_config("[appearance]\nmode = \"dark\"\n");
+        a.sync(&folder);
+        // As Settings does it: a passphrase, the key out of the keychain,
+        // the vault locked and opened again.
+        let pass = "harbor lantern seven moss quietly";
+        a.vault
+            .set_vault_passphrase(Some(pass))
+            .expect("passphrase");
+        a.vault
+            .leave_keychain(&a._keys)
+            .expect("out of the keychain");
+        let path = a.store.dir().join("vault.db");
+        a.vault = Vault::unlock(
+            &path,
+            &MemoryKeys::default(),
+            authwing_vault::Unlock::Passphrase(pass),
+        )
+        .expect("opened");
+        for _ in 0..3 {
+            a.sync(&folder);
+            assert!(a.config().contains("mode = \"dark\""), "{}", a.config());
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
     fn codes_travel_and_a_delete_follows() {
         let root = std::env::temp_dir().join(format!("authwing-codes-sync-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);

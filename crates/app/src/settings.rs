@@ -7,14 +7,16 @@ use std::path::PathBuf;
 
 use gpui::{
     App, Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight, KeyDownEvent,
-    PathPromptOptions, Render, SharedString, Window, div, prelude::*, px, rgb,
+    PathPromptOptions, PromptLevel, Render, SharedString, Window, div, prelude::*, px, rgb,
 };
+
+use authwing_backup::{Format, Imported, Item};
 
 use authwing_bridge::install::{self, Dirs, Found, Os};
 use authwing_config::{
     ColorMode, EditFile, GitSync, S3Sync, SettingValue, Settings, Store, SyncPlaceText, WebDavSync,
 };
-use authwing_i18n::tr;
+use authwing_i18n::{tr, tr_n};
 use authwing_vault::Presence as _;
 
 use crate::colors::colors;
@@ -34,6 +36,8 @@ pub enum SettingsEvent {
     Changed,
     Say(Notice),
     Lock,
+    /// Codes came in from a backup or another app's export.
+    CodesChanged,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -41,15 +45,17 @@ pub enum Page {
     General,
     Sync,
     Security,
+    Backup,
     Browsers,
     About,
 }
 
 impl Page {
-    const ALL: [Page; 5] = [
+    const ALL: [Page; 6] = [
         Page::General,
         Page::Sync,
         Page::Security,
+        Page::Backup,
         Page::Browsers,
         Page::About,
     ];
@@ -59,6 +65,7 @@ impl Page {
             Page::General => tr!("General"),
             Page::Sync => tr!("Sync"),
             Page::Security => tr!("Security"),
+            Page::Backup => tr!("Backup"),
             Page::Browsers => tr!("Browsers"),
             Page::About => tr!("About"),
         }
@@ -108,7 +115,19 @@ pub struct SettingsView {
     busy: bool,
     problem: Option<String>,
     browsers: Vec<install::Entry>,
+    backup_pass: Entity<TextInput>,
+    backup_pass_again: Entity<TextInput>,
+    /// A file to import that waits for its password.
+    pending: Option<Pending>,
+    import_pass: Entity<TextInput>,
     focus: FocusHandle,
+}
+
+/// A file chosen to import, encrypted: what it is, and its bytes.
+struct Pending {
+    name: String,
+    format: Format,
+    bytes: Vec<u8>,
 }
 
 impl EventEmitter<SettingsEvent> for SettingsView {}
@@ -182,6 +201,10 @@ impl SettingsView {
             busy: false,
             problem: None,
             browsers: vec![],
+            backup_pass: masked(cx, || tr!("A passphrase for this backup")),
+            backup_pass_again: masked(cx, || tr!("The same again")),
+            pending: None,
+            import_pass: masked(cx, || tr!("The file's password")),
             focus: cx.focus_handle(),
         };
         view.fill_place(cx);
@@ -467,6 +490,254 @@ impl SettingsView {
             });
         })
         .detach();
+    }
+
+    /// The codes in the vault, as a backup holds them.
+    fn items(&self) -> Option<Vec<Item>> {
+        let vault = self.vault.ready()?;
+        let (codes, _) = crate::codes::load(&vault);
+        Some(
+            codes
+                .into_iter()
+                .map(|e| Item {
+                    otp: e.otp,
+                    group: e.group,
+                    sites: e.sites,
+                })
+                .collect(),
+        )
+    }
+
+    /// Asks where to save, then writes what `make` gives there, off the
+    /// window's thread (sealing derives a key).
+    fn save_file(
+        &mut self,
+        name: String,
+        plain: bool,
+        make: impl FnOnce() -> Result<Vec<u8>, String> + Send + 'static,
+        cx: &mut Context<Self>,
+    ) {
+        let dir = std::env::home_dir()
+            .map(|h| {
+                let docs = h.join("Documents");
+                if docs.is_dir() { docs } else { h }
+            })
+            .unwrap_or_else(std::env::temp_dir);
+        let path = cx.prompt_for_new_path(&dir, Some(&name));
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(path))) = path.await else {
+                return;
+            };
+            let written = cx
+                .background_spawn(async move {
+                    let bytes = make()?;
+                    write_private(&path, &bytes, plain).map_err(|e| e.to_string())?;
+                    Ok::<_, String>(path)
+                })
+                .await;
+            let _ = this.update(cx, |view, cx| {
+                view.busy = false;
+                match written {
+                    Ok(path) => {
+                        view.problem = None;
+                        cx.emit(SettingsEvent::Say(Notice::good(tr!(
+                            "Saved: {path}",
+                            path = path.display().to_string()
+                        ))));
+                    }
+                    Err(e) => view.problem = Some(e),
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    /// Saves every code, sealed with the passphrase in the two fields.
+    fn save_backup(&mut self, cx: &mut Context<Self>) {
+        let (p, again) = (
+            self.backup_pass.read(cx).text().to_string(),
+            self.backup_pass_again.read(cx).text().to_string(),
+        );
+        if p.chars().count() < authwing_backup::MIN_PASSPHRASE {
+            return self.fail(tr!("A passphrase needs at least 10 characters."), cx);
+        }
+        if p != again {
+            return self.fail(tr!("The two passphrases differ."), cx);
+        }
+        if authwing_vault::passphrase_strength(&p) < 3 {
+            return self.fail(tr!("Too easy to guess: try several unrelated words."), cx);
+        }
+        let Some(items) = self.items() else {
+            return self.fail(tr!("Open the vault first."), cx);
+        };
+        if items.is_empty() {
+            return self.fail(tr!("There are no codes to save yet."), cx);
+        }
+        set_text(&self.backup_pass, "", cx);
+        set_text(&self.backup_pass_again, "", cx);
+        self.busy = true;
+        let name = format!("authwing-{}.{}", today(), authwing_backup::EXTENSION);
+        self.save_file(
+            name,
+            false,
+            move || authwing_backup::seal(&items, &p).map_err(|e| backup_error(&e)),
+            cx,
+        );
+    }
+
+    /// Saves every code as plain otpauth links, after a question.
+    fn save_plain(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(items) = self.items() else {
+            return self.fail(tr!("Open the vault first."), cx);
+        };
+        if items.is_empty() {
+            return self.fail(tr!("There are no codes to save yet."), cx);
+        }
+        let (yes, no) = (tr!("Save unencrypted"), tr!("Cancel"));
+        let answer = window.prompt(
+            PromptLevel::Warning,
+            &tr!("Save the codes unencrypted?"),
+            Some(&tr!(
+                "Anyone who sees the file can make your codes. Use it to move to another app, then delete it."
+            )),
+            &[yes.as_str(), no.as_str()],
+            cx,
+        );
+        cx.spawn(async move |this, cx| {
+            if !matches!(answer.await, Ok(0)) {
+                return;
+            }
+            let _ = this.update(cx, |view, cx| {
+                let name = format!("authwing-{}.txt", today());
+                view.save_file(
+                    name,
+                    true,
+                    move || Ok(authwing_backup::plain(&items).into_bytes()),
+                    cx,
+                );
+            });
+        })
+        .detach();
+    }
+
+    fn choose_import(&mut self, cx: &mut Context<Self>) {
+        let picked = cx.prompt_for_paths(PathPromptOptions {
+            files: true,
+            directories: false,
+            multiple: false,
+            prompt: Some(tr!("Import").into()),
+        });
+        cx.spawn(async move |this, cx| {
+            let Ok(Ok(Some(paths))) = picked.await else {
+                return;
+            };
+            let Some(path) = paths.into_iter().next() else {
+                return;
+            };
+            let read = std::fs::read(&path);
+            let _ = this.update(cx, |view, cx| match read {
+                Ok(bytes) => {
+                    let name = path
+                        .file_name()
+                        .map(|n| n.to_string_lossy().to_string())
+                        .unwrap_or_default();
+                    view.import(name, bytes, None, cx)
+                }
+                Err(e) => view.fail(e.to_string(), cx),
+            });
+        })
+        .detach();
+    }
+
+    /// Reads a file to import, off the window's thread (a password may need
+    /// a slow key), and adds its codes; asks for its password when it has one.
+    fn import(
+        &mut self,
+        name: String,
+        bytes: Vec<u8>,
+        password: Option<String>,
+        cx: &mut Context<Self>,
+    ) {
+        self.busy = true;
+        self.problem = None;
+        let kept = bytes.clone();
+        let read = cx
+            .background_spawn(async move { authwing_backup::import(&bytes, password.as_deref()) });
+        cx.spawn(async move |this, cx| {
+            let result = read.await;
+            let _ = this.update(cx, |view, cx| {
+                view.busy = false;
+                match result {
+                    Ok(imported) => {
+                        view.pending = None;
+                        set_text(&view.import_pass, "", cx);
+                        view.add_imported(imported, cx);
+                    }
+                    Err(authwing_backup::Error::PasswordNeeded(format)) => {
+                        view.pending = Some(Pending {
+                            name,
+                            format,
+                            bytes: kept,
+                        });
+                    }
+                    Err(e) => {
+                        set_text(&view.import_pass, "", cx);
+                        view.problem = Some(backup_error(&e));
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    /// Adds the codes that are not in the vault already.
+    fn add_imported(&mut self, imported: Imported, cx: &mut Context<Self>) {
+        let Some(vault) = self.vault.ready() else {
+            return self.fail(tr!("Open the vault first."), cx);
+        };
+        let (have, _) = crate::codes::load(&vault);
+        let same = |a: &authwing_totp::Otp, b: &authwing_totp::Otp| {
+            a.secret.as_bytes() == b.secret.as_bytes()
+                && a.issuer == b.issuer
+                && a.account == b.account
+        };
+        let (mut added, mut there) = (0usize, 0usize);
+        for item in &imported.items {
+            if have.iter().any(|e| same(&e.otp, &item.otp)) {
+                there += 1;
+                continue;
+            }
+            match crate::codes::save(&vault, None, &item.otp, &item.group, &item.sites) {
+                Ok(_) => added += 1,
+                Err(e) => self.problem = Some(e),
+            }
+        }
+        let left_out = imported.skipped.len();
+        let mut said = tr_n!(added, "{n} code added.", "{n} codes added.");
+        if there > 0 {
+            said.push(' ');
+            said.push_str(&tr_n!(
+                there,
+                "{n} was here already.",
+                "{n} were here already."
+            ));
+        }
+        if left_out > 0 {
+            said.push(' ');
+            said.push_str(&tr_n!(
+                left_out,
+                "{n} left out: authwing cannot use it.",
+                "{n} left out: authwing cannot use them."
+            ));
+        }
+        cx.emit(SettingsEvent::CodesChanged);
+        cx.emit(SettingsEvent::Say(if added > 0 {
+            Notice::good(said)
+        } else {
+            Notice::warn(said)
+        }));
     }
 
     fn look_at_browsers(&mut self) {
@@ -981,6 +1252,102 @@ impl SettingsView {
             )
     }
 
+    fn backup_page(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let busy = self.busy;
+        let pending =
+            self.pending.as_ref().map(|p| {
+                card()
+                    .border_color(rgb(c.accent))
+                    .child(div().child(tr!(
+                        "{file} is an encrypted {app} file.",
+                        file = p.name.clone(),
+                        app = p.format.name().to_string()
+                    )))
+                    .child(
+                        div()
+                            .flex()
+                            .gap(px(8.))
+                            .child(div().flex_1().child(input_box(&self.import_pass)))
+                            .child(primary_button("open-import", &tr!("Open")).on_click(
+                                cx.listener(|view, _, _, cx| {
+                                    // Kept until it opens: a wrong password is
+                                    // typed again, not the file chosen again.
+                                    let Some(p) = &view.pending else {
+                                        return;
+                                    };
+                                    let (name, bytes) = (p.name.clone(), p.bytes.clone());
+                                    let password = view.import_pass.read(cx).text().to_string();
+                                    view.import(name, bytes, Some(password), cx);
+                                }),
+                            ))
+                            .child(
+                                text_button("cancel-import", &tr!("Cancel"), c.soft).on_click(
+                                    cx.listener(|view, _, _, cx| {
+                                        view.pending = None;
+                                        cx.notify();
+                                    }),
+                                ),
+                            ),
+                    )
+            });
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(heading(tr!("A backup")))
+            .child(
+                card()
+                    .child(hint(tr!(
+                        "Every code, its group and its sites, sealed with a passphrase of its own: keep it somewhere else than this computer. Restoring it needs only the file and the passphrase."
+                    )))
+                    .child(
+                        div()
+                            .flex()
+                            .gap(px(12.))
+                            .child(div().flex_1().child(labeled(
+                                tr!("Backup passphrase"),
+                                &self.backup_pass,
+                            )))
+                            .child(div().flex_1().child(labeled(tr!("Again"), &self.backup_pass_again))),
+                    )
+                    .child(
+                        div().flex().justify_end().child(
+                            primary_button(
+                                "save-backup",
+                                &if busy { tr!("Working…") } else { tr!("Save a backup…") },
+                            )
+                            .on_click(cx.listener(move |view, _, _, cx| {
+                                if !busy {
+                                    view.save_backup(cx)
+                                }
+                            })),
+                        ),
+                    ),
+            )
+            .child(heading(tr!("Restore, or move from another app")))
+            .child(
+                card()
+                    .child(hint(tr!(
+                        "An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes."
+                    )))
+                    .child(div().flex().child(
+                        outline_button("import", &tr!("Choose a file…"))
+                            .on_click(cx.listener(|view, _, _, cx| view.choose_import(cx))),
+                    )),
+            )
+            .children(pending)
+            .child(heading(tr!("Unencrypted")))
+            .child(
+                card().child(row(
+                    tr!("Save as plain text"),
+                    tr!("One otpauth link per code, which other apps import. Anyone who sees the file can make your codes."),
+                    outline_button("save-plain", &tr!("Save…"))
+                        .on_click(cx.listener(|view, _, window, cx| view.save_plain(window, cx))),
+                )),
+            )
+    }
+
     fn browsers_page(&self, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
         let mut list = card();
@@ -1107,6 +1474,7 @@ impl Render for SettingsView {
             Page::General => self.general(cx),
             Page::Sync => self.sync_page(cx),
             Page::Security => self.security(cx),
+            Page::Backup => self.backup_page(cx),
             Page::Browsers => self.browsers_page(cx),
             Page::About => self.about(),
         };
@@ -1173,5 +1541,65 @@ impl Render for SettingsView {
                             .child(body),
                     ),
             )
+    }
+}
+
+/// Writes `bytes` to `path`; a plain export only its owner can read.
+fn write_private(path: &std::path::Path, bytes: &[u8], plain: bool) -> std::io::Result<()> {
+    std::fs::write(path, bytes)?;
+    #[cfg(unix)]
+    if plain {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))?;
+    }
+    #[cfg(not(unix))]
+    let _ = plain;
+    Ok(())
+}
+
+/// Today as `2026-10-23`, for a backup's name.
+fn today() -> String {
+    let days = (crate::codes::now() / 86_400) as i64;
+    // Howard Hinnant's days-to-civil, for the proleptic Gregorian calendar.
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = if mp < 10 { mp + 3 } else { mp - 9 };
+    let year = yoe + era * 400 + i64::from(month <= 2);
+    format!("{year:04}-{month:02}-{day:02}")
+}
+
+/// What went wrong with a backup or an export, in the user's language.
+fn backup_error(e: &authwing_backup::Error) -> String {
+    use authwing_backup::Error;
+    match e {
+        Error::WrongPassword => tr!("That password does not open this file."),
+        Error::Damaged(why) => tr!("The file is damaged: {why}", why = why.clone()),
+        Error::Unknown => tr!("This is not a backup or an export authwing can read."),
+        Error::WeakPassphrase(n) => tr!(
+            "The passphrase is too short: at least {n} characters.",
+            n = n.to_string()
+        ),
+        Error::PasswordNeeded(f) => tr!(
+            "This {app} file is encrypted: enter its password.",
+            app = f.name().to_string()
+        ),
+        // The app's or the format's own words, from the crate.
+        Error::Unsupported(why) | Error::Seal(why) => why.clone(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn today_reads_as_a_date() {
+        let t = super::today();
+        assert_eq!(t.len(), 10, "{t}");
+        assert!(t.starts_with("20"), "{t}");
+        assert_eq!(&t[4..5], "-");
     }
 }
