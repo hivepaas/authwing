@@ -5,3 +5,13 @@ rustflags = ["-C", "target-feature=+crt-static"]
 
 [target.aarch64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+
+# whisper.cpp, built by CMake for voice, takes the same static C runtime:
+# CMake's own default is the DLL one (/MD), whose __imp_ symbols the static
+# runtime does not have. whisper-rs-sys hands CMAKE_* variables to CMake;
+# whisper.cpp asks for a CMake older than 3.15, so the policy that makes
+# CMake read the runtime from the variable is turned on here. Elsewhere
+# than MSVC both are ignored.
+[env]
+CMAKE_MSVC_RUNTIME_LIBRARY = "MultiThreaded"
+CMAKE_POLICY_DEFAULT_CMP0091 = "NEW"
