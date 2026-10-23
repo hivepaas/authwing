@@ -125,10 +125,9 @@ impl Lines {
     }
 }
 
-/// What an empty field shows.
+/// What an empty field shows: said again each time it is drawn, in the
+/// language in use now.
 enum Placeholder {
-    Text(SharedString),
-    /// Said again each time it is drawn: in the language in use now.
     Said(Box<dyn Fn() -> String>),
 }
 
@@ -265,10 +264,6 @@ const DOT: char = '•';
 impl gpui::EventEmitter<Changed> for TextInput {}
 
 impl TextInput {
-    pub fn new(placeholder: impl Into<SharedString>, cx: &mut Context<Self>) -> Self {
-        Self::with(Placeholder::Text(placeholder.into()), cx)
-    }
-
     /// See [`said`].
     pub fn said(placeholder: impl Fn() -> String + 'static, cx: &mut Context<Self>) -> Self {
         Self::with(Placeholder::Said(Box::new(placeholder)), cx)
@@ -297,6 +292,9 @@ impl TextInput {
     /// high as its text needs (then it scrolls). Enter starts a line; with
     /// Ctrl (Cmd on macOS) it goes to whoever holds the field, as a lone
     /// line's Enter does.
+    // Several lines, and code: the field's other forms, from shellwing; the
+    // window has no such field yet.
+    #[allow(dead_code)]
     pub fn multiline(mut self, min: usize, max: usize) -> Self {
         self.lines = Some(Lines {
             rows: (min.max(1), max.max(min.max(1))),
@@ -314,6 +312,7 @@ impl TextInput {
     /// Code: a field of several lines as high as what holds it, its parts
     /// painted by `paint`, its lines numbered; Tab indents, and Enter keeps
     /// the line's indent.
+    #[allow(dead_code)]
     pub fn code(mut self, paint: Painter) -> Self {
         if self.lines.is_none() {
             self = self.multiline(1, usize::MAX);
@@ -396,7 +395,6 @@ impl TextInput {
 
     fn placeholder_text(&self) -> SharedString {
         match &self.placeholder {
-            Placeholder::Text(t) => t.clone(),
             Placeholder::Said(f) => f().into(),
         }
     }

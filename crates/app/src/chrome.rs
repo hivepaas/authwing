@@ -149,10 +149,6 @@ impl BottomCorners {
         }
     }
 
-    pub fn none() -> Self {
-        Self::default()
-    }
-
     /// Rounds the bottom corners of `el`.
     pub fn round<E: Styled>(self, el: E) -> E {
         el.rounded_bl(self.left).rounded_br(self.right)
@@ -262,21 +258,6 @@ fn windows_buttons(window: &Window) -> Div {
             "icons/win-close.svg",
             WindowControlArea::Close,
         ))
-}
-
-/// The title bar of a window that shows only its title (a note's, a
-/// snippet's, the library's), for [`window_chrome`]: all of it moves the
-/// window. On Windows only what is marked as a drag area does, so the whole
-/// bar is one; it holds nothing to click.
-pub fn title_bar(title: impl IntoElement) -> Div {
-    div()
-        .size_full()
-        .flex()
-        .items_center()
-        .px(px(14.))
-        .text_size(crate::look::ui(13.))
-        .window_control_area(WindowControlArea::Drag)
-        .child(title)
 }
 
 /// The window frame around `content`, with `tabs` in the title bar.

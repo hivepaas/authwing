@@ -1,0 +1,1405 @@
+//! The window: the codes in the vault, found by typing, filed by group, each
+//! copied with a click or a key; the vault opened, locked and synced.
+
+use std::time::{Duration, Instant};
+
+use gpui::{
+    AnyElement, App, ClipboardItem, Context, Entity, FocusHandle, Focusable, FontWeight,
+    KeyDownEvent, MouseButton, PromptLevel, Render, SharedString, Window, WindowControlArea,
+    anchored, deferred, div, prelude::*, px, relative, rgb, svg,
+};
+
+use authwing_config::{EditFile, Hotkey};
+use authwing_context::{Code, Context as Where, Ranking, Reason};
+use authwing_i18n::{tr, tr_n};
+use authwing_totp::Kind;
+use authwing_vault::{Lock, Request, Unlock};
+
+use crate::add_code::{AddCode, AddEvent};
+use crate::chrome;
+use crate::codes::{self, Entry};
+use crate::colors::colors;
+use crate::input::{Changed, TextInput, said};
+use crate::look::{self, Live, ui};
+use crate::notice::{self, Notice};
+use crate::sync_panel::{PanelEvent, SyncPanel};
+use crate::syncing::{SyncEvent, SyncWorker};
+use crate::vault_slot::VaultSlot;
+use crate::widgets::{icon_button, outline_button, primary_button};
+
+/// How long a notice stays.
+const NOTICE: Duration = Duration::from_secs(6);
+/// How long a card says "Copied".
+const COPIED: Duration = Duration::from_secs(2);
+/// Below this many seconds left, a code shows the next one beside it.
+const SHOW_NEXT: u32 = 5;
+const CARD_W: f32 = 260.;
+const SIDEBAR_W: f32 = 220.;
+/// Codes offered for the window used last, at most.
+const FOR_WINDOW: usize = 3;
+/// How long the window's size and place settle before they are saved.
+const SAVE_BOUNDS: Duration = Duration::from_millis(500);
+
+#[derive(Clone, Debug, PartialEq)]
+enum SyncState {
+    /// No place set in `[sync]`.
+    Off,
+    Syncing,
+    /// When, and records in and out.
+    Synced(Instant, usize, usize),
+    Failed(String),
+}
+
+pub struct Workspace {
+    live: Live,
+    vault: VaultSlot,
+    sync: Option<SyncWorker>,
+    sync_state: SyncState,
+    codes: Vec<Entry>,
+    /// The codes were read since the vault opened.
+    loaded: bool,
+    filter: Entity<TextInput>,
+    /// The group shown; None: every code.
+    group: Option<String>,
+    adding: Option<Entity<AddCode>>,
+    panel: Option<Entity<SyncPanel>>,
+    /// Devices asking to join, as the sync thread last saw them.
+    requests: Vec<Request>,
+    passphrase_joins: bool,
+    /// The window of another app used last: its codes come first.
+    elsewhere: Option<authwing_context::Window>,
+    bounds_change: u64,
+    /// The passphrase or recovery key typed to open a locked vault.
+    unlock: Entity<TextInput>,
+    unlocking: bool,
+    notice: Option<(Notice, Instant)>,
+    /// The card that was copied last, to say so for a moment.
+    copied: Option<(String, Instant)>,
+    /// The code put on the clipboard, cleared from it when due.
+    clipboard: Option<(String, Instant)>,
+    focus: FocusHandle,
+    system_light: bool,
+}
+
+impl Workspace {
+    pub fn new(live: Live, problems: Vec<String>, cx: &mut Context<Self>) -> Self {
+        let vault = match live.store() {
+            Some(store) => VaultSlot::open(store.dir().join("vault.db")),
+            None => VaultSlot::none(),
+        };
+        let filter = said(cx, || tr!("Find a code"));
+        cx.subscribe(&filter, |_, _, _: &Changed, cx| cx.notify())
+            .detach();
+        let unlock =
+            cx.new(|cx| TextInput::said(|| tr!("Passphrase or recovery key"), cx).masked());
+        let (events, received) = async_channel::unbounded();
+        let sync = SyncWorker::start(vault.clone(), live.store().cloned(), events);
+        sync.set_place(live.sync_place());
+        let sync_state = if live.sync_place().is_some() {
+            SyncState::Syncing
+        } else {
+            SyncState::Off
+        };
+        cx.spawn(async move |this, cx| {
+            while let Ok(event) = received.recv().await {
+                if this.update(cx, |ws, cx| ws.sync_event(event, cx)).is_err() {
+                    return;
+                }
+            }
+        })
+        .detach();
+        // Once a second: the codes move on, the clipboard is cleared when due.
+        cx.spawn(async move |this, cx| {
+            loop {
+                cx.background_executor().timer(Duration::from_secs(1)).await;
+                if this.update(cx, |ws, cx| ws.tick(cx)).is_err() {
+                    return;
+                }
+            }
+        })
+        .detach();
+        let mut ws = Workspace {
+            live,
+            vault,
+            sync: Some(sync),
+            sync_state,
+            codes: vec![],
+            loaded: false,
+            filter,
+            group: None,
+            adding: None,
+            panel: None,
+            requests: vec![],
+            passphrase_joins: false,
+            elsewhere: None,
+            bounds_change: 0,
+            unlock,
+            unlocking: false,
+            notice: None,
+            copied: None,
+            clipboard: None,
+            focus: cx.focus_handle(),
+            system_light: false,
+        };
+        if let Some(p) = problems.into_iter().next() {
+            ws.say(Notice::warn(p));
+        }
+        cx.set_global(crate::hotkeys::Bound(ws.live.keymap()));
+        ws
+    }
+
+    /// Follows the system's light or dark appearance, which the app takes
+    /// with `mode = "system"`.
+    pub fn track_appearance(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.system_light = Self::looks_light(window);
+        self.restyle();
+        cx.observe_window_appearance(window, |ws, window, cx| {
+            ws.system_light = Self::looks_light(window);
+            ws.restyle();
+            cx.notify();
+        })
+        .detach();
+    }
+
+    /// Remembers the window's size and place for the next start, once they
+    /// settle.
+    pub fn track_bounds(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        cx.observe_window_bounds(window, |ws, window, cx| {
+            ws.bounds_change += 1;
+            let change = ws.bounds_change;
+            let state = crate::placement::state(window.window_bounds());
+            cx.spawn(async move |this, cx| {
+                cx.background_executor().timer(SAVE_BOUNDS).await;
+                let _ = this.update(cx, |ws, _| {
+                    if ws.bounds_change == change
+                        && let Some(store) = ws.live.store()
+                    {
+                        let _ = store.save_window_state(&state);
+                    }
+                });
+            })
+            .detach();
+        })
+        .detach();
+    }
+
+    fn looks_light(window: &Window) -> bool {
+        matches!(
+            window.appearance(),
+            gpui::WindowAppearance::Light | gpui::WindowAppearance::VibrantLight
+        )
+    }
+
+    fn restyle(&mut self) {
+        authwing_i18n::set_language(self.live.settings().general.language.as_deref());
+        crate::colors::set_light(self.live.light_for(self.system_light));
+    }
+
+    /// Edits to config.toml apply while running.
+    pub fn poll_config(&mut self, cx: &mut Context<Self>) {
+        let Some(problems) = self.live.reload_if_changed() else {
+            return;
+        };
+        self.restyle();
+        cx.set_global(crate::hotkeys::Bound(self.live.keymap()));
+        if let Some(sync) = &self.sync {
+            let place = self.live.sync_place();
+            if place.is_none() {
+                self.sync_state = SyncState::Off;
+            }
+            sync.set_place(place);
+        }
+        if let Some(p) = problems.into_iter().next() {
+            self.say(Notice::warn(p));
+        }
+        cx.notify();
+    }
+
+    fn say(&mut self, notice: Notice) {
+        self.notice = Some((notice, Instant::now()));
+    }
+
+    fn tick(&mut self, cx: &mut Context<Self>) {
+        if !self.loaded && self.vault.ready().is_some() {
+            self.reload();
+        }
+        // Another app's window: authwing's own is where the user looks the
+        // codes up, not where they go.
+        if let Some(w) = authwing_context::window::active()
+            && w.pid != Some(std::process::id())
+        {
+            self.elsewhere = Some(w);
+        }
+        if self
+            .notice
+            .as_ref()
+            .is_some_and(|(_, at)| at.elapsed() >= NOTICE)
+        {
+            self.notice = None;
+        }
+        if self
+            .copied
+            .as_ref()
+            .is_some_and(|(_, at)| at.elapsed() >= COPIED)
+        {
+            self.copied = None;
+        }
+        let keep = u64::from(self.live.settings().codes.clear_clipboard);
+        if keep > 0
+            && let Some((code, at)) = &self.clipboard
+            && at.elapsed() >= Duration::from_secs(keep)
+        {
+            // Only if it still holds the code: something copied since stays.
+            if cx.read_from_clipboard().and_then(|c| c.text()).as_deref() == Some(code.as_str()) {
+                cx.write_to_clipboard(ClipboardItem::new_string(String::new()));
+            }
+            self.clipboard = None;
+        }
+        cx.notify();
+    }
+
+    /// Reads the codes from the vault again.
+    fn reload(&mut self) {
+        let Some(vault) = self.vault.ready() else {
+            return;
+        };
+        let (codes, problems) = codes::load(&vault);
+        self.codes = codes;
+        self.loaded = true;
+        if let Some(p) = problems.into_iter().next() {
+            self.say(Notice::warn(p));
+        }
+        if self
+            .group
+            .as_ref()
+            .is_some_and(|g| !self.codes.iter().any(|c| &c.group == g))
+        {
+            self.group = None;
+        }
+    }
+
+    fn sync_event(&mut self, event: SyncEvent, cx: &mut Context<Self>) {
+        match event {
+            SyncEvent::Started => {
+                if self.sync_state == SyncState::Off {
+                    return;
+                }
+                self.sync_state = SyncState::Syncing;
+            }
+            SyncEvent::Done(r) => {
+                self.sync_state = SyncState::Synced(Instant::now(), r.pulled, r.pushed);
+                self.reload();
+            }
+            SyncEvent::Failed(e) => self.sync_state = SyncState::Failed(e),
+            SyncEvent::Asking(state) => {
+                if let Some(p) = &self.panel {
+                    p.update(cx, |p, cx| p.set_asking(state, cx));
+                }
+            }
+            SyncEvent::Requests(requests) => {
+                if self.panel.is_none() && requests.len() > self.requests.len() {
+                    self.say(Notice::warn(tr!(
+                        "A device asks to join: open Sync (the cloud) to approve it."
+                    )));
+                }
+                if let Some(p) = &self.panel {
+                    let r = requests.clone();
+                    p.update(cx, |p, cx| p.set_requests(r, cx));
+                }
+                self.requests = requests;
+            }
+            SyncEvent::PairingFailed(e) => match &self.panel {
+                Some(p) => p.update(cx, |p, cx| p.failed(e, cx)),
+                None => self.say(Notice::bad(e)),
+            },
+            SyncEvent::PassphraseJoins(joins) => {
+                self.passphrase_joins = joins;
+                if let Some(p) = &self.panel {
+                    p.update(cx, |p, cx| p.set_passphrase_joins(joins, cx));
+                }
+            }
+        }
+        if let Some(p) = &self.panel {
+            let status = self.sync_status();
+            p.update(cx, |p, cx| p.set_status(status, cx));
+        }
+        cx.notify();
+    }
+
+    /// How syncing goes, in a line.
+    fn sync_status(&self) -> String {
+        match &self.sync_state {
+            SyncState::Off => tr!("Not syncing"),
+            SyncState::Syncing => tr!("Syncing…"),
+            SyncState::Synced(at, pulled, pushed) => {
+                let ago = at.elapsed().as_secs() / 60;
+                let when = if ago == 0 {
+                    tr!("Synced just now")
+                } else {
+                    tr_n!(
+                        ago as usize,
+                        "Synced {n} minute ago",
+                        "Synced {n} minutes ago"
+                    )
+                };
+                if pulled + pushed == 0 {
+                    when
+                } else {
+                    tr!(
+                        "{when}: {pulled} in, {pushed} out",
+                        when = when,
+                        pulled = pulled.to_string(),
+                        pushed = pushed.to_string()
+                    )
+                }
+            }
+            SyncState::Failed(e) => tr!("Sync failed: {e}", e = e.clone()),
+        }
+    }
+
+    fn open_sync(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(sync) = self.sync.clone() else {
+            return;
+        };
+        let panel = cx.new(|cx| SyncPanel::new(sync, self.vault.clone(), cx));
+        let (status, requests, joins) = (
+            self.sync_status(),
+            self.requests.clone(),
+            self.passphrase_joins,
+        );
+        panel.update(cx, |p, cx| {
+            p.set_status(status, cx);
+            p.set_requests(requests, cx);
+            p.set_passphrase_joins(joins, cx);
+        });
+        cx.subscribe_in(&panel, window, |ws, _, event: &PanelEvent, window, cx| {
+            if let PanelEvent::Joined = event {
+                ws.reload();
+                ws.say(Notice::good(tr!(
+                    "Joined: this device syncs the vault now."
+                )));
+            }
+            ws.panel = None;
+            window.focus(&ws.focus, cx);
+            cx.notify();
+        })
+        .detach();
+        window.focus(&panel.focus_handle(cx), cx);
+        self.panel = Some(panel);
+        cx.notify();
+    }
+
+    /// The codes shown: of the group chosen, matching what is typed.
+    fn shown(&self, cx: &App) -> Vec<&Entry> {
+        let words: Vec<String> = self
+            .filter
+            .read(cx)
+            .text()
+            .to_lowercase()
+            .split_whitespace()
+            .map(str::to_string)
+            .collect();
+        self.codes
+            .iter()
+            .filter(|c| self.group.as_ref().is_none_or(|g| &c.group == g))
+            .filter(|c| c.matches(&words))
+            .collect()
+    }
+
+    /// Puts the code `id` shows now on the clipboard. An HOTP code moves on
+    /// to its next, as it is used.
+    fn copy(&mut self, id: &str, cx: &mut Context<Self>) {
+        let Some(entry) = self.codes.iter().find(|c| c.id == id) else {
+            return;
+        };
+        let code = entry.otp.code_at(codes::now());
+        cx.write_to_clipboard(ClipboardItem::new_string(code.clone()));
+        self.clipboard = Some((code, Instant::now()));
+        self.copied = Some((id.to_string(), Instant::now()));
+        if let Kind::Hotp { counter } = entry.otp.kind
+            && let Some(vault) = self.vault.ready()
+        {
+            let mut next = entry.otp.clone();
+            next.kind = Kind::Hotp {
+                counter: counter.saturating_add(1),
+            };
+            let saved = codes::save(&vault, Some(id), &next, &entry.group, &entry.sites);
+            if let Err(e) = saved {
+                self.say(Notice::bad(tr!("The counter was not saved: {e}", e = e)));
+            }
+            self.reload();
+            self.sync_now();
+        }
+        cx.notify();
+    }
+
+    fn sync_now(&self) {
+        if let Some(s) = &self.sync {
+            s.now();
+        }
+    }
+
+    fn open_adding(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.vault.ready().is_none() {
+            return;
+        }
+        let group = self.group.clone();
+        let add = cx.new(|cx| AddCode::new(group.as_deref(), cx));
+        cx.subscribe_in(&add, window, |ws, _, event: &AddEvent, window, cx| {
+            match event {
+                AddEvent::Close => {}
+                AddEvent::Add {
+                    codes,
+                    group,
+                    sites,
+                } => ws.add(codes, group, sites),
+            }
+            ws.adding = None;
+            window.focus(&ws.focus, cx);
+            cx.notify();
+        })
+        .detach();
+        let link = add.read(cx).link_focus(cx);
+        window.focus(&link, cx);
+        self.adding = Some(add);
+        cx.notify();
+    }
+
+    fn add(&mut self, new: &[authwing_totp::Otp], group: &str, sites: &[String]) {
+        let Some(vault) = self.vault.ready() else {
+            return;
+        };
+        let mut saved = 0;
+        for otp in new {
+            match codes::save(&vault, None, otp, group, sites) {
+                Ok(_) => saved += 1,
+                Err(e) => self.say(Notice::bad(tr!("A code was not saved: {e}", e = e))),
+            }
+        }
+        self.reload();
+        self.sync_now();
+        if saved > 0 {
+            self.say(Notice::good(tr_n!(
+                saved,
+                "{n} code added.",
+                "{n} codes added."
+            )));
+        }
+    }
+
+    fn delete(&mut self, id: String, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(entry) = self.codes.iter().find(|c| c.id == id) else {
+            return;
+        };
+        let title = entry.title();
+        let question = tr!("Delete the code for {name}?", name = title.clone());
+        let detail = tr!(
+            "Turn two-factor sign-in off at {name} first, or sign in there with a recovery code: without this code you cannot sign in. Your other devices lose it too.",
+            name = title
+        );
+        let (yes, no) = (tr!("Delete"), tr!("Cancel"));
+        let answer = window.prompt(
+            PromptLevel::Warning,
+            &question,
+            Some(&detail),
+            &[yes.as_str(), no.as_str()],
+            cx,
+        );
+        cx.spawn_in(window, async move |this, cx| {
+            if !matches!(answer.await, Ok(0)) {
+                return;
+            }
+            let _ = this.update(cx, |ws, cx| {
+                if let Some(vault) = ws.vault.ready()
+                    && let Err(e) = vault.delete(&id)
+                {
+                    ws.say(Notice::bad(tr!("Not deleted: {e}", e = e.to_string())));
+                }
+                ws.reload();
+                ws.sync_now();
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    fn lock(&mut self, cx: &mut Context<Self>) {
+        if self.vault.lock() {
+            self.codes.clear();
+            self.loaded = false;
+        } else {
+            self.say(Notice::warn(tr!(
+                "The vault's key is in this computer's keychain, so it cannot lock. Set a passphrase and take the key out of the keychain to lock it."
+            )));
+        }
+        cx.notify();
+    }
+
+    fn try_unlock(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let typed = self.unlock.read(cx).text().trim().to_string();
+        if typed.is_empty() || self.unlocking {
+            return;
+        }
+        self.unlocking = true;
+        let slot = self.vault.clone();
+        // Argon2 takes half a second: off the window's thread.
+        let opened = cx.background_spawn(async move {
+            let by_passphrase = slot.unlock(Unlock::Passphrase(&typed));
+            match by_passphrase {
+                Ok(_) => Ok(()),
+                Err(e) => slot
+                    .unlock(Unlock::RecoveryKey(&typed))
+                    .map(|_| ())
+                    .map_err(|_| e.to_string()),
+            }
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = opened.await;
+            let _ = this.update_in(cx, |ws, window, cx| {
+                ws.unlocking = false;
+                match result {
+                    Ok(()) => {
+                        ws.unlock.update(cx, |f, cx| f.set_text("", 0..0, cx));
+                        ws.reload();
+                        window.focus(&ws.focus, cx);
+                    }
+                    Err(e) => ws.say(Notice::bad(tr!("Not opened: {e}", e = e))),
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    /// Opens the locked vault with Touch ID or Windows Hello: the system
+    /// asks, off the window's thread.
+    fn unlock_with_presence(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.unlocking {
+            return;
+        }
+        self.unlocking = true;
+        let slot = self.vault.clone();
+        let opened = cx.background_spawn(async move {
+            slot.unlock_with_presence()
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let result = opened.await;
+            let _ = this.update_in(cx, |ws, window, cx| {
+                ws.unlocking = false;
+                match result {
+                    Ok(()) => {
+                        ws.reload();
+                        window.focus(&ws.focus, cx);
+                    }
+                    Err(e) => ws.say(Notice::bad(tr!("Not opened: {e}", e = e))),
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    fn open_settings(&mut self, cx: &mut Context<Self>) {
+        let Some(store) = self.live.store() else {
+            return;
+        };
+        match store.file_for_editing(EditFile::Settings) {
+            Ok(path) => cx.open_with_system(&path),
+            Err(e) => self.say(Notice::bad(tr!(
+                "Cannot open config.toml: {e}",
+                e = e.to_string()
+            ))),
+        }
+    }
+
+    /// The window's shortcuts, before the field with the focus sees the key.
+    fn shortcut(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if self.adding.is_some() || self.panel.is_some() {
+            return;
+        }
+        let Some(chord) = crate::hotkeys::pressed(&ev.keystroke) else {
+            return;
+        };
+        let Some((hotkey, place)) = self.live.keymap().find(&chord) else {
+            return;
+        };
+        match hotkey {
+            Hotkey::Find => window.focus(&self.filter.focus_handle(cx), cx),
+            Hotkey::AddCode => self.open_adding(window, cx),
+            Hotkey::CopyCode => {
+                let id = place.and_then(|n| self.shown(cx).get(n).map(|c| c.id.clone()));
+                if let Some(id) = id {
+                    self.copy(&id, cx);
+                }
+            }
+            Hotkey::Lock => self.lock(cx),
+            Hotkey::Settings => self.open_settings(cx),
+            Hotkey::Quit => {
+                // The last edits go out first, if a sync is quick.
+                if let Some(s) = &self.sync
+                    && s.place().is_some()
+                {
+                    s.sync_and_wait(Duration::from_secs(3));
+                }
+                cx.quit()
+            }
+        }
+        cx.stop_propagation();
+    }
+
+    /// Keys in the find field: Enter copies the first code shown, Escape
+    /// empties the field.
+    fn filter_key(&mut self, ev: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
+        match ev.keystroke.key.as_str() {
+            "enter" => {
+                if let Some(id) = self.shown(cx).first().map(|c| c.id.clone()) {
+                    self.copy(&id, cx);
+                }
+            }
+            "escape" => self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx)),
+            _ => return,
+        }
+        cx.stop_propagation();
+    }
+
+    fn title_bar(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let cloud = match &self.sync_state {
+            SyncState::Off => c.sync_off,
+            SyncState::Syncing | SyncState::Synced(..) => c.sync_ok,
+            SyncState::Failed(_) => c.sync_bad,
+        };
+        let cloud_tip = self.sync_status();
+        let open = self.vault.ready().is_some();
+        div()
+            .size_full()
+            .flex()
+            .items_center()
+            .gap(px(8.))
+            .px(px(10.))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(8.))
+                    .window_control_area(WindowControlArea::Drag)
+                    .child(
+                        svg()
+                            .path("icons/logo.svg")
+                            .size(px(18.))
+                            .text_color(rgb(c.accent)),
+                    )
+                    .child(
+                        div()
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(rgb(c.text))
+                            .child("authwing"),
+                    ),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .h_full()
+                    .window_control_area(WindowControlArea::Drag),
+            )
+            .when(open, |d| {
+                d.child(
+                    div()
+                        .id("find")
+                        .w(px(340.))
+                        .h(px(28.))
+                        .px(px(10.))
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .rounded(px(6.))
+                        .bg(rgb(c.field))
+                        .border_1()
+                        .border_color(rgb(c.field_edge))
+                        .on_key_down(cx.listener(Self::filter_key))
+                        .child(
+                            svg()
+                                .path("icons/search.svg")
+                                .size(px(14.))
+                                .text_color(rgb(c.muted)),
+                        )
+                        .child(div().flex_1().child(self.filter.clone()))
+                        .child(
+                            div()
+                                .text_size(ui(11.))
+                                .text_color(rgb(c.faint))
+                                .child(crate::hotkeys::hint(cx, Hotkey::Find)),
+                        ),
+                )
+            })
+            .child(
+                div()
+                    .flex_1()
+                    .h_full()
+                    .window_control_area(WindowControlArea::Drag),
+            )
+            .child(
+                icon_button("sync", "icons/cloud.svg", cloud)
+                    .tooltip(move |_, cx| tip(cloud_tip.clone(), cx))
+                    .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx))),
+            )
+            .when(open, |d| {
+                d.child(
+                    icon_button("add", "icons/plus.svg", c.soft)
+                        .tooltip(|_, cx| tip(tr!("Add a code"), cx))
+                        .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
+                )
+                .child(
+                    icon_button("lock", "icons/lock.svg", c.soft)
+                        .tooltip(|_, cx| tip(tr!("Lock"), cx))
+                        .on_click(cx.listener(|ws, _, _, cx| ws.lock(cx))),
+                )
+            })
+            .child(
+                icon_button("settings", "icons/settings.svg", c.soft)
+                    .tooltip(|_, cx| tip(tr!("Settings (config.toml)"), cx))
+                    .on_click(cx.listener(|ws, _, _, cx| ws.open_settings(cx))),
+            )
+    }
+
+    fn sidebar(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let row = |id: SharedString, label: String, count: usize, on: bool| {
+            div()
+                .id(id)
+                .h(px(30.))
+                .px(px(10.))
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .rounded(px(6.))
+                .cursor_pointer()
+                .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
+                .when(!on, |d| {
+                    d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
+                })
+                .child(div().flex_1().child(label))
+                .child(
+                    div()
+                        .text_size(ui(11.))
+                        .text_color(rgb(c.muted))
+                        .child(count.to_string()),
+                )
+        };
+        let mut list = div()
+            .flex_1()
+            .flex()
+            .flex_col()
+            .gap(px(1.))
+            .p(px(8.))
+            .child(
+                row(
+                    "group-all".into(),
+                    tr!("All codes"),
+                    self.codes.len(),
+                    self.group.is_none(),
+                )
+                .on_click(cx.listener(|ws, _, _, cx| {
+                    ws.group = None;
+                    cx.notify();
+                })),
+            );
+        let groups = codes::groups(&self.codes);
+        if !groups.is_empty() {
+            list = list.child(
+                div()
+                    .pt(px(12.))
+                    .pb(px(4.))
+                    .px(px(10.))
+                    .text_size(ui(11.))
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .text_color(rgb(c.muted))
+                    .child(tr!("Groups")),
+            );
+        }
+        for (name, count) in groups {
+            let on = self.group.as_deref() == Some(&name);
+            let pick = name.clone();
+            list = list.child(
+                row(format!("group-{name}").into(), name, count, on).on_click(cx.listener(
+                    move |ws, _, _, cx| {
+                        ws.group = Some(pick.clone());
+                        cx.notify();
+                    },
+                )),
+            );
+        }
+        let status = match &self.sync_state {
+            SyncState::Off => tr!("Not syncing: set [sync] in config.toml"),
+            _ => self.sync_status(),
+        };
+        div()
+            .w(px(SIDEBAR_W))
+            .flex_shrink_0()
+            .h_full()
+            .flex()
+            .flex_col()
+            .bg(rgb(c.panel))
+            .border_r_1()
+            .border_color(rgb(c.line))
+            .text_size(ui(13.))
+            .child(list)
+            .child(
+                div()
+                    .id("sync-status")
+                    .p(px(12.))
+                    .border_t_1()
+                    .border_color(rgb(c.line))
+                    .text_size(ui(12.))
+                    .text_color(rgb(c.muted))
+                    .cursor_pointer()
+                    .hover(|s| s.text_color(rgb(c.soft)))
+                    .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx)))
+                    .child(status),
+            )
+    }
+
+    fn card(&self, entry: &Entry, place: usize, now: u64, cx: &mut Context<Self>) -> AnyElement {
+        let c = colors();
+        let code = authwing_totp::grouped(&entry.otp.code_at(now));
+        let left = entry.otp.seconds_left(now);
+        let period = entry.otp.period().unwrap_or(30).max(1);
+        let ending = left.is_some_and(|l| l <= SHOW_NEXT);
+        let next = left
+            .filter(|_| ending)
+            .and_then(|_| entry.otp.next_code_at(now))
+            .map(|n| authwing_totp::grouped(&n));
+        let copied = self.copied.as_ref().is_some_and(|(id, _)| id == &entry.id);
+        let (id, delete) = (entry.id.clone(), entry.id.clone());
+        let hint = (place < 9)
+            .then(|| keymap_hint(cx, place))
+            .filter(|h| !h.is_empty());
+        div()
+            .id(SharedString::from(format!("card-{}", entry.id)))
+            .group("card")
+            .w(px(CARD_W))
+            .flex()
+            .flex_col()
+            .gap(px(10.))
+            .p(px(14.))
+            .rounded(px(10.))
+            .bg(rgb(c.surface))
+            .border_1()
+            .border_color(rgb(if ending { c.warn_edge } else { c.line }))
+            .cursor_pointer()
+            .hover(|s| s.border_color(rgb(c.edge)))
+            .on_click(cx.listener(move |ws, _, _, cx| ws.copy(&id, cx)))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(10.))
+                    .child(
+                        div()
+                            .size(px(30.))
+                            .flex_shrink_0()
+                            .rounded(px(8.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .bg(rgb(c.chip))
+                            .text_size(ui(11.))
+                            .font_weight(FontWeight::BOLD)
+                            .text_color(rgb(c.soft))
+                            .child(entry.initials()),
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .flex()
+                            .flex_col()
+                            .child(
+                                div()
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .truncate()
+                                    .child(entry.title()),
+                            )
+                            .child(
+                                div()
+                                    .text_size(ui(12.))
+                                    .text_color(rgb(c.muted))
+                                    .truncate()
+                                    .child(entry.detail().to_string()),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .id(SharedString::from(format!("delete-{}", entry.id)))
+                            .invisible()
+                            .group_hover("card", |s| s.visible())
+                            .size(px(24.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .rounded(px(5.))
+                            .hover(|s| s.bg(rgb(c.hover)))
+                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                            .on_click(cx.listener(move |ws, _, window, cx| {
+                                cx.stop_propagation();
+                                ws.delete(delete.clone(), window, cx);
+                            }))
+                            .child(
+                                svg()
+                                    .path("icons/trash.svg")
+                                    .size(px(14.))
+                                    .text_color(rgb(c.muted)),
+                            ),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .items_baseline()
+                    .gap(px(10.))
+                    .child(
+                        div()
+                            .text_size(ui(26.))
+                            .font_weight(FontWeight::MEDIUM)
+                            .text_color(rgb(if ending { c.warn } else { c.text }))
+                            .child(code),
+                    )
+                    .when_some(next, |d, n| {
+                        d.child(
+                            div()
+                                .text_size(ui(12.))
+                                .text_color(rgb(c.muted))
+                                .child(tr!("next {code}", code = n)),
+                        )
+                    }),
+            )
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .flex_1()
+                            .h(px(3.))
+                            .rounded(px(2.))
+                            .bg(rgb(c.line))
+                            .when_some(left, |d, l| {
+                                d.child(
+                                    div()
+                                        .h_full()
+                                        .rounded(px(2.))
+                                        .w(relative(l as f32 / period as f32))
+                                        .bg(rgb(if ending { c.amber } else { c.accent })),
+                                )
+                            }),
+                    )
+                    .child(
+                        div()
+                            .text_size(ui(11.))
+                            .text_color(rgb(if copied { c.good } else { c.faint }))
+                            .child(if copied {
+                                tr!("Copied")
+                            } else if let Some(l) = left {
+                                format!("{l} s")
+                            } else {
+                                tr!("Counter")
+                            }),
+                    )
+                    .when_some(hint, |d, h| {
+                        d.child(div().text_size(ui(11.)).text_color(rgb(c.faint)).child(h))
+                    }),
+            )
+            .into_any_element()
+    }
+
+    /// The codes for the window used last, surest first, with why each.
+    fn for_window(&self) -> (Option<&authwing_context::Window>, Vec<(&Entry, Reason)>) {
+        let Some(window) = &self.elsewhere else {
+            return (None, vec![]);
+        };
+        let place = Where {
+            window: Some(window.clone()),
+            page: None,
+        };
+        let list: Vec<Code> = self
+            .codes
+            .iter()
+            .map(|e| Code {
+                issuer: &e.otp.issuer,
+                sites: &e.parsed,
+                rules: &[],
+                times: 0,
+            })
+            .collect();
+        let found = match authwing_context::rank(&place, &list) {
+            Ranking::Candidates(found) => found
+                .into_iter()
+                .take(FOR_WINDOW)
+                .filter_map(|c| Some((self.codes.get(c.code)?, c.why)))
+                .collect(),
+            // Only pages are looked alike, and the window gives none yet.
+            Ranking::LookAlike(_) => vec![],
+        };
+        (Some(window), found)
+    }
+
+    fn for_window_view(&self, now: u64, cx: &mut Context<Self>) -> Option<gpui::Div> {
+        let c = colors();
+        let (window, found) = self.for_window();
+        let window = window?;
+        if found.is_empty() {
+            return None;
+        }
+        let place = match &window.title {
+            Some(t) if !t.is_empty() => format!("{} · {}", window.app_name, t),
+            _ => window.app_name.clone(),
+        };
+        let cards: Vec<AnyElement> = found
+            .iter()
+            .map(|(e, why)| {
+                let reason = match why {
+                    Reason::Site => tr!("its site"),
+                    Reason::Rule => tr!("a rule"),
+                    Reason::Learned { .. } => tr!("chosen here before"),
+                    Reason::IssuerInTitle => tr!("its name in the title"),
+                };
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(self.card(e, usize::MAX, now, cx))
+                    .child(
+                        div()
+                            .px(px(4.))
+                            .text_size(ui(11.))
+                            .text_color(rgb(c.info_text))
+                            .child(tr!("Matched by {why}", why = reason)),
+                    )
+                    .into_any_element()
+            })
+            .collect();
+        Some(
+            div()
+                .mb(px(18.))
+                .p(px(14.))
+                .flex()
+                .flex_col()
+                .gap(px(10.))
+                .rounded(px(12.))
+                .bg(rgb(c.info_bg))
+                .border_1()
+                .border_color(rgb(c.info_edge))
+                .child(
+                    div()
+                        .text_size(ui(12.))
+                        .text_color(rgb(c.info_text))
+                        .child(tr!("For the window used last: {place}", place = place)),
+                )
+                .child(div().flex().flex_wrap().gap(px(12.)).children(cards)),
+        )
+    }
+
+    fn codes_view(&self, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let c = colors();
+        let now = codes::now();
+        let filtering = !self.filter.read(cx).text().trim().is_empty();
+        let strip = (!filtering)
+            .then(|| self.for_window_view(now, cx))
+            .flatten();
+        let shown: Vec<String> = self.shown(cx).iter().map(|e| e.id.clone()).collect();
+        let cards: Vec<AnyElement> = shown
+            .iter()
+            .enumerate()
+            .filter_map(|(i, id)| {
+                let entry = self.codes.iter().find(|e| &e.id == id)?;
+                Some(self.card(entry, i, now, cx))
+            })
+            .collect();
+        let body = if self.codes.is_empty() {
+            empty(
+                tr!("No codes yet"),
+                tr!(
+                    "Turn on two-factor sign-in at a site, then paste the link of the QR code it shows."
+                ),
+            )
+            .child(
+                primary_button("first-code", &tr!("Add your first code"))
+                    .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
+            )
+            .into_any_element()
+        } else if cards.is_empty() {
+            empty(
+                tr!("Nothing matches"),
+                tr!("Try fewer words, or another group."),
+            )
+            .into_any_element()
+        } else {
+            div()
+                .flex()
+                .flex_wrap()
+                .gap(px(12.))
+                .children(cards)
+                .into_any_element()
+        };
+        div()
+            .id("codes")
+            .flex_1()
+            .h_full()
+            .overflow_y_scroll()
+            .p(px(20.))
+            .bg(rgb(c.page))
+            .children(strip)
+            .child(body)
+    }
+
+    fn locked_view(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let (title, detail) = match self.vault.locked() {
+            Some(Lock::New) => (
+                tr!("Set a passphrase"),
+                tr!("This computer has no keychain to keep the vault's key in."),
+            ),
+            Some(_) => (
+                tr!("The vault is locked"),
+                tr!("Type its passphrase, or the recovery key you saved."),
+            ),
+            None => match self.vault.problem() {
+                Some(p) => (tr!("The vault cannot open"), p),
+                None => (tr!("Opening the vault…"), String::new()),
+            },
+        };
+        let can_type = self.vault.locked().is_some();
+        let mut body = empty(title, detail);
+        if self.vault.opens_with_presence() {
+            body = body.child(
+                outline_button("presence", &tr!("Open with Touch ID or Windows Hello"))
+                    .on_click(cx.listener(|ws, _, window, cx| ws.unlock_with_presence(window, cx))),
+            );
+        }
+        if can_type {
+            body = body.child(
+                div()
+                    .w(px(320.))
+                    .flex()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .flex_1()
+                            .h(px(32.))
+                            .px(px(10.))
+                            .flex()
+                            .items_center()
+                            .rounded(px(6.))
+                            .bg(rgb(c.field))
+                            .border_1()
+                            .border_color(rgb(c.field_edge))
+                            .on_key_down(cx.listener(|ws, ev: &KeyDownEvent, window, cx| {
+                                if ev.keystroke.key == "enter" {
+                                    ws.try_unlock(window, cx);
+                                    cx.stop_propagation();
+                                }
+                            }))
+                            .child(self.unlock.clone()),
+                    )
+                    .child(
+                        primary_button(
+                            "unlock",
+                            &if self.unlocking {
+                                tr!("Opening…")
+                            } else {
+                                tr!("Open")
+                            },
+                        )
+                        .on_click(cx.listener(|ws, _, window, cx| ws.try_unlock(window, cx))),
+                    ),
+            );
+        }
+        div().flex_1().h_full().bg(rgb(c.page)).child(body)
+    }
+}
+
+/// A heading and a line under it, centred: what a page shows with nothing on it.
+fn empty(title: String, detail: String) -> gpui::Div {
+    let c = colors();
+    div()
+        .size_full()
+        .flex()
+        .flex_col()
+        .items_center()
+        .justify_center()
+        .gap(px(10.))
+        .p(px(40.))
+        .child(
+            div()
+                .text_size(ui(16.))
+                .font_weight(FontWeight::SEMIBOLD)
+                .text_color(rgb(c.text))
+                .child(title),
+        )
+        .when(!detail.is_empty(), |d| {
+            d.child(
+                div()
+                    .max_w(px(420.))
+                    .text_center()
+                    .text_size(ui(13.))
+                    .text_color(rgb(c.muted))
+                    .child(detail),
+            )
+        })
+}
+
+/// The key that copies the code at `place` (0 for 1), as shown.
+fn keymap_hint(cx: &App, place: usize) -> String {
+    let keys = crate::hotkeys::keymap(cx);
+    keys.chords(Hotkey::CopyCode)
+        .first()
+        .map(|c| c.label(keys.os()).replace("1…9", &(place + 1).to_string()))
+        .unwrap_or_default()
+}
+
+struct Tip(SharedString);
+
+impl Render for Tip {
+    fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .px(px(10.))
+            .py(px(6.))
+            .rounded(px(6.))
+            .bg(rgb(colors().chip))
+            .border_1()
+            .border_color(rgb(colors().edge))
+            .text_size(ui(12.))
+            .text_color(rgb(colors().text))
+            .child(self.0.clone())
+    }
+}
+
+fn tip(text: String, cx: &mut App) -> gpui::AnyView {
+    cx.new(|_| Tip(text.into())).into()
+}
+
+impl Focusable for Workspace {
+    fn focus_handle(&self, _: &App) -> FocusHandle {
+        self.focus.clone()
+    }
+}
+
+impl Render for Workspace {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let ui_font = self.live.settings().appearance.ui_font.clone();
+        window.set_rem_size(look::rem_for(ui_font.size));
+        let family = ui_font.family.clone().map(SharedString::from);
+        if cx
+            .try_global::<crate::prompt::PromptFont>()
+            .is_none_or(|f| f.0 != family)
+        {
+            cx.set_global(crate::prompt::PromptFont(family.clone()));
+        }
+        let bottom = chrome::BottomCorners::of(window);
+        if chrome::BottomCorners::current(cx) != bottom {
+            cx.set_global(bottom);
+        }
+        let c = colors();
+        let main: AnyElement = if self.vault.ready().is_some() {
+            div()
+                .size_full()
+                .flex()
+                .child(bottom.left().round(self.sidebar(cx)))
+                .child(bottom.right().round(self.codes_view(cx)))
+                .into_any_element()
+        } else {
+            bottom.round(self.locked_view(cx)).into_any_element()
+        };
+        let body = div()
+            .flex_1()
+            .min_h_0()
+            .flex()
+            .relative()
+            .child(main)
+            .when_some(self.notice.clone(), |d, (n, _)| {
+                d.child(
+                    div()
+                        .absolute()
+                        .bottom(px(16.))
+                        .right(px(16.))
+                        .max_w(px(420.))
+                        .child(
+                            notice::colored(div(), n.tone)
+                                .px(px(14.))
+                                .py(px(10.))
+                                .rounded(px(8.))
+                                .text_size(ui(13.))
+                                .child(n.text),
+                        ),
+                )
+            });
+        let title = self.title_bar(cx);
+        let root = if chrome::draws_title_bar(window) {
+            chrome::window_chrome(title, body, rgb(c.page).into(), window)
+        } else {
+            // A native title bar (X11): the bar's own row under it.
+            div()
+                .size_full()
+                .flex()
+                .flex_col()
+                .bg(rgb(c.page))
+                .child(
+                    div()
+                        .h(px(chrome::TITLEBAR_H))
+                        .flex_shrink_0()
+                        .bg(rgb(c.chrome))
+                        .border_b_1()
+                        .border_color(rgb(c.line))
+                        .child(title),
+                )
+                .child(body)
+        };
+        let dialog: Option<AnyElement> = match (&self.adding, &self.panel) {
+            (Some(add), _) => Some(add.clone().into_any_element()),
+            (None, Some(panel)) => Some(panel.clone().into_any_element()),
+            (None, None) => None,
+        };
+        let dialog = dialog.map(|dialog| {
+            let (at, shade) = chrome::shade(window);
+            deferred(
+                anchored().position(at).child(
+                    shade
+                        .occlude()
+                        .flex()
+                        .justify_center()
+                        .items_start()
+                        .pt(px(72.))
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(|ws, _, window, cx| {
+                                ws.adding = None;
+                                ws.panel = None;
+                                window.focus(&ws.focus, cx);
+                                cx.notify();
+                            }),
+                        )
+                        .child(
+                            div()
+                                .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                                .child(dialog),
+                        ),
+                ),
+            )
+            .with_priority(10)
+        });
+        root.when_some(ui_font.family, |d, f| d.font_family(f))
+            .text_size(ui(13.))
+            .text_color(rgb(c.text))
+            .track_focus(&self.focus)
+            .capture_key_down(cx.listener(Self::shortcut))
+            .children(dialog)
+    }
+}
+
+/// The drawn title bar's close button: as the system's.
+pub fn close_window(window: &mut Window, _: &mut App) {
+    window.remove_window();
+}

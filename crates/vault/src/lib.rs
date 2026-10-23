@@ -488,8 +488,9 @@ fn random<const N: usize>() -> Result<[u8; N]> {
     Ok(b)
 }
 
-/// A ULID-like id: time first, so ids sort by creation.
-fn new_id() -> Result<String> {
+/// A new record's id: ULID-like, time first, so ids sort by creation; hex,
+/// as synced files' names must start with.
+pub fn new_id() -> Result<String> {
     let r: [u8; 10] = random()?;
     let hex: String = r.iter().map(|b| format!("{b:02x}")).collect();
     Ok(format!("{:012x}{hex}", now_ms()))

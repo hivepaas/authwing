@@ -4,8 +4,8 @@
 //! size and the maximised or fullscreen state come back; the compositor places
 //! the window.
 
-use gpui::{App, Bounds, Pixels, WindowBounds, point, px, size};
 use authwing_config::{WindowMode, WindowState};
+use gpui::{App, Bounds, Pixels, WindowBounds, point, px, size};
 
 const DEFAULT_SIZE: (f32, f32) = (1100., 720.);
 const MIN_SIZE: (f32, f32) = (400., 240.);
@@ -59,8 +59,6 @@ pub fn state(bounds: WindowBounds) -> WindowState {
         height: f32::from(b.size.height),
         mode,
         sidebar_width: None,
-        sidebar_collapsed: false,
-        files_width: None,
     }
 }
 
