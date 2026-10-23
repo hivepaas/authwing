@@ -1043,7 +1043,7 @@ impl SettingsView {
             .flex()
             .flex_col()
             .gap(px(12.))
-            .child(heading(tr!("authwing")))
+            .child(heading("authwing".to_string()))
             .child(
                 card()
                     .child(row(

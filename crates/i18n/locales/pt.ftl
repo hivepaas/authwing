@@ -409,9 +409,6 @@ t89a71bba = Sincronização
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
 # t49b23b02 =
 
-# authwing
-# t36917d20 =
-
 # Version
 # t5dcdd537 =
 

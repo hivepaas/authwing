@@ -141,7 +141,6 @@ t813a0fa7 = Link the browsers
 ta3742172 = Unlink
 td2a9db60 = Browsers on this computer
 t49b23b02 = The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
-t36917d20 = authwing
 t5dcdd537 = Version
 t38e70ee4 = License
 tef971997 = Free software: you may share and change it under the GPL.

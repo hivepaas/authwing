@@ -95,235 +95,235 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
 
 # General
-# t5561fd0b =
+t5561fd0b = Chung
 
 # Sync
 t89a71bba = Đồng bộ
 
 # Security
-# tc2fe21db =
+tc2fe21db = Bảo mật
 
 # Browsers
-# td580efd4 =
+td580efd4 = Trình duyệt
 
 # About
-# t58e096de =
+t58e096de = Giới thiệu
 
 # A folder another app keeps in sync
-# t27689c98 =
+t27689c98 = Một thư mục được app khác đồng bộ
 
 # The repository's default
-# t318b30d3 =
+t318b30d3 = Nhánh mặc định của repository
 
 # None: the bucket's top
-# tb62e6c7b =
+tb62e6c7b = Để trống: gốc của bucket
 
 # Access key
-# t837b43b8 =
+t837b43b8 = Access key
 
 # Kept in the vault, on this device only
-# t4893a866 =
+t4893a866 = Giữ trong vault, chỉ trên thiết bị này
 
 # At least 10 characters, hard to guess
-# tea4f3495 =
+tea4f3495 = Ít nhất 10 ký tự, khó đoán
 
 # The same again
-# t3d35edbe =
+t3d35edbe = Nhập lại lần nữa
 
 # Fill in {what}.
-# t0804c32b =
+t0804c32b = Hãy điền { $what }.
 
 # the folder
-# t48f6f260 =
+t48f6f260 = thư mục
 
 # the repository's address
-# t5f845286 =
+t5f845286 = địa chỉ repository
 
 # the folder's address
-# t3f263e4e =
+t3f263e4e = địa chỉ thư mục
 
 # the user
-# t9ba42c97 =
+t9ba42c97 = tên người dùng
 
 # the endpoint
-# t025e0e85 =
+t025e0e85 = endpoint
 
 # the bucket
-# ta347465a =
+ta347465a = bucket
 
 # the access key
-# t4e629821 =
+t4e629821 = access key
 
 # Open the vault first.
-# t18fc18b2 =
+t18fc18b2 = Hãy mở vault trước.
 
 # Fill in the password.
-# t396bf9b1 =
+t396bf9b1 = Hãy điền mật khẩu.
 
 # Fill in the secret key.
-# tfddf418b =
+tfddf418b = Hãy điền secret key.
 
 # Saved. Syncing now.
-# t3bd89f83 =
+t3bd89f83 = Đã lưu. Đang đồng bộ.
 
 # Sync is off. What is in the place stays there.
-# t9350814a =
+t9350814a = Đã tắt đồng bộ. Những gì ở nơi đồng bộ vẫn được giữ nguyên.
 
 # Sync here
-# te998c2e0 =
+te998c2e0 = Đồng bộ ở đây
 
 # This vault has no recovery key yet.
 tdd764294 = Vault này chưa có khoá khôi phục.
 
 # A passphrase needs at least 10 characters.
-# t848f2c32 =
+t848f2c32 = Mật khẩu cần ít nhất 10 ký tự.
 
 # The two passphrases differ.
-# teb0402b1 =
+teb0402b1 = Hai mật khẩu không khớp nhau.
 
 # Too easy to guess: try several unrelated words.
-# tc80e0d6d =
+tc80e0d6d = Quá dễ đoán: hãy dùng vài từ không liên quan đến nhau.
 
 # The passphrase is set.
-# t1c4d5a62 =
+t1c4d5a62 = Đã đặt mật khẩu.
 
 # No browser the extension runs in was found.
-# tbdee3baa =
+tbdee3baa = Không tìm thấy trình duyệt nào chạy được tiện ích.
 
 # As the system
-# t29f671f7 =
+t29f671f7 = Theo hệ thống
 
 # Dark
-# t45570065 =
+t45570065 = Tối
 
 # Light
-# t8ad2f8cf =
+t8ad2f8cf = Sáng
 
 # 10 s
-# t656f91cd =
+t656f91cd = 10 giây
 
 # 20 s
-# t9356dfda =
+t9356dfda = 20 giây
 
 # 45 s
-# td029e48f =
+td029e48f = 45 giây
 
 # 90 s
-# ted25e5d5 =
+ted25e5d5 = 90 giây
 
 # Never
-# tb2ff2b29 =
+tb2ff2b29 = Không bao giờ
 
 # Language
-# t9a73db9b =
+t9a73db9b = Ngôn ngữ
 
 # This device's own: it does not sync.
-# t075c5383 =
+t075c5383 = Riêng của thiết bị này: không đồng bộ.
 
 # Appearance
-# t31018b9f =
+t31018b9f = Giao diện
 
 # Colors
-# t25bb4ed1 =
+t25bb4ed1 = Màu
 
 # Text size
-# t2c041143 =
+t2c041143 = Cỡ chữ
 
 # Codes
-# t758add25 =
+t758add25 = Mã
 
 # Clear a copied code from the clipboard after
-# tcf387b5b =
+tcf387b5b = Xoá mã đã copy khỏi clipboard sau
 
 # Only if the clipboard still holds it.
-# tedfee6ca =
+tedfee6ca = Chỉ khi clipboard vẫn còn giữ mã đó.
 
 # Off
-# t0dc6b4aa =
+t0dc6b4aa = Tắt
 
 # Folder
-# t06357afd =
+t06357afd = Thư mục
 
 # Git
-# tb6b5540b =
+tb6b5540b = Git
 
 # WebDAV
-# t8e2d2e34 =
+t8e2d2e34 = WebDAV
 
 # S3
-# t060203c3 =
+t060203c3 = S3
 
 # Saved on this device; type a new one to change it.
-# t6f6ad6e7 =
+t6f6ad6e7 = Đã lưu trên thiết bị này; gõ cái mới để thay.
 
 # Kept sealed in the vault, on this device only: it never syncs.
-# t5529829d =
+t5529829d = Được niêm phong trong vault, chỉ trên thiết bị này: không bao giờ đồng bộ.
 
 # The codes stay on this device. Keep its recovery key (Security) and a backup.
-# t29381d6c =
+t29381d6c = Các mã chỉ ở trên thiết bị này. Hãy giữ khoá khôi phục (Bảo mật) và một bản sao lưu.
 
 # Choose…
-# t58daae9c =
+t58daae9c = Chọn…
 
 # Use iCloud Drive
-# t789420ac =
+t789420ac = Dùng iCloud Drive
 
 # Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share.
-# taadf45c8 =
+taadf45c8 = Bất kỳ thư mục nào được app khác đồng bộ: iCloud Drive, Syncthing, Dropbox, OneDrive, thư mục mạng.
 
 # Repository
-# te763c8b5 =
+te763c8b5 = Repository
 
 # Branch
-# ta3e27665 =
+ta3e27665 = Nhánh
 
 # A private repository. This computer's git signs in as it does for you.
-# tcf6c891b =
+tcf6c891b = Một repository riêng tư. git của máy này đăng nhập như bình thường bạn vẫn dùng.
 
 # Folder's address
-# t1331c053 =
+t1331c053 = Địa chỉ thư mục
 
 # User
-# te0a63e12 =
+te0a63e12 = Người dùng
 
 # Password
-# t2cc30838 =
+t2cc30838 = Mật khẩu
 
 # Endpoint
-# t27e7d69c =
+t27e7d69c = Endpoint
 
 # Bucket
-# te34e3557 =
+te34e3557 = Bucket
 
 # Folder in it
-# tdfe63979 =
+tdfe63979 = Thư mục bên trong
 
 # Region
-# t492e789d =
+t492e789d = Region
 
 # Secret key
-# t47252d7a =
+t47252d7a = Secret key
 
 # Where the vault syncs
-# td7a153f7 =
+td7a153f7 = Nơi vault đồng bộ
 
 # Save and sync
-# te0b44954 =
+te0b44954 = Lưu và đồng bộ
 
 # Stop syncing
-# t59fdbd70 =
+t59fdbd70 = Dừng đồng bộ
 
 # What syncs
-# ta2fbb093 =
+ta2fbb093 = Những gì được đồng bộ
 
 # Settings too
-# ta8aa81ba =
+ta8aa81ba = Cả cài đặt
 
 # Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
+te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
 
 # Devices joining, and the recovery key, are in the cloud's panel in the title bar.
-# t674d2276 =
+t674d2276 = Thiết bị xin tham gia và khoá khôi phục nằm trong bảng của biểu tượng đám mây trên thanh tiêu đề.
 
 # Show the recovery key
 t16f62979 = Hiện khoá khôi phục
@@ -332,7 +332,7 @@ t16f62979 = Hiện khoá khôi phục
 te10c7bcd = Ẩn
 
 # Change the passphrase
-# t02c0bf0a =
+t02c0bf0a = Đổi mật khẩu
 
 # Set a passphrase
 t69755c3c = Đặt mật khẩu
@@ -341,103 +341,100 @@ t69755c3c = Đặt mật khẩu
 t02904a59 = Khoá khôi phục
 
 # It opens the vault when nothing else can: a lost keychain, a forgotten passphrase, a new device. Write it down and keep it apart from this computer.
-# tc3c501b7 =
+tc3c501b7 = Nó mở vault khi không còn cách nào khác: mất keychain, quên mật khẩu, thiết bị mới. Hãy chép lại và cất ở nơi tách biệt với máy này.
 
 # Passphrase
-# t191a2dc5 =
+t191a2dc5 = Mật khẩu
 
 # A passphrase opens this vault. Set another below.
-# tc2369f61 =
+tc2369f61 = Vault này được mở bằng mật khẩu. Đặt mật khẩu khác ở dưới.
 
 # No passphrase yet: the keychain alone opens the vault, and it cannot lock.
-# t4373fdd8 =
+t4373fdd8 = Chưa có mật khẩu: chỉ keychain mở được vault, và vault không thể khoá.
 
 # Again
-# t58fb56ef =
+t58fb56ef = Nhập lại
 
 # Working…
-# td5507854 =
+td5507854 = Đang xử lý…
 
 # Save the passphrase
-# t014d0621 =
+t014d0621 = Lưu mật khẩu
 
 # Opening and locking
-# tb34987b3 =
+tb34987b3 = Mở và khoá
 
 # Open by itself
-# t680c6531 =
+t680c6531 = Tự mở
 
 # The vault's key stays in this computer's keychain. Off: the passphrase opens it, and Lock closes it.
-# ta2c3bb9f =
+ta2c3bb9f = Khoá của vault nằm trong keychain của máy này. Tắt: mật khẩu mở vault, và nút Khoá đóng nó lại.
 
 # Open with {what}
-# td5998b93 =
+td5998b93 = Mở bằng { $what }
 
 # Needs a passphrase set. The system asks when you change it.
-# t5b1f668d =
+t5b1f668d = Cần đặt mật khẩu trước. Hệ thống sẽ hỏi khi bạn thay đổi.
 
 # Lock now
-# t1aa78686 =
+t1aa78686 = Khoá ngay
 
 # Closes the vault until its passphrase is typed.
-# tba4f5365 =
+tba4f5365 = Đóng vault cho tới khi gõ mật khẩu.
 
 # Lock
 t71b42d62 = Khoá
 
 # Linked to this authwing
-# ta9f58dac =
+ta9f58dac = Đã liên kết với authwing này
 
 # Linked to another copy: {path}
-# t92cd5320 =
+t92cd5320 = Đã liên kết với một bản authwing khác: { $path }
 
 # Not linked
-# ta8dc0817 =
+ta8dc0817 = Chưa liên kết
 
 # The browser extension
-# tdcceb399 =
+tdcceb399 = Tiện ích trình duyệt
 
 # With authwing's extension, the app knows the page in front exactly: a code saved with that site comes first and is typed in, and a page that only looks like it gets none. The extension keeps no codes.
-# t9ca9ffff =
+t9ca9ffff = Với tiện ích của authwing, app biết chính xác trang đang mở: mã đã lưu cho trang đó được đưa lên đầu và gõ vào trang, còn trang chỉ trông giống thì không nhận được mã nào. Tiện ích không giữ mã nào.
 
 # Link the browsers
-# t813a0fa7 =
+t813a0fa7 = Liên kết các trình duyệt
 
 # Unlink
-# ta3742172 =
+ta3742172 = Bỏ liên kết
 
 # Browsers on this computer
-# td2a9db60 =
+td2a9db60 = Trình duyệt trên máy này
 
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
-# t49b23b02 =
-
-# authwing
-# t36917d20 =
+t49b23b02 = Tiện ích chưa có trên các store: hãy build từ thư mục extension của repository và nạp dạng unpacked.
 
 # Version
-# t5dcdd537 =
+t5dcdd537 = Phiên bản
 
 # License
-# t38e70ee4 =
+t38e70ee4 = Giấy phép
 
 # Free software: you may share and change it under the GPL.
-# tef971997 =
+tef971997 = Phần mềm tự do: bạn có thể chia sẻ và sửa đổi theo giấy phép GPL.
 
 # Source
-# t61e2a3f8 =
+t61e2a3f8 = Mã nguồn
 
 # Updates
-# t483075a5 =
+t483075a5 = Cập nhật
 
 # Not looked for: this build has no release keys to check them with.
-# t208f65bc =
+t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
 
 # Open config.toml
-# t07a52335 =
+t07a52335 = Mở config.toml
 
 # Done
-# t8dd31791 =
+t8dd31791 = Xong
 
 # XXXX-XXXX-…, 13 groups
 tbb504d9f = XXXX-XXXX-…, 13 nhóm
@@ -584,7 +581,7 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 t2e0269c8 = Chưa mở được: { $e }
 
 # Settings
-# t4b058728 =
+t4b058728 = Cài đặt
 
 # All codes
 t113331ee = Tất cả mã
