@@ -330,7 +330,7 @@ mod tests {
                 let said = tr_n!(n, "{n} code added.", "{n} codes added.");
                 assert!(said.contains(&n.to_string()), "{tag}: {said}");
             }
-            let said = tr!("Sync failed: {e}", e = "x");
+            let said = tr!("Not synced: {why}", why = "x");
             assert!(said.contains('x') && !said.contains('$'), "{tag}: {said}");
         }
         set_language(Some("vi"));
@@ -340,8 +340,8 @@ mod tests {
             "Đã thêm 3 mã."
         );
         assert_eq!(
-            tr!("Sync failed: {e}", e = "offline"),
-            "Đồng bộ thất bại: offline",
+            tr!("Not synced: {why}", why = "offline"),
+            "Chưa đồng bộ: offline",
             "a value is said in place"
         );
         set_language(Some("en"));

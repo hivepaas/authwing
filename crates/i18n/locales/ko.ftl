@@ -202,6 +202,45 @@ te833da37 = config.toml, [shortcuts]: `{ $key }`이(가) { $kept }과(와) { $lo
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 # t87e7ceec =
 
+# XXXX-XXXX-…, 13 groups
+# tbb504d9f =
+
+# Waiting for a device that syncs: open authwing there.
+# t33ac6aa2 =
+
+# Approve on {device} if it shows the same code:
+# ta89ba4d1 =
+
+# Joined. The vault's codes are coming.
+# t775b89a0 =
+
+# The other device refused.
+# t74419d8e =
+
+# Nobody approved in time: ask again.
+# t5c323bb6 =
+
+# Ask a device that syncs
+# t2dc61136 =
+
+# Stop asking
+# t296beec8 =
+
+# It holds a vault from another device: join it
+# t25a71781 =
+
+# Ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
+# t58c3578d =
+
+# Ask a device that syncs, or type the vault's recovery key.
+# tfa918e42 =
+
+# Joining…
+taa884c51 = 참여하는 중…
+
+# Join with the key
+# t9f857a57 =
+
 # Hide authwing
 # tc980ec1e =
 
@@ -859,6 +898,18 @@ t89a71bba = 동기화
 # Install a newer git (git-scm.com), then Connect again.
 # t9a84a209 =
 
+# Settings too
+# ta8aa81ba =
+
+# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
+# te0e876b2 =
+
+# Or a place of your own
+# t7b88a644 =
+
+# When it syncs
+# t4849994e =
+
 # Your place
 # t63cb5f41 =
 
@@ -871,20 +922,8 @@ t89a71bba = 동기화
 # Stop syncing
 # t59fdbd70 =
 
-# A place of your own
-# t8d5f140b =
-
-# What syncs
-# ta2fbb093 =
-
-# Settings too
-# ta8aa81ba =
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
-
-# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
-# t674d2276 =
+# Options
+# t353e0d45 =
 
 # Hide
 # te10c7bcd =
@@ -1027,71 +1066,113 @@ t538b10e9 = 열기
 # This {app} file is encrypted: enter its password.
 # t1aa6da9b =
 
-# XXXX-XXXX-…, 13 groups
-# tbb504d9f =
+# Not syncing
+# t0f346f03 =
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-# t82f98ccc =
+# Synced · {when}
+# ta250b3ba =
 
-# Waiting for a device that syncs: open authwing there.
-# t33ac6aa2 =
+# Set up
+# t43c06abc =
 
-# Approve on {device} if it shows the same code:
-# ta89ba4d1 =
+# Syncing…
+t8ad2ae06 = 동기화하는 중…
 
-# Joined. The vault's codes are coming.
-# t775b89a0 =
+# Not synced: {why}
+# t26991b72 =
 
-# The other device refused.
-# t74419d8e =
+# Paused: the vault is locked
+# tfff0fb2a =
 
-# Nobody approved in time: ask again.
-# t5c323bb6 =
+# {n} code | {n} codes
+# ta5ca2740 =
 
-# Ask a device that syncs
-# t2dc61136 =
+# NOT SYNCING
+# t7c7f0ba3 =
 
-# Stop asking
-# t296beec8 =
+# Your codes on every device. Just sign in.
+# t64f52192 =
 
-# Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
-# tc75c83a8 =
+# Your codes, their groups and sites stay on this computer for now.
+# tcc5add1d =
 
-# Close
-tcd86acc3 = 닫기
+# See authwing cloud
+# t37219794 =
 
-# Only encrypted records are stored there: not even the services' names can be read.
-# td7b59080 =
+# A folder, WebDAV, S3 or Git of your own:
+# t42ad626a =
 
-# Devices asking to join
-# tff44c4a4 =
+# Settings › Sync
+# t6790eaeb =
 
-# Approve only if it shows this code.
-# t8f54c79f =
+# SYNC
+# t476c685a =
 
-# Approve
-te6edf55a = 승인
+# Open Settings › Sync
+# tbef0fba1 =
 
-# Refuse
-t9bcada35 = 거부
+# Not synced
+# t4d1a6724 =
 
-# Join from this device
-# t54904649 =
+# With {place}, once it is open
+# tf75bc464 =
 
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
-# te7a28cec =
-
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key.
-# t2d6ea251 =
-
-# Joining…
-taa884c51 = 참여하는 중…
-
-# Join with the key
-# t9f857a57 =
+# Unlock…
+# tc671ed6b =
 
 # Sync now
 ta34dd8fe = 지금 동기화
+
+# Your codes, their groups and sites follow you to every computer.
+# ta5f11048 =
+
+# Nothing to set up: no folder, no server, no key to type on a new device.
+# tde7b1d58 =
+
+# Encrypted on your devices: authwing never sees your codes.
+# ta3c7045e =
+
+# Create an account
+# td7f6c093 =
+
+# Sign in
+# t744be623 =
+
+# or continue with
+# t2f60c9bf =
+
+# Rather not keep it yourself?
+# t616f184a =
+
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+# t69b9a0b0 =
+
+# authwing cloud is coming: signing in opens with it.
+# t6f15019c =
+
+# up to {n} code | up to {n} codes
+# td320882c =
+
+# unlimited · $15/year
+# te176f9c3 =
+
+# just now
+# ta715ef0f =
+
+# a minute ago
+# t85ac693d =
+
+# {n} minute ago | {n} minutes ago
+# t6c7302d6 =
+
+# an hour ago
+# t84377069 =
+
+# {n} hour ago | {n} hours ago
+# t137b052e =
+
+# {n} day ago | {n} days ago
+# tb9fa7744 =
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = 이 기기에 비밀번호가 저장되어 있지 않음: 설정 › 동기화에서 다시 연결하세요
@@ -1129,18 +1210,6 @@ t60f438b7 = 설정이 저장되지 않음: { $e }
 # the Microsoft Store
 # t1df799a1 =
 
-# just now
-# ta715ef0f =
-
-# {n} minute ago | {n} minutes ago
-# t6c7302d6 =
-
-# {n} hour ago | {n} hours ago
-# t137b052e =
-
-# {n} day ago | {n} days ago
-# tb9fa7744 =
-
 # Downloading… {got} of {total}
 # taee668c2 =
 
@@ -1168,35 +1237,23 @@ t60f438b7 = 설정이 저장되지 않음: { $e }
 # The quick panel's shortcut {key} cannot be used: {e}
 # td4cbf886 =
 
-# A device asks to join: open Sync (the cloud) to approve it.
-# tf1bf552a =
+# Let {device} into this vault?
+# tfab743ab =
+
+# It gets every code the vault holds. Approve only if {device} shows the code {code}.
+# ta4cf95fb =
+
+# Approve
+te6edf55a = 승인
+
+# Refuse
+t9bcada35 = 거부
 
 # Typed into the page.
 # t97706593 =
 
 # Not typed into the page: {why}
 # t709fb554 =
-
-# Not syncing
-# t0f346f03 =
-
-# Syncing…
-t8ad2ae06 = 동기화하는 중…
-
-# Synced just now
-# t4df6f903 =
-
-# Synced {n} minute ago | Synced {n} minutes ago
-# tc7922c74 =
-
-# {when}: {pulled} in, {pushed} out
-# t9dc23f47 =
-
-# Sync failed: {e}
-# tcc341778 =
-
-# Joined: this device syncs the vault now.
-# t6b25e007 =
 
 # Not saved: {e}
 # ta9354472 =
@@ -1231,6 +1288,9 @@ t12e9b880 = 삭제되지 않음: { $e }
 # Not opened: {e}
 # t2e0269c8 =
 
+# Joined: this device syncs the vault now.
+# t6b25e007 =
+
 # Settings: an update is out
 # t5742fd7e =
 
@@ -1251,9 +1311,6 @@ t12e9b880 = 삭제되지 않음: { $e }
 
 # No group
 # t2721e1c1 =
-
-# Manage
-# td7aff116 =
 
 # Add code
 # t081cfe79 =
