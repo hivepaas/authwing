@@ -10,7 +10,6 @@
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
 
 use image::RgbaImage;
 use image::imageops::{self, FilterType};
@@ -28,7 +27,7 @@ pub const PREVIEW_WIDTH: u32 = 480;
 
 /// How long the system's question about the camera may wait for the user.
 #[cfg(target_os = "macos")]
-const ASKING: Duration = Duration::from_secs(120);
+const ASKING: std::time::Duration = std::time::Duration::from_secs(120);
 
 /// The camera, on until this is dropped.
 pub struct Camera {
