@@ -110,10 +110,13 @@ impl Git {
         };
         // An empty home: ~/.gitconfig (a rewrite to SSH, a helper with the
         // user's password) must not sign in for us.
+        // Named by the process and a count: an Instant's Debug has a colon,
+        // which no folder name on Windows may have.
+        static HOMES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let home = std::env::temp_dir().join(format!(
-            "authwing-anonymous-{}-{:?}",
+            "authwing-anonymous-{}-{}",
             std::process::id(),
-            Instant::now()
+            HOMES.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ));
         std::fs::create_dir_all(&home)?;
         let mut c = self.command(None);
