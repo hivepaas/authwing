@@ -106,20 +106,6 @@ pub(crate) fn by_said(by: &str) -> String {
     }
 }
 
-/// How long ago `t` was: "3 hours ago".
-pub(crate) fn ago(t: SystemTime) -> String {
-    let s = SystemTime::now()
-        .duration_since(t)
-        .map(|d| d.as_secs())
-        .unwrap_or(0) as usize;
-    match s {
-        0..=59 => tr!("just now"),
-        60..=3599 => tr_n!(s / 60, "{n} minute ago", "{n} minutes ago"),
-        3600..=86399 => tr_n!(s / 3600, "{n} hour ago", "{n} hours ago"),
-        _ => tr_n!(s / 86400, "{n} day ago", "{n} days ago"),
-    }
-}
-
 fn install() -> Install {
     let exe = std::env::current_exe().unwrap_or_default();
     authwing_update::install_of(&exe, |k| std::env::var(k).ok())
