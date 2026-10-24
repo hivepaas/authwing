@@ -247,6 +247,55 @@ impl<'a> Reader<'a> {
     }
 }
 
+/// An export shown as several QR codes (Google Authenticator's, past a
+/// few codes), put together as its codes are read, in any order.
+#[derive(Debug, Default)]
+pub struct Batches {
+    id: i32,
+    size: i32,
+    read: std::collections::BTreeMap<i32, Vec<Otp>>,
+    skipped: usize,
+}
+
+/// How far an export of several QR codes is read.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Gathered {
+    /// `read` of its `of` QR codes so far.
+    Partly { read: usize, of: usize },
+    /// All of them: their codes, in the export's order, and how many were
+    /// left out (see [`Skipped`]).
+    Whole { codes: Vec<Otp>, skipped: usize },
+}
+
+impl Batches {
+    /// Takes one QR code's part: a part of another export starts over.
+    pub fn add(&mut self, part: Migration) -> Gathered {
+        if part.batch_id != self.id || part.batch_size != self.size {
+            *self = Batches {
+                id: part.batch_id,
+                size: part.batch_size,
+                ..Batches::default()
+            };
+        }
+        if let std::collections::btree_map::Entry::Vacant(slot) = self.read.entry(part.batch_index)
+        {
+            self.skipped += part.skipped.len();
+            slot.insert(part.codes);
+        }
+        let of = usize::try_from(self.size.max(1)).unwrap_or(1);
+        if self.read.len() < of {
+            return Gathered::Partly {
+                read: self.read.len(),
+                of,
+            };
+        }
+        Gathered::Whole {
+            codes: self.read.values().flatten().cloned().collect(),
+            skipped: self.skipped,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use base64::engine::general_purpose::STANDARD;
@@ -440,5 +489,46 @@ mod tests {
             ])),
             Error::Migration("number too long")
         );
+    }
+
+    #[test]
+    fn an_export_of_several_codes_is_put_together_in_any_order() {
+        let part = |id: i32, index: i32, issuer: &str| Migration {
+            codes: vec![Otp::new(
+                issuer,
+                "me",
+                crate::Secret::from_base32("JBSWY3DPEHPK3PXP").expect("secret"),
+                crate::Kind::Totp { period: 30 },
+            )],
+            skipped: Vec::new(),
+            batch_size: 3,
+            batch_index: index,
+            batch_id: id,
+        };
+        let mut batches = Batches::default();
+        assert_eq!(
+            batches.add(part(7, 1, "B")),
+            Gathered::Partly { read: 1, of: 3 }
+        );
+        // The same part again counts once.
+        assert_eq!(
+            batches.add(part(7, 1, "B")),
+            Gathered::Partly { read: 1, of: 3 }
+        );
+        // A part of another export starts over.
+        assert_eq!(
+            batches.add(part(8, 0, "X")),
+            Gathered::Partly { read: 1, of: 3 }
+        );
+        assert_eq!(
+            batches.add(part(7, 2, "C")),
+            Gathered::Partly { read: 1, of: 3 }
+        );
+        batches.add(part(7, 0, "A"));
+        let Gathered::Whole { codes, skipped } = batches.add(part(7, 1, "B")) else {
+            panic!("not whole");
+        };
+        let issuers: Vec<&str> = codes.iter().map(|c| c.issuer.as_str()).collect();
+        assert_eq!((issuers, skipped), (vec!["A", "B", "C"], 0));
     }
 }

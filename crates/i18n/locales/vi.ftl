@@ -46,6 +46,33 @@ t4a7417f5 =
 # Read from the QR code. Check the names, then add it.
 t494fced8 = Đã đọc từ mã QR. Kiểm tra tên, rồi thêm.
 
+# No camera was found.
+tc5a6210e = Không tìm thấy camera nào.
+
+# QR code {read} of {of} read: show the next one.
+t9a91fa26 = Đã đọc mã QR { $read } trên { $of }: hãy đưa mã tiếp theo.
+
+# {n} code read from the export: Add adds it. | {n} codes read from the export: Add adds them all.
+te4a9664a =
+    { $n ->
+       *[other] Đã đọc { $n } mã từ bản xuất: bấm Thêm để thêm tất cả.
+    }
+
+# {n} code read from the export: Add adds it ({left} left out). | {n} codes read from the export: Add adds them all ({left} left out).
+t7b1b6860 =
+    { $n ->
+       *[other] Đã đọc { $n } mã từ bản xuất: bấm Thêm để thêm tất cả ({ $left } mã bị bỏ qua).
+    }
+
+# macOS asks first: turn authwing on in System Settings › Privacy & Security › Camera, then try again.
+tdfd4f8b3 = macOS hỏi trước: bật authwing trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Camera, rồi thử lại.
+
+# The camera may not be used.
+t40813ca5 = Không được phép dùng camera.
+
+# The camera could not be used: {why}
+t8d5dc2f5 = Không dùng được camera: { $why }
+
 # The screen was not shared, so nothing was read.
 t4c77286d = Màn hình không được chia sẻ nên không đọc được gì.
 
@@ -54,6 +81,12 @@ t9133669c = Không đọc được: { $why }
 
 # This is not an image authwing can read.
 t5d87f9dd = Đây không phải ảnh authwing đọc được.
+
+# Starting the camera…
+tacf1655f = Đang bật camera…
+
+# Hold the QR code up to the camera: the phone's, or on paper. Nothing it sees is kept.
+t32699fea = Đưa mã QR trước camera: trên điện thoại, hay trên giấy. Không gì camera thấy được lưu lại.
 
 # Edit the code
 tb79e0e3f = Sửa mã
@@ -69,6 +102,12 @@ t6aad8485 = Đang đọc…
 
 # Scan the screen
 t1eac14ed = Quét màn hình
+
+# Stop the camera
+tf594afdd = Tắt camera
+
+# Use the camera
+t9f05fab6 = Dùng camera
 
 # Choose an image…
 t4b006b9a = Chọn ảnh…

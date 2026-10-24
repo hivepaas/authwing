@@ -7,6 +7,10 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[features]
+# Reading QR codes from the camera, through nokhwa.
+camera = ["dep:nokhwa"]
+
 [dependencies]
 # GPUI's version, so its images are these. The formats are those a file or
 # the clipboard brings; GPUI builds them all already.
@@ -14,6 +18,8 @@ image = { version = "0.25.10", default-features = false, features = ["png", "jpe
 # QR codes found and read, in pure Rust.
 rqrr = { version = "0.11", default-features = false }
 thiserror.workspace = true
+# Frames from the camera: AVFoundation, Media Foundation, V4L2.
+nokhwa = { version = "0.10.11", features = ["input-native"], optional = true }
 
 # Each display captured: CoreGraphics on macOS, GDI on Windows. Not on Linux,
 # where it would link PipeWire and libgbm for its screen recording.
@@ -35,6 +41,10 @@ x11rb = { version = "0.13", features = ["image", "randr"] }
 [dev-dependencies]
 # QR codes made in the tests, to read back.
 qrcode = { version = "0.14", default-features = false }
+
+[[example]]
+name = "camera_frame"
+required-features = ["camera"]
 
 [lints]
 workspace = true

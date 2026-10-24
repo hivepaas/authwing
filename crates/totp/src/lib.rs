@@ -23,6 +23,6 @@ mod uri;
 pub use code::{Algorithm, hotp, seconds_left, steam, time_step, totp};
 pub use display::grouped;
 pub use error::{Error, Result};
-pub use migration::{Migration, Skipped};
+pub use migration::{Batches, Gathered, Migration, Skipped};
 pub use otp::{DEFAULT_DIGITS, DEFAULT_PERIOD, DIGITS_RANGE, Kind, Otp};
 pub use secret::Secret;

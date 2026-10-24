@@ -27,6 +27,8 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>11.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>authwing reads the QR code you hold up to the camera, to add a code. Nothing it sees is kept.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>authwing listens while you hold its shortcut, to find the code you name. What you say stays on this Mac.</string>
 	<key>NSHighResolutionCapable</key>

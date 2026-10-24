@@ -30,8 +30,9 @@ from there; the SSH client does not.
 **Works now**
 
 * **Codes:** TOTP, HOTP and Steam Guard (SHA-1/256/512, 5 to 10 digits), added
-  by reading the site's QR code on the screen or in an image, or from an
-  `otpauth://` link, a Google Authenticator export or a typed key;
+  by reading the site's QR code on the screen, in an image or held up to the
+  camera (a phone's Google Authenticator export too, however many QR codes it
+  shows), or from an `otpauth://` link or a typed key;
   cards that count down and show the next code at the end of the period;
   copy with a click, Enter or Cmd/Ctrl+1…9, the clipboard cleared after 20 s.
 * **Find and file:** type to find by service, account, group or site; groups
@@ -105,7 +106,7 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 | `crates/app` | The GPUI window: codes, adding them, the quick panel, Settings, the Sync panel |
 | `crates/backup` | authwing's encrypted backup, the plain export, other apps' exports |
 | `crates/totp` | One-time codes, `otpauth://` links, Google Authenticator's export |
-| `crates/scan` | QR codes read from the screen, an image file or the clipboard |
+| `crates/scan` | QR codes read from the screen, the camera, an image file or the clipboard |
 | `crates/context` | The active app and window, sites against look-alikes, codes ranked for a context |
 | `crates/voice` | Matching a spoken name to a code; Whisper, the microphone and the model's download as features |
 | `crates/bridge` | The browser extension's protocol, Native Messaging host and installer |

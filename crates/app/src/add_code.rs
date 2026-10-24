@@ -3,23 +3,27 @@
 //! from the key a site shows to type when its QR code cannot be scanned.
 //!
 //! The QR code itself is read where it is: on the screen, in an image file
-//! chosen or dropped on the dialog, or in an image pasted into it. What it
-//! holds goes into the link field, as if pasted there.
+//! chosen or dropped on the dialog, in an image pasted into it, or held up
+//! to the camera. What it holds goes into the link field, as if pasted
+//! there; an export shown as several QR codes (Google Authenticator's) is
+//! put together from the camera, all its codes then added at once.
 //!
 //! The same dialog edits a code once added ([`AddCode::edit`]): its names,
 //! its group and its sites; its key stays as it is.
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Duration;
 
 use gpui::{
     App, ClipboardEntry, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable,
-    FontWeight, KeyDownEvent, PathPromptOptions, Render, SharedString, Window, div, prelude::*, px,
-    rgb,
+    FontWeight, ImageSource, KeyDownEvent, ObjectFit, PathPromptOptions, Render, RenderImage,
+    SharedString, Window, div, img, prelude::*, px, rgb,
 };
 
 use authwing_i18n::{tr, tr_n};
-use authwing_totp::{Kind, Migration, Otp, Secret};
+use authwing_scan::camera::{self, Camera, Seen};
+use authwing_totp::{Batches, Gathered, Kind, Migration, Otp, Secret};
 
 use crate::colors::colors;
 use crate::input::{Changed, TextInput, said};
@@ -60,6 +64,19 @@ pub struct AddCode {
     editing: Option<String>,
     /// The groups there are, to pick one.
     groups: Vec<(String, u32)>,
+    /// The camera, while it looks for a QR code, and its last frame.
+    camera: Option<Camera>,
+    preview: Option<Arc<RenderImage>>,
+    /// The cameras there are, and the one in use.
+    cameras: Vec<String>,
+    camera_index: usize,
+    /// What the camera has read of an export of several QR codes.
+    batches: Batches,
+    /// What to say under the camera's picture.
+    camera_note: Option<String>,
+    /// Codes the camera read all at once (an export of several QR codes),
+    /// which Add adds.
+    collected: Option<Vec<Otp>>,
     focus: FocusHandle,
 }
 
@@ -113,6 +130,13 @@ impl AddCode {
             scanning: false,
             editing: None,
             groups,
+            camera: None,
+            preview: None,
+            cameras: Vec::new(),
+            camera_index: 0,
+            batches: Batches::default(),
+            camera_note: None,
+            collected: None,
             focus: cx.focus_handle(),
         }
     }
@@ -198,6 +222,16 @@ impl AddCode {
                 id,
                 issuer,
                 account,
+                group,
+                sites,
+            });
+            return;
+        }
+        if let Some(codes) = self.collected.clone()
+            && text(&self.link, cx).is_empty()
+        {
+            cx.emit(AddEvent::Add {
+                codes,
                 group,
                 sites,
             });
@@ -363,12 +397,8 @@ impl AddCode {
             });
             return;
         };
-        // The names come from the code, not from one read before.
-        for field in [&self.issuer, &self.account] {
-            field.update(cx, |f, cx| f.set_text("", 0..0, cx));
-        }
-        self.link
-            .update(cx, |f, cx| f.set_text(first, first.len()..first.len(), cx));
+        let first = first.clone();
+        self.fill_link(&first, cx);
         let said = if codes.len() > 1 {
             tr_n!(
                 codes.len(),
@@ -378,7 +408,139 @@ impl AddCode {
         } else {
             tr!("Read from the QR code. Check the names, then add it.")
         };
-        self.note = Some((first.clone(), said));
+        self.note = Some((first, said));
+    }
+
+    /// Puts a code's text, as read from a QR code, in the link field; the
+    /// names come from it, not from one read before.
+    fn fill_link(&mut self, text: &str, cx: &mut Context<Self>) {
+        self.collected = None;
+        for field in [&self.issuer, &self.account] {
+            field.update(cx, |f, cx| f.set_text("", 0..0, cx));
+        }
+        self.link
+            .update(cx, |f, cx| f.set_text(text, text.len()..text.len(), cx));
+    }
+
+    /// Turns the camera on (camera `index` of those there are), its frames
+    /// read until a two-factor code is found, or it is stopped.
+    fn start_camera(&mut self, index: usize, cx: &mut Context<Self>) {
+        self.stop_camera(cx);
+        self.cameras = camera::cameras();
+        if self.cameras.is_empty() {
+            self.problem = Some(tr!("No camera was found."));
+            cx.notify();
+            return;
+        }
+        self.camera_index = index.min(self.cameras.len() - 1);
+        self.problem = None;
+        self.note = None;
+        self.camera_note = None;
+        // A frame or two waiting at most: the window draws the newest.
+        let (send, frames) = async_channel::bounded(2);
+        let opened = camera::open(self.camera_index, move |seen| {
+            let _ = send.try_send(seen);
+        });
+        match opened {
+            Ok(camera) => self.camera = Some(camera),
+            Err(e) => {
+                self.problem = Some(camera_error(&e));
+                cx.notify();
+                return;
+            }
+        }
+        cx.spawn(async move |this, cx| {
+            while let Ok(seen) = frames.recv().await {
+                if this
+                    .update(cx, |this, cx| this.camera_saw(seen, cx))
+                    .is_err()
+                {
+                    return;
+                }
+            }
+        })
+        .detach();
+        cx.notify();
+    }
+
+    /// Turns the camera off; its picture goes.
+    fn stop_camera(&mut self, cx: &mut Context<Self>) {
+        self.camera = None;
+        if let Some(old) = self.preview.take() {
+            cx.drop_image(old, None);
+        }
+        cx.notify();
+    }
+
+    fn camera_saw(&mut self, seen: Seen, cx: &mut Context<Self>) {
+        if self.camera.is_none() {
+            return;
+        }
+        let (preview, texts) = match seen {
+            Seen::Failed(e) => {
+                self.stop_camera(cx);
+                self.problem = Some(camera_error(&e));
+                return;
+            }
+            Seen::Frame { preview, texts } => (preview, texts),
+        };
+        // GPUI draws BGRA.
+        let mut bgra = preview;
+        for pixel in bgra.pixels_mut() {
+            pixel.0.swap(0, 2);
+        }
+        let frame = RenderImage::new(vec![image::Frame::new(bgra)]);
+        if let Some(old) = self.preview.replace(Arc::new(frame)) {
+            cx.drop_image(old, None);
+        }
+        cx.notify();
+        let Some(text) = authwing_scan::two_factor(&texts).into_iter().next() else {
+            return;
+        };
+        let several = text
+            .get(.."otpauth-migration:".len())
+            .is_some_and(|s| s.eq_ignore_ascii_case("otpauth-migration:"))
+            .then(|| Migration::parse(&text).ok())
+            .flatten()
+            .filter(|m| m.batch_size > 1);
+        match several.map(|part| self.batches.add(part)) {
+            Some(Gathered::Partly { read, of }) => {
+                self.camera_note = Some(tr!(
+                    "QR code {read} of {of} read: show the next one.",
+                    read = read.to_string(),
+                    of = of.to_string()
+                ));
+            }
+            Some(Gathered::Whole { codes, skipped }) => {
+                self.stop_camera(cx);
+                self.fill_link("", cx);
+                self.camera_note = None;
+                let said = if skipped == 0 {
+                    tr_n!(
+                        codes.len(),
+                        "{n} code read from the export: Add adds it.",
+                        "{n} codes read from the export: Add adds them all."
+                    )
+                } else {
+                    tr_n!(
+                        codes.len(),
+                        "{n} code read from the export: Add adds it ({left} left out).",
+                        "{n} codes read from the export: Add adds them all ({left} left out).",
+                        left = skipped.to_string()
+                    )
+                };
+                self.collected = Some(codes);
+                self.note = Some((String::new(), said));
+            }
+            None => {
+                self.stop_camera(cx);
+                self.fill_link(&text, cx);
+                self.note = Some((
+                    text,
+                    tr!("Read from the QR code. Check the names, then add it."),
+                ));
+            }
+        }
     }
 
     /// Cmd/Ctrl+V with an image, or an image file, on the clipboard reads
@@ -432,6 +594,22 @@ fn is_image(paths: &ExternalPaths) -> bool {
     })
 }
 
+/// What went wrong with the camera, in the user's language.
+fn camera_error(e: &authwing_scan::Error) -> String {
+    match e {
+        authwing_scan::Error::NotAllowed if cfg!(target_os = "macos") => tr!(
+            "macOS asks first: turn authwing on in System Settings › Privacy & Security › Camera, then try again."
+        ),
+        authwing_scan::Error::NotAllowed => tr!("The camera may not be used."),
+        authwing_scan::Error::Capture(why) => {
+            tr!("The camera could not be used: {why}", why = why.clone())
+        }
+        authwing_scan::Error::Unreadable(why) => {
+            tr!("The camera could not be used: {why}", why = why.to_string())
+        }
+    }
+}
+
 fn scan_error(e: &authwing_scan::Error) -> String {
     match e {
         authwing_scan::Error::NotAllowed if cfg!(target_os = "macos") => tr!(
@@ -472,6 +650,69 @@ impl Render for AddCode {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let editing = self.editing.is_some();
+        let camera_on = self.camera.is_some();
+        let picture = match &self.preview {
+            Some(frame) => img(ImageSource::Render(frame.clone()))
+                .w_full()
+                .h_full()
+                .object_fit(ObjectFit::Contain)
+                .into_any_element(),
+            None => div()
+                .text_size(ui(12.))
+                .text_color(rgb(c.muted))
+                .child(tr!("Starting the camera…"))
+                .into_any_element(),
+        };
+        let mut choices = div().flex().flex_wrap().gap(px(6.));
+        for (i, name) in self.cameras.iter().enumerate() {
+            let on = i == self.camera_index;
+            choices = choices.child(
+                div()
+                    .id(SharedString::from(format!("camera-{i}")))
+                    .h(px(24.))
+                    .px(px(8.))
+                    .flex()
+                    .items_center()
+                    .rounded(px(6.))
+                    .border_1()
+                    .border_color(rgb(if on { c.accent } else { c.edge }))
+                    .when(on, |d| d.bg(rgb(c.selected)))
+                    .cursor_pointer()
+                    .hover(|s| s.bg(rgb(c.hover)))
+                    .text_size(ui(12.))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        if i != this.camera_index {
+                            this.start_camera(i, cx);
+                        }
+                    }))
+                    .child(name.clone()),
+            );
+        }
+        let camera_panel = div()
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .child(
+                div()
+                    .w_full()
+                    .h(px(270.))
+                    .rounded(px(8.))
+                    .overflow_hidden()
+                    .bg(rgb(0x000000))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(picture),
+            )
+            .child(
+                div()
+                    .text_size(ui(12.))
+                    .text_color(rgb(c.soft))
+                    .child(self.camera_note.clone().unwrap_or_else(|| {
+                        tr!("Hold the QR code up to the camera: the phone's, or on paper. Nothing it sees is kept.")
+                    })),
+            )
+            .when(self.cameras.len() > 1, |d| d.child(choices));
         let typed_group = self.group.read(cx).text().trim().to_lowercase();
         let mut group_chips = div().flex().flex_wrap().gap(px(6.));
         for (name, color) in &self.groups {
@@ -539,6 +780,7 @@ impl Render for AddCode {
             .when(!editing, |d| {
                 d.child(
                 div()
+                    .when(camera_on, |d| d.hidden())
                     .text_size(ui(12.))
                     .text_color(rgb(c.muted))
                     .child(tr!(
@@ -548,6 +790,7 @@ impl Render for AddCode {
             .child(
                 div()
                     .flex()
+                    .flex_wrap()
                     .items_center()
                     .gap(px(8.))
                     .child(
@@ -562,6 +805,23 @@ impl Render for AddCode {
                         .on_click(cx.listener(|this, _, _, cx| this.scan_screen(cx))),
                     )
                     .child(
+                        outline_button(
+                            "scan-camera",
+                            &if camera_on {
+                                tr!("Stop the camera")
+                            } else {
+                                tr!("Use the camera")
+                            },
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            if this.camera.is_some() {
+                                this.stop_camera(cx);
+                            } else {
+                                this.start_camera(this.camera_index, cx);
+                            }
+                        })),
+                    )
+                    .child(
                         outline_button("scan-image", &tr!("Choose an image…"))
                             .on_click(cx.listener(|this, _, _, cx| this.choose_image(cx))),
                     )
@@ -572,23 +832,26 @@ impl Render for AddCode {
                             .child(tr!("or paste or drop one here")),
                     ),
             )
-            .child(field(tr!("Link or key"), &self.link))
+            .when(camera_on, |d| d.child(camera_panel))
+            .when(!camera_on, |d| d.child(field(tr!("Link or key"), &self.link)))
             })
-            .child(
-                div()
-                    .flex()
-                    .gap(px(12.))
-                    .child(div().flex_1().child(field(tr!("Service"), &self.issuer)))
-                    .child(div().flex_1().child(field(tr!("Account"), &self.account))),
-            )
-            .child(
-                div()
-                    .flex()
-                    .gap(px(12.))
-                    .child(div().w(px(160.)).child(field(tr!("Group"), &self.group)))
-                    .child(div().flex_1().child(field(tr!("Show it first on"), &self.sites))),
-            )
-            .when(!self.groups.is_empty(), |d| d.child(group_chips))
+            .when(!camera_on, |d| {
+                d.child(
+                    div()
+                        .flex()
+                        .gap(px(12.))
+                        .child(div().flex_1().child(field(tr!("Service"), &self.issuer)))
+                        .child(div().flex_1().child(field(tr!("Account"), &self.account))),
+                )
+                .child(
+                    div()
+                        .flex()
+                        .gap(px(12.))
+                        .child(div().w(px(160.)).child(field(tr!("Group"), &self.group)))
+                        .child(div().flex_1().child(field(tr!("Show it first on"), &self.sites))),
+                )
+            })
+            .when(!self.groups.is_empty() && !camera_on, |d| d.child(group_chips))
             .when(self.problem.is_none(), |d| {
                 let link = self.link.read(cx).text();
                 let note = self.note.as_ref().filter(|(text, _)| link == text.as_str());

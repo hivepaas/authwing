@@ -7,6 +7,7 @@
 //! - [`from_file_bytes`]: an image file, or an image from the clipboard.
 //! - [`screen`]: every display, as it is now. On macOS this needs the
 //!   user's permission ([`access`], [`ask_access`]).
+//! - `camera` (feature `camera`): the camera's frames, as they come.
 //!
 //! [`two_factor`] then keeps the texts that are two-factor codes: an
 //! `otpauth://` URI for one code, or an `otpauth-migration://` one for the
@@ -16,6 +17,8 @@
 //! UI, and the reading takes a moment on a large screen: call it off the
 //! UI thread.
 
+#[cfg(feature = "camera")]
+pub mod camera;
 mod decode;
 mod screen;
 
