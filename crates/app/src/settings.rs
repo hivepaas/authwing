@@ -38,6 +38,8 @@ pub enum SettingsEvent {
     Lock,
     /// Codes came in from a backup or another app's export.
     CodesChanged,
+    /// Show the welcome again.
+    Welcome,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1944,7 +1946,7 @@ impl SettingsView {
             )))
     }
 
-    fn about(&self) -> gpui::Div {
+    fn about(&self, cx: &mut Context<Self>) -> gpui::Div {
         div()
             .flex()
             .flex_col()
@@ -1972,6 +1974,12 @@ impl SettingsView {
                         tr!("Not looked for: this build has no release keys to check them with."),
                         div(),
                     )),
+            )
+            .child(
+                div().flex().child(
+                    outline_button("show-welcome", &tr!("Show the welcome again"))
+                        .on_click(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::Welcome))),
+                ),
             )
     }
 }
@@ -2063,7 +2071,7 @@ impl Render for SettingsView {
             Page::Security => self.security(cx),
             Page::Backup => self.backup_page(cx),
             Page::Browsers => self.browsers_page(cx),
-            Page::About => self.about(),
+            Page::About => self.about(cx),
         };
         let page = div().flex_1().min_h_0().flex().child(nav).child(
             div()

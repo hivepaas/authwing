@@ -34,6 +34,7 @@ mod syncing;
 mod typing;
 mod vault_slot;
 mod voice;
+mod welcome;
 mod widgets;
 mod workspace;
 

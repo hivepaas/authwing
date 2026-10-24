@@ -30,7 +30,8 @@ use crate::settings::{SettingsEvent, SettingsView};
 use crate::sync_panel::{PanelEvent, SyncPanel};
 use crate::syncing::{SyncEvent, SyncWorker};
 use crate::vault_slot::VaultSlot;
-use crate::widgets::{icon_button, outline_button, primary_button};
+use crate::welcome::{Welcome, WelcomeEvent};
+use crate::widgets::{icon_button, outline_button, primary_button, text_button};
 
 /// How long a notice stays.
 mod listening;
@@ -86,6 +87,10 @@ pub struct Workspace {
     /// The groups there are, with their colors.
     groups: Vec<Group>,
     group_editor: Option<Entity<GroupEditor>>,
+    /// The welcome, the first time on a device with no codes.
+    welcome: Option<Entity<Welcome>>,
+    /// Whether it was looked at whether to show it, once the codes were read.
+    welcome_decided: bool,
     adding: Option<Entity<AddCode>>,
     panel: Option<Entity<SyncPanel>>,
     settings: Option<Entity<SettingsView>>,
@@ -190,6 +195,8 @@ impl Workspace {
             shown: Shown::All,
             groups: Vec::new(),
             group_editor: None,
+            welcome: None,
+            welcome_decided: false,
             adding: None,
             panel: None,
             settings: None,
@@ -883,6 +890,57 @@ impl Workspace {
         self.show_adding(add, window, cx);
     }
 
+    /// Shows the welcome, in place of the codes.
+    fn show_welcome(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let (codes, settings) = (self.codes.len(), self.live.settings().clone());
+        let vault = self.vault.clone();
+        let welcome = cx.new(|_| Welcome::new(codes, settings, vault));
+        cx.subscribe_in(
+            &welcome,
+            window,
+            |ws, _, event: &WelcomeEvent, window, cx| {
+                match event {
+                    WelcomeEvent::Add => ws.open_adding(window, cx),
+                    WelcomeEvent::Scan => ws.open_scanning(window, cx),
+                    WelcomeEvent::Camera => {
+                        ws.open_adding(window, cx);
+                        if let Some(add) = &ws.adding {
+                            add.update(cx, |add, cx| add.use_camera(cx));
+                        }
+                    }
+                    WelcomeEvent::Settings(page) => ws.open_settings_at(*page, window, cx),
+                    WelcomeEvent::Done => {
+                        ws.welcome = None;
+                        if let Some(store) = ws.live.store()
+                            && let Err(e) = store.save_welcome_seen(true)
+                        {
+                            eprintln!("authwing: the welcome's end not saved: {e}");
+                        }
+                    }
+                }
+                cx.notify();
+            },
+        )
+        .detach();
+        self.welcome = Some(welcome);
+        cx.notify();
+    }
+
+    /// Settings, at `page`.
+    fn open_settings_at(
+        &mut self,
+        page: crate::settings::Page,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.settings.is_none() {
+            self.toggle_settings(window, cx);
+        }
+        if let Some(settings) = &self.settings {
+            settings.update(cx, |view, cx| view.set_page(page, cx));
+        }
+    }
+
     /// Adding, then reading the screen at once: the sidebar's scan button.
     fn open_scanning(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.open_adding(window, cx);
@@ -1092,6 +1150,10 @@ impl Workspace {
                     if ws.vault.ready().is_none() {
                         ws.settings = None;
                     }
+                }
+                SettingsEvent::Welcome => {
+                    ws.settings = None;
+                    ws.show_welcome(window, cx);
                 }
             }
             cx.notify();
@@ -1869,6 +1931,10 @@ impl Workspace {
                 primary_button("first-code", &tr!("Add your first code"))
                     .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
             )
+            .child(
+                text_button("show-welcome", &tr!("Show the welcome"), c.muted)
+                    .on_click(cx.listener(|ws, _, window, cx| ws.show_welcome(window, cx))),
+            )
             .into_any_element()
         } else if cards.is_empty() {
             let typed = !self.filter.read(cx).text().trim().is_empty();
@@ -2086,6 +2152,17 @@ impl Render for Workspace {
             cx.set_global(bottom);
         }
         let c = colors();
+        // The first time on this device with no codes: the welcome.
+        if self.loaded && !self.welcome_decided {
+            self.welcome_decided = true;
+            if self.codes.is_empty() && !crate::welcome::seen(self.live.store()) {
+                self.show_welcome(window, cx);
+            }
+        }
+        if let Some(welcome) = &self.welcome {
+            let (codes, settings) = (self.codes.len(), self.live.settings().clone());
+            welcome.update(cx, |w, cx| w.update_from(codes, &settings, cx));
+        }
         let main: AnyElement = if let Some(settings) = &self.settings {
             bottom
                 .round(div().size_full().child(settings.clone()))
@@ -2095,7 +2172,21 @@ impl Render for Workspace {
                 .size_full()
                 .flex()
                 .child(bottom.left().round(self.sidebar(cx)))
-                .child(bottom.right().round(self.codes_view(cx)))
+                .child(match &self.welcome {
+                    Some(welcome) => bottom
+                        .right()
+                        .round(
+                            div()
+                                .id("welcome")
+                                .flex_1()
+                                .h_full()
+                                .overflow_y_scroll()
+                                .bg(rgb(c.page))
+                                .child(welcome.clone()),
+                        )
+                        .into_any_element(),
+                    None => bottom.right().round(self.codes_view(cx)).into_any_element(),
+                })
                 .into_any_element()
         } else {
             bottom.round(self.locked_view(cx)).into_any_element()
