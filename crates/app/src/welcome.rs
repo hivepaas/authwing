@@ -455,7 +455,7 @@ impl Welcome {
 }
 
 impl Render for Welcome {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let step = STEPS[self.step];
         let (title, lead) = match step {
@@ -517,7 +517,7 @@ impl Render for Welcome {
                             .flex()
                             .items_center()
                             .gap(px(12.))
-                            .child(gpui::img("icons/app-mark.svg").size(px(28.)))
+                            .child(crate::mark::mark(px(28.), window.scale_factor(), cx))
                             .child(
                                 div()
                                     .flex()
