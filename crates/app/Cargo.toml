@@ -31,6 +31,8 @@ authwing-backup.workspace = true
 authwing-scan = { workspace = true, features = ["camera"] }
 # Frames to draw: the camera's, as GPUI takes them.
 image = { version = "0.25", default-features = false }
+# The brands' icons, compressed into the app (assets/brands.tsv.gz).
+flate2 = "1"
 authwing-voice = { workspace = true, features = ["whisper", "mic", "download"] }
 gpui.workspace = true
 gpui_platform.workspace = true

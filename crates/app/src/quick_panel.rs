@@ -31,6 +31,8 @@ pub struct Item {
     pub title: String,
     pub detail: String,
     pub initials: String,
+    /// Its brand, for its icon.
+    pub brand: Option<&'static crate::brands::Brand>,
     pub otp: Otp,
     /// Why it matches the app or page, for those that do.
     pub why: Option<String>,
@@ -249,20 +251,12 @@ impl QuickPanel {
                     PanelEvent::Copy(id.clone())
                 })
             }))
-            .child(
-                div()
-                    .size(px(28.))
-                    .flex_shrink_0()
-                    .rounded(px(7.))
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .bg(rgb(c.chip))
-                    .text_size(ui(10.))
-                    .font_weight(FontWeight::BOLD)
-                    .text_color(rgb(c.soft))
-                    .child(item.initials.clone()),
-            )
+            .child(crate::brands::tile(
+                item.brand,
+                &item.title,
+                &item.initials,
+                28.,
+            ))
             .child(
                 div()
                     .flex_1()

@@ -39,6 +39,8 @@ pub struct Entry {
     /// Those of them that read as sites, to match pages against.
     pub parsed: Vec<Site>,
     pub favorite: bool,
+    /// Its brand, for its icon.
+    pub brand: Option<&'static crate::brands::Brand>,
 }
 
 impl Entry {
@@ -137,7 +139,8 @@ pub fn load(vault: &Vault) -> (Vec<Entry>, Vec<String>) {
                     .get(SITES)
                     .map(|s| s.lines().map(str::to_string).collect())
                     .unwrap_or_default();
-                let parsed = sites.iter().filter_map(|s| Site::parse(s).ok()).collect();
+                let parsed: Vec<Site> = sites.iter().filter_map(|s| Site::parse(s).ok()).collect();
+                let brand = crate::brands::find(&otp.issuer, &otp.account, &parsed);
                 Some(Entry {
                     id,
                     otp,
@@ -145,6 +148,7 @@ pub fn load(vault: &Vault) -> (Vec<Entry>, Vec<String>) {
                     sites,
                     parsed,
                     favorite: fields.get(FAVORITE).is_some_and(|f| f == "1"),
+                    brand,
                 })
             }
             Err(e) => {
@@ -246,6 +250,7 @@ mod tests {
             sites: vec!["console.aws.amazon.com".into()],
             parsed: vec![],
             favorite: false,
+            brand: None,
         };
         let words = |s: &str| -> Vec<String> { s.split_whitespace().map(str::to_string).collect() };
         assert!(entry.matches(&words("amazon prod")));
@@ -265,6 +270,7 @@ mod tests {
             sites: vec![],
             parsed: vec![],
             favorite: false,
+            brand: None,
         }
     }
 }

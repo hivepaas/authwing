@@ -11,6 +11,7 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 mod add_code;
+mod brands;
 mod browser;
 mod chrome;
 mod codes;
@@ -132,6 +133,9 @@ const ICONS: &[(&str, &[u8])] = &[
 
 impl gpui::AssetSource for Assets {
     fn load(&self, path: &str) -> gpui::Result<Option<std::borrow::Cow<'static, [u8]>>> {
+        if path.starts_with(brands::PREFIX) {
+            return Ok(brands::svg(path).map(std::borrow::Cow::Owned));
+        }
         Ok(ICONS
             .iter()
             .find(|(p, _)| *p == path)

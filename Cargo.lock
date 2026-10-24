@@ -628,6 +628,7 @@ dependencies = [
  "authwing-vault",
  "authwing-voice",
  "enigo",
+ "flate2",
  "global-hotkey",
  "gpui-pre",
  "gpui-pre-platform",

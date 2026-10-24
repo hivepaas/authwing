@@ -746,6 +746,7 @@ impl Workspace {
             title: e.title(),
             detail: e.detail().to_string(),
             initials: e.initials(),
+            brand: e.brand,
             otp: e.otp.clone(),
             why: why.map(reason_label),
             search: format!(
@@ -1572,20 +1573,12 @@ impl Workspace {
                     .flex()
                     .items_center()
                     .gap(px(10.))
-                    .child(
-                        div()
-                            .size(px(30.))
-                            .flex_shrink_0()
-                            .rounded(px(8.))
-                            .flex()
-                            .items_center()
-                            .justify_center()
-                            .bg(rgb(c.chip))
-                            .text_size(ui(11.))
-                            .font_weight(FontWeight::BOLD)
-                            .text_color(rgb(c.soft))
-                            .child(entry.initials()),
-                    )
+                    .child(crate::brands::tile(
+                        entry.brand,
+                        &entry.title(),
+                        &entry.initials(),
+                        30.,
+                    ))
                     .child(
                         div()
                             .flex_1()
