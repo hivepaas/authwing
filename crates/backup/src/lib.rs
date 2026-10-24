@@ -11,12 +11,14 @@
 //! - The plain export ([`plain`]) is one URI per line: what nearly every app
 //!   imports, and what anyone who sees the file can use.
 //! - [`import`] reads authwing's backup, the exports of Aegis, 2FAS,
-//!   andOTP, Stratum (Authenticator Pro), TOTP Authenticator and Bitwarden,
-//!   Ente Auth's plain-text export and lists of URIs (with Google
-//!   Authenticator's `otpauth-migration://` among them); [`detect`] says
-//!   which a file is. A code authwing cannot use (MD5, mOTP, no secret) is
-//!   listed in [`Imported::skipped`] with the reason, and the rest come in:
-//!   one bad entry does not cost the user the others.
+//!   andOTP, Stratum (Authenticator Pro), TOTP Authenticator, Bitwarden
+//!   (password-protected too), FreeOTP+ and Proton Authenticator, Ente
+//!   Auth's plain-text export, Steam Desktop Authenticator's maFiles and
+//!   lists of URIs (with Google Authenticator's `otpauth-migration://` among
+//!   them); [`detect`] says which a file is. A code authwing cannot use
+//!   (MD5, mOTP, no secret) is listed in [`Imported::skipped`] with the
+//!   reason, and the rest come in: one bad entry does not cost the user the
+//!   others.
 //! - Encrypted backups that do not say what they are, andOTP's and TOTP
 //!   Authenticator's, are [`Format::EncryptedFile`]: the password that opens
 //!   one tells which app wrote it.
@@ -26,6 +28,9 @@ mod andotp;
 mod authwing;
 mod bitwarden;
 mod crypto;
+mod freeotp_plus;
+mod proton;
+mod steam;
 mod stratum;
 mod totp_authenticator;
 mod twofas;
@@ -73,7 +78,7 @@ pub enum Format {
     Aegis,
     /// A 2FAS backup (`.2fas`), plain or encrypted.
     TwoFas,
-    /// Bitwarden's JSON export.
+    /// Bitwarden's JSON export, plain or protected by a password.
     Bitwarden,
     /// Ente Auth's export.
     Ente,
@@ -85,6 +90,13 @@ pub enum Format {
     /// An encrypted file that does not say what it is: andOTP's backup, or
     /// TOTP Authenticator's. Whichever opens with the password is read.
     EncryptedFile,
+    /// FreeOTP+'s JSON export.
+    FreeOtpPlus,
+    /// Proton Authenticator's export, plain or encrypted.
+    Proton,
+    /// A Steam Guard maFile, from Steam Desktop Authenticator, or the Steam
+    /// app's own file of its accounts.
+    Steam,
 }
 
 impl Format {
@@ -100,6 +112,9 @@ impl Format {
             Format::AndOtp => "andOTP",
             Format::Stratum => "Stratum (Authenticator Pro)",
             Format::EncryptedFile => "an encrypted export",
+            Format::FreeOtpPlus => "FreeOTP+",
+            Format::Proton => "Proton Authenticator",
+            Format::Steam => "Steam (maFile)",
         }
     }
 }
@@ -208,6 +223,10 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
             return text.contains(authwing::FORMAT).then_some(Format::Authwing);
         };
         let has = |key: &str| json.get(key).is_some();
+        let steam_accounts = || {
+            let accounts = json.get("accounts").and_then(Value::as_object);
+            accounts.is_some_and(|a| a.values().any(|a| a.get("shared_secret").is_some()))
+        };
         return if json.get("format").and_then(Value::as_str) == Some(authwing::FORMAT) {
             Some(Format::Authwing)
         } else if has("header") && has("db") {
@@ -220,6 +239,12 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
             Some(Format::Ente)
         } else if has("Authenticators") {
             Some(Format::Stratum)
+        } else if json.get("tokens").is_some_and(Value::is_array) {
+            Some(Format::FreeOtpPlus)
+        } else if has("version") && (has("entries") || (has("salt") && has("content"))) {
+            Some(Format::Proton)
+        } else if has("shared_secret") || steam_accounts() {
+            Some(Format::Steam)
         } else {
             None
         };
@@ -246,10 +271,13 @@ pub fn import(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
         Format::Uris | Format::Ente => uris::import(bytes),
         Format::Aegis => aegis::import(bytes, password),
         Format::TwoFas => twofas::import(bytes, password),
-        Format::Bitwarden => bitwarden::import(bytes),
+        Format::Bitwarden => bitwarden::import(bytes, password),
         Format::AndOtp => andotp::import(bytes),
         Format::Stratum => stratum::import(bytes, password),
         Format::EncryptedFile => import_encrypted(bytes, password),
+        Format::FreeOtpPlus => freeotp_plus::import(bytes),
+        Format::Proton => proton::import(bytes, password),
+        Format::Steam => steam::import(bytes),
     }
 }
 
@@ -349,7 +377,7 @@ mod tests {
 
     #[test]
     fn detects_each_format() {
-        let cases: [(&[u8], Format); 14] = [
+        let cases: [(&[u8], Format); 19] = [
             (
                 include_bytes!("../testdata/aegis_plain.json"),
                 Format::Aegis,
@@ -371,6 +399,20 @@ mod tests {
                 Format::Bitwarden,
             ),
             (include_bytes!("../testdata/ente_auth.txt"), Format::Ente),
+            (
+                include_bytes!("../testdata/freeotp_plus.json"),
+                Format::FreeOtpPlus,
+            ),
+            (
+                include_bytes!("../testdata/proton_authenticator.json"),
+                Format::Proton,
+            ),
+            (
+                include_bytes!("../testdata/proton_authenticator_encrypted.json"),
+                Format::Proton,
+            ),
+            (include_bytes!("../testdata/steam.json"), Format::Steam),
+            (include_bytes!("../testdata/steam_old.json"), Format::Steam),
             (
                 b"\xEF\xBB\xBF\n otpauth://totp/x?secret=JBSWY3DPEHPK3PXP\n",
                 Format::Uris,
@@ -419,6 +461,8 @@ mod tests {
         let short = b"JBSWY3DPEHPK3PXP\n";
         for other in [
             &b"{\"version\": 1}"[..],
+            b"{\"tokens\": 1}",
+            b"{\"accounts\": {\"1\": {\"account_name\": \"x\"}}}",
             b"hello",
             b"\xFF\xFE",
             b"",

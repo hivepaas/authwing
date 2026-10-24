@@ -1,11 +1,12 @@
 //! What the formats share: random bytes, AES-256-GCM as Aegis, 2FAS,
-//! andOTP and Stratum use it, AES-256-CBC as older Stratum and TOTP
-//! Authenticator do, and the text forms of bytes in their files.
+//! andOTP, Stratum and Proton Authenticator use it, AES-256-CBC as older
+//! Stratum and TOTP Authenticator do, and the text forms of bytes in their
+//! files.
 
 use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{BlockDecryptMut, KeyIvInit};
 use aes_gcm::Aes256Gcm;
-use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::aead::{Aead, KeyInit, Payload};
 use base64::alphabet::STANDARD;
 use base64::engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig};
 use sha2::{Digest, Sha256};
@@ -32,12 +33,23 @@ pub(crate) fn random<const N: usize>() -> Result<[u8; N]> {
 /// ciphertext with the tag after it. `None` if the key or the nonce has the
 /// wrong length, or the tag does not match: the wrong key, or damage.
 pub(crate) fn aes_gcm_open(key: &[u8], nonce: &[u8], sealed: &[u8]) -> Option<Zeroizing<Vec<u8>>> {
+    aes_gcm_open_with(key, nonce, b"", sealed)
+}
+
+/// [`aes_gcm_open`] for what was sealed with associated data, `aad`: bytes
+/// the tag vouches for without their being sealed.
+pub(crate) fn aes_gcm_open_with(
+    key: &[u8],
+    nonce: &[u8],
+    aad: &[u8],
+    sealed: &[u8],
+) -> Option<Zeroizing<Vec<u8>>> {
     if nonce.len() != GCM_NONCE {
         return None;
     }
     let cipher = Aes256Gcm::new_from_slice(key).ok()?;
     cipher
-        .decrypt(nonce.into(), sealed)
+        .decrypt(nonce.into(), Payload { msg: sealed, aad })
         .ok()
         .map(Zeroizing::new)
 }
@@ -93,7 +105,6 @@ pub(crate) fn hex(text: &str) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aes_gcm::aead::Payload;
 
     #[test]
     fn opens_what_aes_gcm_sealed() {
@@ -117,6 +128,20 @@ mod tests {
         assert_eq!(aes_gcm_open(&[8u8; 32], &nonce, &sealed), None);
         assert_eq!(aes_gcm_open(&key, &nonce[..8], &sealed), None);
         assert_eq!(aes_gcm_open(&key[..16], &nonce, &sealed), None);
+        // With associated data, only the same data opens it.
+        let sealed = Aes256Gcm::new_from_slice(&key)
+            .expect("key")
+            .encrypt(
+                (&nonce).into(),
+                Payload {
+                    msg: b"codes",
+                    aad: b"export v1",
+                },
+            )
+            .expect("seal");
+        assert!(aes_gcm_open_with(&key, &nonce, b"export v1", &sealed).is_some());
+        assert_eq!(aes_gcm_open_with(&key, &nonce, b"export v2", &sealed), None);
+        assert_eq!(aes_gcm_open(&key, &nonce, &sealed), None);
     }
 
     #[test]
