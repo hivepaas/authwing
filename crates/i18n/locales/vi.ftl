@@ -784,6 +784,9 @@ tba4f5365 = Đóng vault cho tới khi gõ mật khẩu.
 # Lock
 t71b42d62 = Khoá
 
+# {file} is encrypted.
+tf707379d = { $file } đã được mã hoá.
+
 # {file} is an encrypted {app} file.
 t3635feb7 = { $file } là file { $app } đã mã hoá.
 
@@ -805,11 +808,26 @@ tbc59ad3d = Lưu bản sao lưu…
 # Restore, or move from another app
 tea7de02f = Khôi phục, hoặc chuyển từ app khác
 
-# An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
-t4f923eb7 = Một bản sao lưu authwing, file export từ Aegis, 2FAS, Ente Auth hoặc Bitwarden, hoặc một danh sách link otpauth. Mã đã có sẵn được giữ nguyên. Authy không xuất được mã.
+# An authwing backup, another app's export, or a list of otpauth links. Codes already here are left as they are.
+t108c09a7 = Một bản sao lưu authwing, file xuất từ app khác, hoặc danh sách link otpauth. Mã đã có ở đây được giữ nguyên.
+
+# Authenticators
+t78d70a21 = App xác thực
+
+# Password managers
+t44c4870c = Trình quản lý mật khẩu
 
 # Choose a file…
 t28a576c9 = Chọn file…
+
+# Apps with no file to export
+tbbed0c21 = App không xuất được file
+
+# Transfer accounts › Export accounts shows QR codes: in Add a code, use the camera, or a screenshot, for many codes at once.
+t53ce8a8a = Chuyển tài khoản › Xuất tài khoản sẽ hiện mã QR: trong Thêm mã, dùng camera hoặc ảnh chụp màn hình để thêm nhiều mã cùng lúc.
+
+# They keep their codes to themselves: at each site, set up two-step verification again, add the new QR code here, then remove it there.
+t0f07a1dd = Các app này không cho lấy mã ra: ở từng site, bật lại xác minh hai bước, thêm mã QR mới vào đây, rồi xoá mã ở app cũ.
 
 # Unencrypted
 t39b38862 = Không mã hoá
@@ -882,6 +900,9 @@ td41d3da6 = Đây không phải bản sao lưu hay file export mà authwing đ�
 
 # The passphrase is too short: at least {n} characters.
 t67c24024 = Mật khẩu quá ngắn: cần ít nhất { $n } ký tự.
+
+# This file is encrypted: enter its password.
+t3bd1216e = File này đã được mã hoá: hãy nhập mật khẩu của nó.
 
 # This {app} file is encrypted: enter its password.
 t1aa6da9b = File { $app } này đã được mã hoá: hãy nhập mật khẩu.

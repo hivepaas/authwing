@@ -146,14 +146,42 @@ the one named clearly selected: Enter types it.
   passphrase of its own (Argon2id, then XChaCha20-Poly1305), in a
   `.authwing-backup` file. Keep it somewhere else than the computer:
   restoring needs only the file and the passphrase.
-- **Restore, or move from another app**: an authwing backup, an export from
-  Aegis (plain or encrypted), 2FAS (plain or encrypted), Ente Auth or
-  Bitwarden (unencrypted), or a list of `otpauth://` links (Google
-  Authenticator's `otpauth-migration://` export among them). An encrypted
-  file asks for its password. Codes already here are left as they are, and
-  codes authwing cannot use (MD5, an unknown kind) are counted and left out.
-  Authy cannot export its codes: move each by turning two-factor off and on
-  again at the site.
+- **Restore, or move from another app**: an authwing backup, a list of
+  `otpauth://` links (Google Authenticator's `otpauth-migration://` export
+  among them), or another app's export. An encrypted file asks for its
+  password. Codes already here are left as they are, and codes authwing
+  cannot use (MD5, mOTP, an unknown kind) are counted and left out.
+
+  | App | What to export | Encrypted |
+  | --- | --- | --- |
+  | Aegis | the vault (`.json`) | yes |
+  | 2FAS | a backup (`.2fas`) | yes |
+  | andOTP | a backup | yes, either kind |
+  | Ente Auth | the plain-text export | no |
+  | FreeOTP+ | the JSON export | no |
+  | Proton Authenticator | the export | yes |
+  | Raivo OTP | the export (`.zip`) | yes |
+  | Stratum (Authenticator Pro) | a backup | yes |
+  | TOTP Authenticator | a backup | yes |
+  | Steam Desktop Authenticator | a maFile (`.maFile`) | no |
+  | 1Password | `.1pux`, or CSV | no |
+  | Apple Passwords | CSV | no |
+  | Bitwarden | JSON, or CSV | yes (password-protected JSON) |
+  | Dashlane | CSV (credentials) | no |
+  | KeePassXC | CSV | no |
+  | Proton Pass | the export (`.zip`), or CSV | no |
+
+  From a password manager only the logins with a one-time code come in,
+  with the login's site, so the code comes first there.
+
+  Some apps have no file to export:
+
+  - **Google Authenticator**: *Transfer accounts › Export accounts* shows QR
+    codes; in *Add a code*, the camera or a screenshot of them brings many
+    codes at once.
+  - **Microsoft Authenticator, Authy, Duo Mobile** keep their codes to
+    themselves: at each site, set up two-step verification again, add the
+    new QR code to authwing, then remove it from the old app.
 - **Save as plain text**: one `otpauth://` link per code, which other apps
   import, after a question. Anyone who sees the file can make your codes;
   on macOS and Linux only you can read it.

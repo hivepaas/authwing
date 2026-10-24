@@ -1,0 +1,5 @@
+"Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
+"Root","SPDX","James","pass""word","https://spdx.org/","","otpauth://totp/SPDX:James?secret=5OM4WOOGPLQEF6UGN3CPEOOLWU&period=20&digits=7&issuer=SPDX&algorithm=SHA256","0","2026-10-20T09:12:45Z","2026-10-20T09:10:02Z"
+"Root/Games/Steam","Boeing","Sophia","hunter2","https://store.steampowered.com/login/","Two
+lines","otpauth://totp/Boeing:Sophia?secret=JRZCL47CMXVOQMNPZR2F7J4RGI&period=30&digits=5&issuer=Boeing&encoder=steam","0","2026-10-20T09:14:11Z","2026-10-20T09:13:30Z"
+"Root","No one-time password","nobody","pw","","","","0","2026-10-20T09:15:00Z","2026-10-20T09:15:00Z"
