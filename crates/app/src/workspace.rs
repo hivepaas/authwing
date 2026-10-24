@@ -20,6 +20,8 @@ use crate::browser::{self, Bridge, Tab};
 use crate::chrome;
 use crate::codes::{self, Entry};
 use crate::colors::colors;
+use crate::group_editor::{GroupEditor, GroupEvent};
+use crate::groups::{self, Group};
 use crate::input::{Changed, TextInput, said};
 use crate::look::{self, Live, ui};
 use crate::notice::{self, Notice};
@@ -32,6 +34,21 @@ use crate::widgets::{icon_button, outline_button, primary_button};
 
 /// How long a notice stays.
 mod listening;
+
+/// Which codes the window shows, as chosen in the sidebar.
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Shown {
+    All,
+    Favorites,
+    /// Those used on this device, the last used first.
+    Recent,
+    Group(String),
+    /// Those in no group.
+    NoGroup,
+}
+
+/// How many codes Recently used shows.
+const RECENT: usize = 12;
 
 const NOTICE: Duration = Duration::from_secs(6);
 /// How long a card says "Copied".
@@ -64,8 +81,11 @@ pub struct Workspace {
     /// The codes were read since the vault opened.
     loaded: bool,
     filter: Entity<TextInput>,
-    /// The group shown; None: every code.
-    group: Option<String>,
+    /// Which codes are shown.
+    shown: Shown,
+    /// The groups there are, with their colors.
+    groups: Vec<Group>,
+    group_editor: Option<Entity<GroupEditor>>,
     adding: Option<Entity<AddCode>>,
     panel: Option<Entity<SyncPanel>>,
     settings: Option<Entity<SettingsView>>,
@@ -87,8 +107,9 @@ pub struct Workspace {
     listening: bool,
     /// What voice heard last in the quick panel.
     last_heard: Option<listening::LastHeard>,
-    /// What voice has learnt on this device.
-    voice_memory: authwing_config::VoiceMemory,
+    /// How the codes are used on this device: what voice has learnt, what
+    /// was used when.
+    usage: authwing_config::Usage,
     /// The browser extension, and the tab in front as it last said.
     _bridge: Bridge,
     tab: Option<Tab>,
@@ -133,7 +154,7 @@ impl Workspace {
         })
         .detach();
         let (heard, said) = async_channel::unbounded();
-        let voice_memory = live.store().map(|s| s.voice_memory()).unwrap_or_default();
+        let usage = live.store().map(|s| s.usage()).unwrap_or_default();
         let bridge = Bridge::start(move |event| {
             let _ = heard.send_blocking(event);
         });
@@ -166,7 +187,9 @@ impl Workspace {
             codes: vec![],
             loaded: false,
             filter,
-            group: None,
+            shown: Shown::All,
+            groups: Vec::new(),
+            group_editor: None,
             adding: None,
             panel: None,
             settings: None,
@@ -178,7 +201,7 @@ impl Workspace {
             presses: 0,
             listening: false,
             last_heard: None,
-            voice_memory,
+            usage,
             _bridge: bridge,
             tab: None,
             bounds_change: 0,
@@ -333,17 +356,20 @@ impl Workspace {
             return;
         };
         let (codes, problems) = codes::load(&vault);
+        self.groups = groups::load(&vault, &codes);
         self.codes = codes;
         self.loaded = true;
         if let Some(p) = problems.into_iter().next() {
             self.say(Notice::warn(p));
         }
-        if self
-            .group
-            .as_ref()
-            .is_some_and(|g| !self.codes.iter().any(|c| &c.group == g))
+        // A group deleted or renamed elsewhere: every code instead.
+        if let Shown::Group(name) = &self.shown
+            && !self
+                .groups
+                .iter()
+                .any(|g| g.name.eq_ignore_ascii_case(name))
         {
-            self.group = None;
+            self.shown = Shown::All;
         }
     }
 
@@ -497,7 +523,7 @@ impl Workspace {
         cx.notify();
     }
 
-    /// The codes shown: of the group chosen, matching what is typed.
+    /// The codes shown: those the sidebar chose, matching what is typed.
     fn shown(&self, cx: &App) -> Vec<&Entry> {
         let words: Vec<String> = self
             .filter
@@ -507,11 +533,141 @@ impl Workspace {
             .split_whitespace()
             .map(str::to_string)
             .collect();
-        self.codes
+        let last = |c: &Entry| self.usage.codes.get(&c.id).map_or(0, |u| u.last);
+        let mut shown: Vec<&Entry> = self
+            .codes
             .iter()
-            .filter(|c| self.group.as_ref().is_none_or(|g| &c.group == g))
+            .filter(|c| match &self.shown {
+                Shown::All => true,
+                Shown::Favorites => c.favorite,
+                Shown::Recent => last(c) > 0,
+                Shown::Group(name) => groups::holds(name, c),
+                Shown::NoGroup => c.group.trim().is_empty(),
+            })
             .filter(|c| c.matches(&words))
+            .collect();
+        if self.shown == Shown::Recent {
+            shown.sort_by_key(|c| std::cmp::Reverse(last(c)));
+            shown.truncate(RECENT);
+        }
+        shown
+    }
+
+    fn show(&mut self, shown: Shown, cx: &mut Context<Self>) {
+        self.shown = shown;
+        cx.notify();
+    }
+
+    /// The groups' names and colors, to offer them.
+    fn group_choices(&self) -> Vec<(String, u32)> {
+        self.groups
+            .iter()
+            .map(|g| (g.name.clone(), g.rgb()))
             .collect()
+    }
+
+    /// Stars the code `id`, or unstars it.
+    fn toggle_favorite(&mut self, id: &str, cx: &mut Context<Self>) {
+        let (Some(vault), Some(entry)) =
+            (self.vault.ready(), self.codes.iter().find(|c| c.id == id))
+        else {
+            return;
+        };
+        let filing = codes::Filing {
+            favorite: !entry.favorite,
+            ..entry.filing()
+        };
+        if let Err(e) = codes::save(&vault, Some(id), &entry.otp, &filing) {
+            self.say(Notice::bad(tr!("Not saved: {e}", e = e)));
+        }
+        self.reload();
+        self.sync_now();
+        cx.notify();
+    }
+
+    /// Opens the group editor, for `group` or a new one.
+    fn open_group_editor(
+        &mut self,
+        group: Option<Group>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.vault.ready().is_none() {
+            return;
+        }
+        let all = self.groups.clone();
+        let editor = cx.new(|cx| GroupEditor::new(group, &all, cx));
+        cx.subscribe_in(&editor, window, |ws, _, event: &GroupEvent, window, cx| {
+            ws.group_event(event, cx);
+            ws.group_editor = None;
+            window.focus(&ws.focus, cx);
+            cx.notify();
+        })
+        .detach();
+        let name = editor.read(cx).name_focus(cx);
+        window.focus(&name, cx);
+        self.group_editor = Some(editor);
+        cx.notify();
+    }
+
+    fn group_event(&mut self, event: &GroupEvent, cx: &mut Context<Self>) {
+        let Some(vault) = self.vault.ready() else {
+            return;
+        };
+        let done = match event {
+            GroupEvent::Close => return,
+            GroupEvent::Save { old, name, color } => {
+                let saved = groups::save(&vault, &self.codes, old.as_ref(), name, color);
+                if saved.is_ok() {
+                    // The group shown, renamed: still shown.
+                    let was_shown = matches!((&self.shown, old), (Shown::Group(s), Some(o)) if s.eq_ignore_ascii_case(&o.name));
+                    if was_shown || old.is_none() {
+                        self.shown = Shown::Group(name.clone());
+                    }
+                }
+                saved
+            }
+            GroupEvent::Delete(group) => groups::delete(&vault, &self.codes, group),
+        };
+        if let Err(e) = done {
+            self.say(Notice::bad(tr!("Not saved: {e}", e = e)));
+        }
+        self.reload();
+        self.sync_now();
+        cx.notify();
+    }
+
+    /// Opens the dialog that edits the code `id`.
+    fn open_editing(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(entry) = self.codes.iter().find(|c| c.id == id) else {
+            return;
+        };
+        let choices = self.group_choices();
+        let edit = cx.new(|cx| AddCode::edit(entry, choices, cx));
+        self.show_adding(edit, window, cx);
+    }
+
+    /// Saves what the edit dialog says of the code `id`.
+    fn edit_code(&mut self, id: &str, issuer: &str, account: &str, group: &str, sites: &[String]) {
+        let (Some(vault), Some(entry)) =
+            (self.vault.ready(), self.codes.iter().find(|c| c.id == id))
+        else {
+            return;
+        };
+        let mut otp = entry.otp.clone();
+        otp.issuer = issuer.to_string();
+        otp.account = account.to_string();
+        let filing = codes::Filing {
+            group: group.to_string(),
+            sites: sites.to_vec(),
+            favorite: entry.favorite,
+        };
+        match codes::save(&vault, Some(id), &otp, &filing) {
+            Ok(_) => self.say(Notice::good(tr!("Saved."))),
+            Err(e) => self.say(Notice::bad(tr!("Not saved: {e}", e = e))),
+        }
+        self.reload();
+        self.sync_now();
     }
 
     /// The code `id` shows now, for use: an HOTP code moves on to its next,
@@ -524,9 +680,9 @@ impl Workspace {
             next.kind = Kind::Hotp {
                 counter: counter.saturating_add(1),
             };
-            let (group, sites) = (entry.group.clone(), entry.sites.clone());
+            let filing = entry.filing();
             if let Some(vault) = self.vault.ready() {
-                if let Err(e) = codes::save(&vault, Some(id), &next, &group, &sites) {
+                if let Err(e) = codes::save(&vault, Some(id), &next, &filing) {
                     self.say(Notice::bad(tr!("The counter was not saved: {e}", e = e)));
                 }
                 self.reload();
@@ -717,8 +873,25 @@ impl Workspace {
         if self.vault.ready().is_none() {
             return;
         }
-        let group = self.group.clone();
-        let add = cx.new(|cx| AddCode::new(group.as_deref(), cx));
+        let group = match &self.shown {
+            Shown::Group(name) => Some(name.clone()),
+            _ => None,
+        };
+        let choices = self.group_choices();
+        let add = cx.new(|cx| AddCode::new(group.as_deref(), choices, cx));
+        self.show_adding(add, window, cx);
+    }
+
+    /// Adding, then reading the screen at once: the sidebar's scan button.
+    fn open_scanning(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_adding(window, cx);
+        if let Some(add) = &self.adding {
+            add.update(cx, |add, cx| add.scan_screen(cx));
+        }
+    }
+
+    /// Shows the add (or edit) dialog over the window.
+    fn show_adding(&mut self, add: Entity<AddCode>, window: &mut Window, cx: &mut Context<Self>) {
         cx.subscribe_in(&add, window, |ws, _, event: &AddEvent, window, cx| {
             match event {
                 AddEvent::Close => {}
@@ -727,14 +900,21 @@ impl Workspace {
                     group,
                     sites,
                 } => ws.add(codes, group, sites),
+                AddEvent::Edit {
+                    id,
+                    issuer,
+                    account,
+                    group,
+                    sites,
+                } => ws.edit_code(id, issuer, account, group, sites),
             }
             ws.adding = None;
             window.focus(&ws.focus, cx);
             cx.notify();
         })
         .detach();
-        let link = add.read(cx).link_focus(cx);
-        window.focus(&link, cx);
+        let first = add.read(cx).first_focus(cx);
+        window.focus(&first, cx);
         self.adding = Some(add);
         cx.notify();
     }
@@ -744,8 +924,13 @@ impl Workspace {
             return;
         };
         let mut saved = 0;
+        let filing = codes::Filing {
+            group: group.to_string(),
+            sites: sites.to_vec(),
+            favorite: false,
+        };
         for otp in new {
-            match codes::save(&vault, None, otp, group, sites) {
+            match codes::save(&vault, None, otp, &filing) {
                 Ok(_) => saved += 1,
                 Err(e) => self.say(Notice::bad(tr!("A code was not saved: {e}", e = e))),
             }
@@ -920,7 +1105,7 @@ impl Workspace {
 
     /// The window's shortcuts, before the field with the focus sees the key.
     fn shortcut(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.adding.is_some() || self.panel.is_some() {
+        if self.adding.is_some() || self.panel.is_some() || self.group_editor.is_some() {
             return;
         }
         let Some(chord) = crate::hotkeys::pressed(&ev.keystroke) else {
@@ -1079,73 +1264,199 @@ impl Workspace {
 
     fn sidebar(&self, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
-        let row = |id: SharedString, label: String, count: usize, on: bool| {
+        // A row of the list: its mark (an icon, a group's color), its name,
+        // how many codes it has.
+        let row =
+            |id: SharedString, mark: AnyElement, label: String, count: Option<usize>, on: bool| {
+                div()
+                    .id(id)
+                    .group("side-row")
+                    .h(px(30.))
+                    .px(px(10.))
+                    .flex()
+                    .items_center()
+                    .gap(px(9.))
+                    .rounded(px(6.))
+                    .cursor_pointer()
+                    .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
+                    .when(!on, |d| {
+                        d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
+                    })
+                    .child(mark)
+                    .child(div().flex_1().min_w_0().truncate().child(label))
+                    .when_some(count, |d, n| {
+                        d.child(
+                            div()
+                                .flex_shrink_0()
+                                .text_size(ui(11.))
+                                .text_color(rgb(c.muted))
+                                .child(n.to_string()),
+                        )
+                    })
+            };
+        let icon = |path: &'static str| {
+            svg()
+                .path(path)
+                .size(px(14.))
+                .flex_shrink_0()
+                .text_color(rgb(c.muted))
+                .into_any_element()
+        };
+        let dot = |color: u32| {
             div()
-                .id(id)
-                .h(px(30.))
+                .size(px(8.))
+                .flex_shrink_0()
+                .rounded(px(2.))
+                .bg(rgb(color))
+                .into_any_element()
+        };
+        let section = |title: String| {
+            div()
+                .pt(px(14.))
+                .pb(px(4.))
                 .px(px(10.))
                 .flex()
                 .items_center()
-                .gap(px(8.))
-                .rounded(px(6.))
-                .cursor_pointer()
-                .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
-                .when(!on, |d| {
-                    d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
-                })
-                .child(div().flex_1().child(label))
-                .child(
-                    div()
-                        .text_size(ui(11.))
-                        .text_color(rgb(c.muted))
-                        .child(count.to_string()),
-                )
+                .text_size(ui(11.))
+                .font_weight(FontWeight::SEMIBOLD)
+                .text_color(rgb(c.muted))
+                .child(div().flex_1().child(title.to_uppercase()))
         };
+        let favorites = self.codes.iter().filter(|e| e.favorite).count();
         let mut list = div()
+            .id("sidebar-list")
             .flex_1()
+            .min_h_0()
+            .overflow_y_scroll()
             .flex()
             .flex_col()
             .gap(px(1.))
             .p(px(8.))
             .child(
                 row(
-                    "group-all".into(),
+                    "show-all".into(),
+                    icon("icons/grid.svg"),
                     tr!("All codes"),
-                    self.codes.len(),
-                    self.group.is_none(),
+                    Some(self.codes.len()),
+                    self.shown == Shown::All,
                 )
-                .on_click(cx.listener(|ws, _, _, cx| {
-                    ws.group = None;
-                    cx.notify();
-                })),
+                .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::All, cx))),
+            )
+            .child(
+                row(
+                    "show-favorites".into(),
+                    icon("icons/star.svg"),
+                    tr!("Favorites"),
+                    (favorites > 0).then_some(favorites),
+                    self.shown == Shown::Favorites,
+                )
+                .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Favorites, cx))),
+            )
+            .child(
+                row(
+                    "show-recent".into(),
+                    icon("icons/clock.svg"),
+                    tr!("Recently used"),
+                    None,
+                    self.shown == Shown::Recent,
+                )
+                .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Recent, cx))),
+            )
+            .child(
+                section(tr!("Groups")).child(
+                    div()
+                        .id("new-group")
+                        .size(px(20.))
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded(px(5.))
+                        .cursor_pointer()
+                        .hover(|s| s.bg(rgb(c.hover)))
+                        .on_click(
+                            cx.listener(|ws, _, window, cx| ws.open_group_editor(None, window, cx)),
+                        )
+                        .child(
+                            svg()
+                                .path("icons/plus.svg")
+                                .size(px(12.))
+                                .text_color(rgb(c.muted)),
+                        ),
+                ),
             );
-        let groups = codes::groups(&self.codes);
-        if !groups.is_empty() {
+        if self.groups.is_empty() {
             list = list.child(
                 div()
-                    .pt(px(12.))
-                    .pb(px(4.))
                     .px(px(10.))
-                    .text_size(ui(11.))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(rgb(c.muted))
-                    .child(tr!("Groups")),
+                    .py(px(4.))
+                    .text_size(ui(12.))
+                    .text_color(rgb(c.faint))
+                    .child(tr!("Groups file codes: Work, Money, Family…")),
             );
         }
-        for (name, count) in groups {
-            let on = self.group.as_deref() == Some(&name);
-            let pick = name.clone();
+        for (n, group) in self.groups.iter().enumerate() {
+            let on = matches!(&self.shown, Shown::Group(g) if g.eq_ignore_ascii_case(&group.name));
+            let (pick, edit) = (group.name.clone(), group.clone());
             list = list.child(
-                row(format!("group-{name}").into(), name, count, on).on_click(cx.listener(
-                    move |ws, _, _, cx| {
-                        ws.group = Some(pick.clone());
-                        cx.notify();
-                    },
-                )),
+                row(
+                    SharedString::from(format!("group-{n}")),
+                    dot(group.rgb()),
+                    group.name.clone(),
+                    Some(group.count),
+                    on,
+                )
+                .on_click(cx.listener(move |ws, _, _, cx| ws.show(Shown::Group(pick.clone()), cx)))
+                .child(
+                    div()
+                        .id(SharedString::from(format!("edit-group-{n}")))
+                        .invisible()
+                        .group_hover("side-row", |s| s.visible())
+                        .size(px(20.))
+                        .flex_shrink_0()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded(px(5.))
+                        .hover(|s| s.bg(rgb(c.hover)))
+                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                        .on_click(cx.listener(move |ws, _, window, cx| {
+                            cx.stop_propagation();
+                            ws.open_group_editor(Some(edit.clone()), window, cx);
+                        }))
+                        .child(
+                            svg()
+                                .path("icons/pencil.svg")
+                                .size(px(12.))
+                                .text_color(rgb(c.muted)),
+                        ),
+                ),
+            );
+        }
+        let ungrouped = self
+            .codes
+            .iter()
+            .filter(|e| e.group.trim().is_empty())
+            .count();
+        if !self.groups.is_empty() && ungrouped > 0 {
+            list = list.child(
+                row(
+                    "show-no-group".into(),
+                    div()
+                        .size(px(8.))
+                        .flex_shrink_0()
+                        .rounded(px(2.))
+                        .border_1()
+                        .border_color(rgb(c.muted))
+                        .into_any_element(),
+                    tr!("No group"),
+                    Some(ungrouped),
+                    self.shown == Shown::NoGroup,
+                )
+                .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::NoGroup, cx))),
             );
         }
         let status = match &self.sync_state {
-            SyncState::Off => tr!("Not syncing: set [sync] in config.toml"),
+            SyncState::Off => tr!("Not syncing"),
             _ => self.sync_status(),
         };
         div()
@@ -1161,16 +1472,76 @@ impl Workspace {
             .child(list)
             .child(
                 div()
-                    .id("sync-status")
-                    .p(px(12.))
+                    .px(px(12.))
+                    .pt(px(10.))
                     .border_t_1()
                     .border_color(rgb(c.line))
+                    .flex()
+                    .items_center()
+                    .gap(px(6.))
                     .text_size(ui(12.))
                     .text_color(rgb(c.muted))
-                    .cursor_pointer()
-                    .hover(|s| s.text_color(rgb(c.soft)))
-                    .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx)))
-                    .child(status),
+                    .child(div().flex_1().min_w_0().truncate().child(status))
+                    .child(
+                        div()
+                            .id("sync-manage")
+                            .flex_shrink_0()
+                            .text_color(rgb(c.accent))
+                            .cursor_pointer()
+                            .hover(|s| s.text_color(rgb(c.accent_hover)))
+                            .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx)))
+                            .child(tr!("Manage")),
+                    ),
+            )
+            .child(
+                div()
+                    .p(px(10.))
+                    .flex()
+                    .gap(px(8.))
+                    .child(
+                        div()
+                            .id("side-add")
+                            .flex_1()
+                            .h(px(32.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .gap(px(6.))
+                            .rounded(px(6.))
+                            .border_1()
+                            .border_color(rgb(c.edge))
+                            .bg(rgb(c.button))
+                            .cursor_pointer()
+                            .hover(|s| s.bg(rgb(c.button_hover)))
+                            .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx)))
+                            .child(
+                                svg()
+                                    .path("icons/plus.svg")
+                                    .size(px(13.))
+                                    .text_color(rgb(c.soft)),
+                            )
+                            .child(tr!("Add code")),
+                    )
+                    .child(
+                        div()
+                            .id("side-scan")
+                            .size(px(32.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .rounded(px(6.))
+                            .border_1()
+                            .border_color(rgb(c.edge))
+                            .cursor_pointer()
+                            .hover(|s| s.bg(rgb(c.hover)))
+                            .on_click(cx.listener(|ws, _, window, cx| ws.open_scanning(window, cx)))
+                            .child(
+                                svg()
+                                    .path("icons/scan.svg")
+                                    .size(px(15.))
+                                    .text_color(rgb(c.soft)),
+                            ),
+                    ),
             )
     }
 
@@ -1186,6 +1557,7 @@ impl Workspace {
             .map(|n| authwing_totp::grouped(&n));
         let copied = self.copied.as_ref().is_some_and(|(id, _)| id == &entry.id);
         let (id, delete) = (entry.id.clone(), entry.id.clone());
+        let (star, edit) = (entry.id.clone(), entry.id.clone());
         let hint = (place < 9)
             .then(|| keymap_hint(cx, place))
             .filter(|h| !h.is_empty());
@@ -1193,6 +1565,7 @@ impl Workspace {
             .id(SharedString::from(format!("card-{}", entry.id)))
             .group("card")
             .w(px(CARD_W))
+            .relative()
             .flex()
             .flex_col()
             .gap(px(10.))
@@ -1231,9 +1604,25 @@ impl Workspace {
                             .flex_col()
                             .child(
                                 div()
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .truncate()
-                                    .child(entry.title()),
+                                    .flex()
+                                    .items_center()
+                                    .gap(px(5.))
+                                    .child(
+                                        div()
+                                            .min_w_0()
+                                            .font_weight(FontWeight::SEMIBOLD)
+                                            .truncate()
+                                            .child(entry.title()),
+                                    )
+                                    .when(entry.favorite, |d| {
+                                        d.child(
+                                            svg()
+                                                .path("icons/star-fill.svg")
+                                                .size(px(11.))
+                                                .flex_shrink_0()
+                                                .text_color(rgb(c.amber)),
+                                        )
+                                    }),
                             )
                             .child(
                                 div()
@@ -1241,29 +1630,6 @@ impl Workspace {
                                     .text_color(rgb(c.muted))
                                     .truncate()
                                     .child(entry.detail().to_string()),
-                            ),
-                    )
-                    .child(
-                        div()
-                            .id(SharedString::from(format!("delete-{}", entry.id)))
-                            .invisible()
-                            .group_hover("card", |s| s.visible())
-                            .size(px(24.))
-                            .flex()
-                            .items_center()
-                            .justify_center()
-                            .rounded(px(5.))
-                            .hover(|s| s.bg(rgb(c.hover)))
-                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                            .on_click(cx.listener(move |ws, _, window, cx| {
-                                cx.stop_propagation();
-                                ws.delete(delete.clone(), window, cx);
-                            }))
-                            .child(
-                                svg()
-                                    .path("icons/trash.svg")
-                                    .size(px(14.))
-                                    .text_color(rgb(c.muted)),
                             ),
                     ),
             )
@@ -1324,6 +1690,50 @@ impl Workspace {
                     .when_some(hint, |d, h| {
                         d.child(div().text_size(ui(11.)).text_color(rgb(c.faint)).child(h))
                     }),
+            )
+            .child(
+                div()
+                    .absolute()
+                    .top(px(10.))
+                    .right(px(10.))
+                    .flex()
+                    .gap(px(2.))
+                    .p(px(2.))
+                    .rounded(px(7.))
+                    .bg(rgb(c.surface))
+                    .invisible()
+                    .group_hover("card", |s| s.visible())
+                    .child(card_button(
+                        format!("star-{}", entry.id),
+                        if entry.favorite {
+                            "icons/star-fill.svg"
+                        } else {
+                            "icons/star.svg"
+                        },
+                        if entry.favorite { c.amber } else { c.muted },
+                        cx.listener(move |ws, _, _, cx| {
+                            cx.stop_propagation();
+                            ws.toggle_favorite(&star, cx);
+                        }),
+                    ))
+                    .child(card_button(
+                        format!("edit-{}", entry.id),
+                        "icons/pencil.svg",
+                        c.muted,
+                        cx.listener(move |ws, _, window, cx| {
+                            cx.stop_propagation();
+                            ws.open_editing(&edit, window, cx);
+                        }),
+                    ))
+                    .child(card_button(
+                        format!("delete-{}", entry.id),
+                        "icons/trash.svg",
+                        c.muted,
+                        cx.listener(move |ws, _, window, cx| {
+                            cx.stop_propagation();
+                            ws.delete(delete.clone(), window, cx);
+                        }),
+                    )),
             )
             .into_any_element()
     }
@@ -1477,11 +1887,32 @@ impl Workspace {
             )
             .into_any_element()
         } else if cards.is_empty() {
-            empty(
-                tr!("Nothing matches"),
-                tr!("Try fewer words, or another group."),
-            )
-            .into_any_element()
+            let typed = !self.filter.read(cx).text().trim().is_empty();
+            let (title, detail) = match &self.shown {
+                _ if typed => (
+                    tr!("Nothing matches"),
+                    tr!("Try fewer words, or another group."),
+                ),
+                Shown::Favorites => (
+                    tr!("No favorites yet"),
+                    tr!("The star on a code makes it one."),
+                ),
+                Shown::Recent => (
+                    tr!("Nothing used yet"),
+                    tr!("The codes you copy or type show up here, the last first."),
+                ),
+                Shown::Group(name) => (
+                    tr!("{group} is empty", group = name.clone()),
+                    tr!(
+                        "Edit a code (the pencil on its card) to file it here, or add one while this group is shown."
+                    ),
+                ),
+                _ => (
+                    tr!("Nothing matches"),
+                    tr!("Try fewer words, or another group."),
+                ),
+            };
+            empty(title, detail).into_any_element()
         } else {
             div()
                 .flex()
@@ -1568,6 +1999,28 @@ impl Workspace {
 }
 
 /// A heading and a line under it, centred: what a page shows with nothing on it.
+/// A small button on a card, among those shown on hover.
+fn card_button(
+    id: String,
+    icon: &'static str,
+    color: u32,
+    on_click: impl Fn(&gpui::ClickEvent, &mut Window, &mut App) + 'static,
+) -> gpui::Stateful<gpui::Div> {
+    let c = colors();
+    div()
+        .id(SharedString::from(id))
+        .size(px(24.))
+        .flex_shrink_0()
+        .flex()
+        .items_center()
+        .justify_center()
+        .rounded(px(5.))
+        .hover(|s| s.bg(rgb(c.hover)))
+        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+        .on_click(on_click)
+        .child(svg().path(icon).size(px(14.)).text_color(rgb(color)))
+}
+
 fn empty(title: String, detail: String) -> gpui::Div {
     let c = colors();
     div()
@@ -1707,10 +2160,11 @@ impl Render for Workspace {
                 )
                 .child(body)
         };
-        let dialog: Option<AnyElement> = match (&self.adding, &self.panel) {
-            (Some(add), _) => Some(add.clone().into_any_element()),
-            (None, Some(panel)) => Some(panel.clone().into_any_element()),
-            (None, None) => None,
+        let dialog: Option<AnyElement> = match (&self.adding, &self.panel, &self.group_editor) {
+            (Some(add), _, _) => Some(add.clone().into_any_element()),
+            (None, Some(panel), _) => Some(panel.clone().into_any_element()),
+            (None, None, Some(editor)) => Some(editor.clone().into_any_element()),
+            (None, None, None) => None,
         };
         let dialog = dialog.map(|dialog| {
             let (at, shade) = chrome::shade(window);
@@ -1727,6 +2181,7 @@ impl Render for Workspace {
                             cx.listener(|ws, _, window, cx| {
                                 ws.adding = None;
                                 ws.panel = None;
+                                ws.group_editor = None;
                                 window.focus(&ws.focus, cx);
                                 cx.notify();
                             }),

@@ -2,17 +2,17 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-/// What voice has learnt on this device (`state/voice.json`), by the id of
-/// the code.
+/// How the codes are used on this device (`state/usage.json`), by the id of
+/// the code: what voice has learnt, and what was used when.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct VoiceMemory {
+pub struct Usage {
     #[serde(default)]
-    pub codes: BTreeMap<String, Voiced>,
+    pub codes: BTreeMap<String, Used>,
 }
 
-/// What voice knows of one code.
+/// How one code is used.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub struct Voiced {
+pub struct Used {
     /// What Whisper wrote when this code was named and the user then chose
     /// it by hand: heard again, it picks this code.
     #[serde(default)]
@@ -21,6 +21,9 @@ pub struct Voiced {
     /// Whisper is told to expect.
     #[serde(default)]
     pub uses: u32,
+    /// When it was last used, in seconds since 1970; 0: never.
+    #[serde(default)]
+    pub last: u64,
 }
 
 /// What the last look for a newer authwing found (`state/updates.json`).

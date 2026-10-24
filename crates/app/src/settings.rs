@@ -712,7 +712,12 @@ impl SettingsView {
                 there += 1;
                 continue;
             }
-            match crate::codes::save(&vault, None, &item.otp, &item.group, &item.sites) {
+            let filing = crate::codes::Filing {
+                group: item.group.clone(),
+                sites: item.sites.clone(),
+                favorite: false,
+            };
+            match crate::codes::save(&vault, None, &item.otp, &filing) {
                 Ok(_) => added += 1,
                 Err(e) => self.problem = Some(e),
             }
@@ -1168,10 +1173,16 @@ impl SettingsView {
             .child(heading(tr!("Find a code by voice")))
             .child(
                 card()
-                    .child(hint(tr!(
-                        "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
-                        key = crate::panel_key::label(&s.panel.key)
-                    )))
+                    .child(hint(if s.panel.key.trim().is_empty() {
+                        tr!(
+                            "The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it."
+                        )
+                    } else {
+                        tr!(
+                            "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
+                            key = crate::panel_key::label(&s.panel.key)
+                        )
+                    }))
                     .child(row(
                         tr!("Model"),
                         tr!("The larger ones are slower, and named no more codes right in our tests."),
@@ -1776,44 +1787,39 @@ impl Render for SettingsView {
             Page::Browsers => self.browsers_page(cx),
             Page::About => self.about(),
         };
-        let page = div()
-            .flex_1()
-            .min_h_0()
-            .flex()
-            .child(nav)
-            .child(
-                div()
-                    .id("settings-page")
-                    .flex_1()
-                    .h_full()
-                    .overflow_y_scroll()
-                    .child(
-                        div()
-                            .max_w(px(720.))
-                            .flex()
-                            .flex_col()
-                            .gap(px(4.))
-                            .p(px(24.))
-                            .child(
-                                div()
-                                    .text_size(ui(18.))
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .child(self.page.title()),
+        let page = div().flex_1().min_h_0().flex().child(nav).child(
+            div()
+                .id("settings-page")
+                .flex_1()
+                .h_full()
+                .overflow_y_scroll()
+                .child(
+                    div()
+                        .max_w(px(720.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(4.))
+                        .p(px(24.))
+                        .child(
+                            div()
+                                .text_size(ui(18.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(self.page.title()),
+                        )
+                        .when_some(self.problem.clone(), |d, p| {
+                            d.child(
+                                crate::notice::colored(div(), crate::notice::Tone::Bad)
+                                    .mt(px(8.))
+                                    .px(px(12.))
+                                    .py(px(8.))
+                                    .rounded(px(6.))
+                                    .text_size(ui(12.))
+                                    .child(p),
                             )
-                            .when_some(self.problem.clone(), |d, p| {
-                                d.child(
-                                    crate::notice::colored(div(), crate::notice::Tone::Bad)
-                                        .mt(px(8.))
-                                        .px(px(12.))
-                                        .py(px(8.))
-                                        .rounded(px(6.))
-                                        .text_size(ui(12.))
-                                        .child(p),
-                                )
-                            })
-                            .child(body),
-                    ),
-            );
+                        })
+                        .child(body),
+                ),
+        );
         div()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))

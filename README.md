@@ -35,7 +35,8 @@ from there; the SSH client does not.
   cards that count down and show the next code at the end of the period;
   copy with a click, Enter or Cmd/Ctrl+1…9, the clipboard cleared after 20 s.
 * **Find and file:** type to find by service, account, group or site; groups
-  in the sidebar.
+  of their own color, favorites and the codes used lately in the sidebar;
+  each code's names, group and sites edited after it is added.
 * **For the window used last:** the codes for the app you were in come first,
   by the sites saved with them or their name in the window's title.
 * **Quick panel:** Option+Space (Ctrl+Alt+Space on Windows and Linux) over any
@@ -80,7 +81,8 @@ cargo run -p authwing         # or by hand
 ```
 
 To try it without touching your own codes, give it a config directory of its
-own: `AUTHWING_CONFIG_DIR=/tmp/aw cargo run -p authwing`.
+own: `AUTHWING_CONFIG_DIR=/tmp/aw cargo run -p authwing`. Its vault's key then
+has a keychain item of its own too, named by that directory.
 
 ---
 

@@ -23,7 +23,7 @@ const SETTINGS: &str = "config.toml";
 const STATE: &str = "state";
 const WINDOW: &str = "window.json";
 const UPDATES: &str = "updates.json";
-const VOICE: &str = "voice.json";
+const USAGE: &str = "usage.json";
 
 /// A file that could not be read or parsed.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
@@ -372,13 +372,13 @@ impl Store {
         self.save_state(UPDATES, state)
     }
 
-    /// What voice has learnt on this device (`state/voice.json`).
-    pub fn voice_memory(&self) -> crate::VoiceMemory {
-        self.load_state(VOICE).unwrap_or_default()
+    /// How the codes are used on this device (`state/usage.json`).
+    pub fn usage(&self) -> crate::Usage {
+        self.load_state(USAGE).unwrap_or_default()
     }
 
-    pub fn save_voice_memory(&self, memory: &crate::VoiceMemory) -> io::Result<()> {
-        self.save_state(VOICE, memory)
+    pub fn save_usage(&self, usage: &crate::Usage) -> io::Result<()> {
+        self.save_state(USAGE, usage)
     }
 
     fn load_state<T: DeserializeOwned>(&self, file: &str) -> Option<T> {
@@ -571,21 +571,22 @@ mod tests {
     }
 
     #[test]
-    fn voice_memory_round_trips_and_starts_empty() {
-        let s = temp("voice");
-        assert_eq!(s.voice_memory(), crate::VoiceMemory::default());
-        let mut memory = crate::VoiceMemory::default();
-        memory.codes.insert(
+    fn usage_round_trips_and_starts_empty() {
+        let s = temp("usage");
+        assert_eq!(s.usage(), crate::Usage::default());
+        let mut usage = crate::Usage::default();
+        usage.codes.insert(
             "0a1b2c3d4e5f6071".into(),
-            crate::Voiced {
+            crate::Used {
                 taught: vec!["Mở viết cơm an".into()],
                 uses: 3,
+                last: 1_792_800_000,
             },
         );
-        s.save_voice_memory(&memory).expect("save");
-        assert_eq!(s.voice_memory(), memory);
-        fs::write(s.dir().join(STATE).join(VOICE), "[").expect("write");
-        assert_eq!(s.voice_memory(), crate::VoiceMemory::default());
+        s.save_usage(&usage).expect("save");
+        assert_eq!(s.usage(), usage);
+        fs::write(s.dir().join(STATE).join(USAGE), "[").expect("write");
+        assert_eq!(s.usage(), crate::Usage::default());
     }
 
     #[test]

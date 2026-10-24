@@ -5,13 +5,17 @@
 //! The QR code itself is read where it is: on the screen, in an image file
 //! chosen or dropped on the dialog, or in an image pasted into it. What it
 //! holds goes into the link field, as if pasted there.
+//!
+//! The same dialog edits a code once added ([`AddCode::edit`]): its names,
+//! its group and its sites; its key stays as it is.
 
 use std::path::PathBuf;
 use std::time::Duration;
 
 use gpui::{
     App, ClipboardEntry, Context, Entity, EventEmitter, ExternalPaths, FocusHandle, Focusable,
-    FontWeight, KeyDownEvent, PathPromptOptions, Render, Window, div, prelude::*, px, rgb,
+    FontWeight, KeyDownEvent, PathPromptOptions, Render, SharedString, Window, div, prelude::*, px,
+    rgb,
 };
 
 use authwing_i18n::{tr, tr_n};
@@ -26,6 +30,14 @@ pub enum AddEvent {
     /// Codes to save, under a group and shown first on these sites.
     Add {
         codes: Vec<Otp>,
+        group: String,
+        sites: Vec<String>,
+    },
+    /// The code `id`, its names, group and sites as now.
+    Edit {
+        id: String,
+        issuer: String,
+        account: String,
         group: String,
         sites: Vec<String>,
     },
@@ -44,6 +56,10 @@ pub struct AddCode {
     note: Option<(String, String)>,
     /// A QR code being looked for, until the answer comes.
     scanning: bool,
+    /// The code being edited; None: adding.
+    editing: Option<String>,
+    /// The groups there are, to pick one.
+    groups: Vec<(String, u32)>,
     focus: FocusHandle,
 }
 
@@ -71,7 +87,9 @@ enum Read {
 }
 
 impl AddCode {
-    pub fn new(group: Option<&str>, cx: &mut Context<Self>) -> Self {
+    /// Adds codes, under `group` at first; `groups` (names and colors) are
+    /// offered.
+    pub fn new(group: Option<&str>, groups: Vec<(String, u32)>, cx: &mut Context<Self>) -> Self {
         let link = said(cx, || tr!("otpauth:// link, or the key the site shows"));
         // A link fills in what it says, so the fields show what will be saved.
         cx.subscribe(&link, |this: &mut AddCode, _, _: &Changed, cx| {
@@ -93,13 +111,39 @@ impl AddCode {
             problem: None,
             note: None,
             scanning: false,
+            editing: None,
+            groups,
             focus: cx.focus_handle(),
         }
     }
 
-    /// The link field's focus, where the cursor goes first.
-    pub fn link_focus(&self, cx: &App) -> FocusHandle {
-        self.link.focus_handle(cx)
+    /// Edits the code `entry`: its names, group and sites.
+    pub fn edit(
+        entry: &crate::codes::Entry,
+        groups: Vec<(String, u32)>,
+        cx: &mut Context<Self>,
+    ) -> Self {
+        let mut this = Self::new(Some(&entry.group), groups, cx);
+        this.editing = Some(entry.id.clone());
+        let sites = entry.sites.join(", ");
+        for (field, value) in [
+            (&this.issuer, &entry.otp.issuer),
+            (&this.account, &entry.otp.account),
+            (&this.sites, &sites),
+        ] {
+            field.update(cx, |f, cx| f.set_text(value, value.len()..value.len(), cx));
+        }
+        this
+    }
+
+    /// Where the cursor goes first: the link when adding, the service when
+    /// editing.
+    pub fn first_focus(&self, cx: &App) -> FocusHandle {
+        if self.editing.is_some() {
+            self.issuer.focus_handle(cx)
+        } else {
+            self.link.focus_handle(cx)
+        }
     }
 
     fn read(text: &str) -> Result<Read, String> {
@@ -144,6 +188,21 @@ impl AddCode {
             .filter(|s| !s.is_empty())
             .map(|s| s.trim_end_matches('/').to_lowercase())
             .collect();
+        if let Some(id) = self.editing.clone() {
+            if issuer.is_empty() && account.is_empty() {
+                self.problem = Some(tr!("Say whose code it is: the service, or the account."));
+                cx.notify();
+                return;
+            }
+            cx.emit(AddEvent::Edit {
+                id,
+                issuer,
+                account,
+                group,
+                sites,
+            });
+            return;
+        }
         let codes = match Self::read(&text(&self.link, cx)) {
             Err(e) => {
                 self.problem = Some(e);
@@ -190,7 +249,7 @@ impl AddCode {
 
     /// Reads the QR codes on the screen. On macOS authwing steps out of the
     /// way while it does, as its window may be over the code.
-    fn scan_screen(&mut self, cx: &mut Context<Self>) {
+    pub fn scan_screen(&mut self, cx: &mut Context<Self>) {
         if self.scanning {
             return;
         }
@@ -412,9 +471,44 @@ fn field(label: String, input: &Entity<TextInput>) -> gpui::Div {
 impl Render for AddCode {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let editing = self.editing.is_some();
+        let typed_group = self.group.read(cx).text().trim().to_lowercase();
+        let mut group_chips = div().flex().flex_wrap().gap(px(6.));
+        for (name, color) in &self.groups {
+            let on = typed_group == name.to_lowercase();
+            let pick = name.clone();
+            group_chips = group_chips.child(
+                div()
+                    .id(SharedString::from(format!("pick-group-{name}")))
+                    .h(px(24.))
+                    .px(px(8.))
+                    .flex()
+                    .items_center()
+                    .gap(px(6.))
+                    .rounded(px(6.))
+                    .border_1()
+                    .border_color(rgb(if on { c.accent } else { c.edge }))
+                    .when(on, |d| d.bg(rgb(c.selected)))
+                    .cursor_pointer()
+                    .hover(|s| s.bg(rgb(c.hover)))
+                    .text_size(ui(12.))
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        let name = if this.group.read(cx).text().trim() == pick {
+                            String::new()
+                        } else {
+                            pick.clone()
+                        };
+                        this.group
+                            .update(cx, |f, cx| f.set_text(&name, name.len()..name.len(), cx));
+                        cx.notify();
+                    }))
+                    .child(div().size(px(8.)).rounded(px(2.)).bg(rgb(*color)))
+                    .child(name.clone()),
+            );
+        }
         div()
             .track_focus(&self.focus)
-            .capture_key_down(cx.listener(Self::on_paste))
+            .when(!editing, |d| d.capture_key_down(cx.listener(Self::on_paste)))
             .on_key_down(cx.listener(Self::on_key))
             .on_drop(cx.listener(|this, paths: &ExternalPaths, _, cx| {
                 if let Some(path) = paths.paths().first() {
@@ -436,9 +530,14 @@ impl Render for AddCode {
                 div()
                     .text_size(ui(16.))
                     .font_weight(FontWeight::SEMIBOLD)
-                    .child(tr!("Add a code")),
+                    .child(if editing {
+                        tr!("Edit the code")
+                    } else {
+                        tr!("Add a code")
+                    }),
             )
-            .child(
+            .when(!editing, |d| {
+                d.child(
                 div()
                     .text_size(ui(12.))
                     .text_color(rgb(c.muted))
@@ -474,6 +573,7 @@ impl Render for AddCode {
                     ),
             )
             .child(field(tr!("Link or key"), &self.link))
+            })
             .child(
                 div()
                     .flex()
@@ -488,6 +588,7 @@ impl Render for AddCode {
                     .child(div().w(px(160.)).child(field(tr!("Group"), &self.group)))
                     .child(div().flex_1().child(field(tr!("Show it first on"), &self.sites))),
             )
+            .when(!self.groups.is_empty(), |d| d.child(group_chips))
             .when(self.problem.is_none(), |d| {
                 let link = self.link.read(cx).text();
                 let note = self.note.as_ref().filter(|(text, _)| link == text.as_str());
@@ -518,8 +619,11 @@ impl Render for AddCode {
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(AddEvent::Close))),
                     )
                     .child(
-                        primary_button("add-save", &tr!("Add"))
-                            .on_click(cx.listener(|this, _, _, cx| this.submit(cx))),
+                        primary_button(
+                            "add-save",
+                            &if editing { tr!("Save") } else { tr!("Add") },
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| this.submit(cx))),
                     ),
             )
     }

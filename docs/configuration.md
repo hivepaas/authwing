@@ -9,7 +9,8 @@ TOML, both in its config directory:
 | macOS | `~/Library/Application Support/authwing` |
 | Windows | `%APPDATA%\authwing` |
 
-`$AUTHWING_CONFIG_DIR` points it somewhere else.
+`$AUTHWING_CONFIG_DIR` points it somewhere else: a vault of its own, whose
+key has a keychain item of its own (`authwing (<that directory>)`).
 
 How `config.toml` behaves:
 
@@ -75,6 +76,14 @@ settings = true              # the settings that are not this device's own sync 
   window's title. On macOS the title needs the Accessibility permission
   (System Settings › Privacy & Security › Accessibility); without it only
   the app is known. On Wayland no app may read other windows.
+- **Filing:** the sidebar shows every code, the favorites (the star on a
+  card), those used on this device lately, and each group. **+** beside
+  Groups makes one, of a name and a color; the pencil beside a group renames
+  it (its codes go along), recolors or deletes it (its codes stay, under no
+  group). Groups and stars sync with the codes; what was used when is this
+  device's own (`state/usage.json`).
+- **Editing:** the pencil on a card changes its service, account, group and
+  sites; its key stays as it is.
 - **Deleting:** the bin on a card, after a question. Turn two-factor
   sign-in off at the site first, or keep its recovery codes: without the
   code you cannot sign in there.
@@ -121,7 +130,7 @@ the one named clearly selected: Enter types it.
   names are often said the English way.
 - **It learns.** When voice is not sure, it offers the codes it may mean;
   the one you choose is found by what was heard next time. That, and how
-  often each code is used, is kept in `state/voice.json`, on this device.
+  often each code is used, is kept in `state/usage.json`, on this device.
 
 ## Backup, and moving from another app
 
