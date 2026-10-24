@@ -15,8 +15,7 @@ How `config.toml` behaves:
 
 - **Every key is optional**; anything missing takes its default, and a
   missing file is all defaults. **Settings** (the gear in the title bar, or
-  Cmd/Ctrl+,) changes it for you, keeping your comments; *Open config.toml*
-  there opens it in your editor.
+  Cmd/Ctrl+,) changes it for you, keeping your comments.
 - **Edits apply to a running window** within half a second.
 - **A file with a mistake is reported** with its line number, and the window
   keeps the last good values.
