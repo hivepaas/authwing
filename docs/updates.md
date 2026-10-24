@@ -1,7 +1,7 @@
 # Updates
 
-authwing tells its user when a newer version is out (*Settings › About*, a dot
-on the Settings button, an entry of the palette). It looks once a day while
+authwing tells its user when a newer version is out (*Settings › About*, and a
+dot on the Settings button). It looks once a day while
 `[updates] check` is on (the default), and when asked (*Check now*). Nothing is
 downloaded or installed until the user says so (see [Installing](#installing)).
 
@@ -55,7 +55,7 @@ where it runs:
 | installed as | the app |
 |---|---|
 | an AppImage (`$APPIMAGE`) | downloads the release's AppImage and puts it in place of this one |
-| `Authwing.app` on macOS | downloads the `.app` (tarred), checks it with `codesign` (valid, signed by the team that signed this one), and swaps the two |
+| `authwing.app` on macOS | downloads the `.app` (tarred), checks it with `codesign` (valid, signed by the team that signed this one), and swaps the two |
 | by its installer on Windows (`…\AppData\Local\Programs\authwing\`, `…\Program Files\authwing\`) | downloads the installer and runs it, quiet (`/S`), once the app has quit |
 | by Homebrew, Scoop, Flatpak, Snap, a system package, a store | says what updates it (`brew upgrade authwing`, …) |
 | by hand (a binary in a folder) | opens the release's page |
@@ -75,8 +75,8 @@ that one. The signed list is read again, and checked again, before each download
 
 *Download and install* downloads the file to the cache folder
 (`~/.cache/authwing/updates/` and the like), and says the release is ready. It is
-installed as the app quits: at *Restart now* (asked first while connections are
-open, as quitting is), which starts the new one, or whenever the user quits. A
+installed as the app quits: at *Restart now*, which starts the new one, or
+whenever the user quits. A
 release downloaded by an earlier run is still ready at the next start; once the
 app running is that version or newer, its file goes.
 
@@ -91,11 +91,20 @@ It is never run from the working tree: `scripts/release_sign.sh` builds it from
 the reviewed commit in `tools/releasesign/PIN`, with the network off, signs, and
 then checks the result again with OpenSSL 3.5 or later (the payload byte for byte,
 and each signature against the public key OpenSSL derives from the private key).
+The signing machine needs Go 1.27 or later on `PATH` (its standard library has
+ML-DSA) and OpenSSL 3.5 or later (`brew install go openssl@3`).
 
 ```sh
 # On the signing machine, in a clone of the repository:
-scripts/release_sign.sh /offline/2026-ed.key /offline/2026-ml.key
+scripts/release_sign.sh /offline/authwing/2026-ed.key /offline/authwing/2026-ml.key
 ```
+
+authwing's keys are its own, not shellwing's, though the tool and the machine
+are the same: a key that leaked would sign updates for one app's users, not
+both, and authwing can change hands without shellwing's key going with it.
+They live in a folder of their own (`/offline/authwing/`), so that the two
+apps' `2026-ed` never meet. (A signature could not cross over anyway: each app
+checks it under its own context.)
 
 Moving `PIN` to a newer commit is how a change to the tool reaches the keys: only
 after it is reviewed.

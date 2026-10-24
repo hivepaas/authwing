@@ -1,17 +1,21 @@
 //! The About page, as shellwing's: the version, where the code is and how
-//! to take part, updates, and the author's other projects, shellwing and
-//! HivePaaS.
+//! to take part, updates (see `workspace/updates.rs`), and the author's
+//! other projects, shellwing and HivePaaS.
 
 use gpui::{ClipboardItem, Context, FontWeight, div, prelude::*, px, rgb, svg};
 
 use authwing_i18n::tr;
 
-use super::{SettingsEvent, SettingsView, card, heading, hint};
+use authwing_config::SettingValue;
+
+use super::{SettingsEvent, SettingsView, card, heading, hint, row};
 use crate::colors::colors;
 use crate::look::ui;
 use crate::mark::{self, APP_ICON, SHELLWING_ICON};
 use crate::notice::Notice;
-use crate::widgets::outline_button;
+use crate::widgets::{outline_button, switch};
+use crate::workspace::UpdateStage;
+use crate::workspace::updates::{ago, by_said, download_said};
 
 const SITE: &str = "https://authwing.app";
 const REPO: &str = "https://github.com/hivepaas/authwing";
@@ -56,12 +60,7 @@ impl SettingsView {
             .gap(px(20.))
             .child(identity(scale, cx))
             .child(open_source(cx))
-            .child(section(
-                &tr!("Updates"),
-                card().child(hint(tr!(
-                    "This build has no release keys, so it cannot tell of updates."
-                ))),
-            ))
+            .child(self.updates(cx))
             .child(
                 div()
                     .flex()
@@ -82,6 +81,176 @@ impl SettingsView {
                     ))),
             )
     }
+
+    /// Which channel this build is on, what a look found, and getting it.
+    fn updates(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let check = self.settings.updates.check;
+        let Some(u) = &self.update else {
+            return section(&tr!("Updates"), card());
+        };
+        let status: gpui::Div = if !u.keys {
+            hint(tr!(
+                "This build has no release keys, so it cannot tell of updates."
+            ))
+        } else if let UpdateStage::Ready(v) = &u.stage {
+            update_card(
+                tr!("authwing {version} is ready", version = v.to_string()),
+                hint(tr!("It is installed when you quit, or now with Restart.")),
+            )
+            .child(
+                outline_button("update-restart", &tr!("Restart now"))
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::RestartToUpdate))),
+            )
+        } else if let UpdateStage::Downloading(got, of) = u.stage {
+            let v = u.offered.clone().unwrap_or_default();
+            update_card(
+                tr!("authwing {version}", version = v),
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(6.))
+                    .child(hint(download_said(got, of)))
+                    .when_some(of.filter(|n| *n > 0), |d, of| {
+                        let done = (got as f32 / of as f32).clamp(0., 1.);
+                        d.child(
+                            div()
+                                .h(px(4.))
+                                .w_full()
+                                .rounded_full()
+                                .bg(rgb(c.edge))
+                                .child(
+                                    div()
+                                        .h_full()
+                                        .w(gpui::relative(done))
+                                        .rounded_full()
+                                        .bg(rgb(c.accent)),
+                                ),
+                        )
+                    }),
+            )
+        } else if u.checking {
+            hint(tr!("Looking for a newer version…"))
+        } else if let Some(v) = &u.offered {
+            let get = match u.managed {
+                Some(_) => tr!("How to update"),
+                None if u.updates_itself => match u.stage {
+                    UpdateStage::Failed(_) => tr!("Try again"),
+                    _ => tr!("Download and install"),
+                },
+                None => tr!("Download"),
+            };
+            let said = match u.managed {
+                Some((by, Some(command))) => tr!(
+                    "{by} updates it: {command}",
+                    by = by_said(by),
+                    command = command
+                ),
+                Some((by, None)) => tr!("{by} updates it.", by = by_said(by)),
+                None if u.updates_itself => {
+                    tr!("It is downloaded and checked, then installed when you quit.")
+                }
+                None => tr!("Download it, and install it in place of this one."),
+            };
+            update_card(
+                tr!("authwing {version} is out", version = v.clone()),
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(2.))
+                    .child(hint(said))
+                    .when_some(
+                        match &u.stage {
+                            UpdateStage::Failed(why) => Some(why.clone()),
+                            _ => None,
+                        },
+                        |d, why| {
+                            d.child(
+                                div()
+                                    .text_size(ui(12.))
+                                    .text_color(rgb(c.bad))
+                                    .child(tr!("The download failed: {why}", why = why)),
+                            )
+                        },
+                    ),
+            )
+            .child(primary_link_action(
+                "update-get",
+                &get,
+                AUTHWING_BRAND,
+                cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::GetUpdate)),
+            ))
+            .child(
+                outline_button("update-skip", &tr!("Skip this version"))
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::SkipUpdate))),
+            )
+        } else if let Some(p) = &u.problem {
+            div()
+                .text_size(ui(12.))
+                .text_color(rgb(c.bad))
+                .child(tr!("The last look failed: {why}", why = p.clone()))
+        } else if let Some(t) = u.checked_at {
+            hint(tr!("Up to date (looked {when}).", when = ago(t)))
+        } else {
+            hint(tr!("Not looked yet."))
+        };
+        section(
+            &tr!("Updates"),
+            card()
+                .child(body_text(match u.channel {
+                    "beta" => tr!(
+                        "This is a beta: you are told of newer betas, and of the release that follows them."
+                    ),
+                    _ => tr!("This is a release: you are told of newer releases, not of betas."),
+                }))
+                .child(status)
+                .when(u.keys, |d| {
+                    d.child(
+                        div().flex().child(
+                            outline_button("update-check", &tr!("Check now"))
+                                .when(u.checking, |b| b.opacity(0.5))
+                                .on_click(cx.listener(|_, _, _, cx| {
+                                    cx.emit(SettingsEvent::CheckUpdates)
+                                })),
+                        ),
+                    )
+                    .child(row(
+                        tr!("Look for updates once a day"),
+                        tr!(
+                            "It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you."
+                        ),
+                        switch("update-auto", check).on_click(cx.listener(move |view, _, _, cx| {
+                            view.set(&["updates", "check"], Some(SettingValue::Bool(!check)), cx)
+                        })),
+                    ))
+                }),
+        )
+    }
+}
+
+/// A release, as About shows it: what it is, and what is said of it; the
+/// buttons follow.
+fn update_card(title: String, body: gpui::Div) -> gpui::Div {
+    div()
+        .flex()
+        .flex_wrap()
+        .items_center()
+        .gap(px(10.))
+        .p(px(12.))
+        .rounded(px(8.))
+        .border_1()
+        .border_color(rgb(colors().accent))
+        .bg(rgb(colors().selected))
+        .child(
+            div()
+                .flex_1()
+                .min_w(px(220.))
+                .flex()
+                .flex_col()
+                .gap(px(2.))
+                .child(div().font_weight(FontWeight::SEMIBOLD).child(title))
+                .child(body),
+        )
 }
 
 /// The icon, the name, what it is and which build this is.
@@ -480,8 +649,23 @@ fn primary_link(
     id: &'static str,
     text: &str,
     url: &'static str,
-    (top, bottom, hover_top, hover_bottom, fg): Brand,
+    brand: Brand,
     cx: &mut Context<SettingsView>,
+) -> gpui::Stateful<gpui::Div> {
+    primary_link_action(
+        id,
+        text,
+        brand,
+        cx.listener(move |_, _, _, cx| cx.open_url(url)),
+    )
+}
+
+/// A filled button in a brand's colors that does `action`.
+fn primary_link_action(
+    id: &'static str,
+    text: &str,
+    (top, bottom, hover_top, hover_bottom, fg): Brand,
+    action: impl Fn(&gpui::ClickEvent, &mut gpui::Window, &mut gpui::App) + 'static,
 ) -> gpui::Stateful<gpui::Div> {
     let hover = brand_fill(hover_top, hover_bottom);
     div()
@@ -498,7 +682,7 @@ fn primary_link(
         .cursor_pointer()
         .hover(move |s| s.bg(hover))
         .child(text.to_string())
-        .on_click(cx.listener(move |_, _, _, cx| cx.open_url(url)))
+        .on_click(action)
 }
 
 #[cfg(test)]

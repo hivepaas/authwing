@@ -286,17 +286,89 @@ t27cb3b23 = đóng
 # Allow Accessibility to type codes in
 t5e806dae = Cho phép Trợ năng để gõ mã vào
 
+# From the same author
+te0bcddcb = Cùng tác giả
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+t974bcb65 = © { $year } HivePaaS. Tên và logo authwing là nhãn hiệu của HivePaaS.
+
 # Updates
 t483075a5 = Cập nhật
 
 # This build has no release keys, so it cannot tell of updates.
 t378182cb = Bản build này không có khoá phát hành, nên không thể báo khi có bản cập nhật.
 
-# From the same author
-te0bcddcb = Cùng tác giả
+# authwing {version} is ready
+t2b9b301d = authwing { $version } đã sẵn sàng
 
-# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
-t974bcb65 = © { $year } HivePaaS. Tên và logo authwing là nhãn hiệu của HivePaaS.
+# It is installed when you quit, or now with Restart.
+t6fecac86 = Bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+
+# Restart now
+t54001a7c = Khởi động lại ngay
+
+# authwing {version}
+t07bd65c2 = authwing { $version }
+
+# Looking for a newer version…
+tf1905fe9 = Đang tìm phiên bản mới hơn…
+
+# How to update
+t3603428f = Cách cập nhật
+
+# Try again
+t213e90fa = Thử lại
+
+# Download and install
+t1a99173f = Tải xuống và cài đặt
+
+# Download
+t6964bb19 = Tải xuống
+
+# {by} updates it: {command}
+tdf2cab9c = { $by } sẽ cập nhật nó: { $command }
+
+# {by} updates it.
+t84b27295 = { $by } sẽ cập nhật nó.
+
+# It is downloaded and checked, then installed when you quit.
+tb46c0678 = Bản mới được tải xuống và kiểm tra, rồi cài khi bạn thoát app.
+
+# Download it, and install it in place of this one.
+t39312eae = Tải về và cài đè lên bản này.
+
+# authwing {version} is out
+t44ae3b62 = Đã có authwing { $version }
+
+# The download failed: {why}
+t5e96c075 = Tải xuống thất bại: { $why }
+
+# Skip this version
+t2c33d756 = Bỏ qua phiên bản này
+
+# The last look failed: {why}
+td122a092 = Lần kiểm tra trước bị lỗi: { $why }
+
+# Up to date (looked {when}).
+t4665ef60 = Đang là bản mới nhất (kiểm tra { $when }).
+
+# Not looked yet.
+t5a3ba058 = Chưa kiểm tra lần nào.
+
+# This is a beta: you are told of newer betas, and of the release that follows them.
+t1d6a96bc = Đây là bản beta: bạn sẽ được báo khi có beta mới hơn, và khi có bản chính thức tiếp theo.
+
+# This is a release: you are told of newer releases, not of betas.
+t9d2d8250 = Đây là bản chính thức: bạn chỉ được báo khi có bản chính thức mới hơn, không báo bản beta.
+
+# Check now
+t4f0e0677 = Kiểm tra ngay
+
+# Look for updates once a day
+tcc27ace1 = Kiểm tra cập nhật mỗi ngày một lần
+
+# It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+t258cdfd9 = App đọc danh sách bản phát hành từ GitHub, và chỉ tin khi chữ ký của nó hợp lệ. Không có gì được tải xuống hay cài đặt nếu bạn không đồng ý.
 
 # Two-factor codes that know the window you are in.
 t76a57f34 = Mã hai yếu tố biết bạn đang ở cửa sổ nào.
@@ -1231,6 +1303,54 @@ tc421facd = Không nghe thấy gì. Micro đã được cho phép chưa? Cài đ
 # Nothing was heard: is the microphone on?
 t5de1c09c = Không nghe thấy gì: micro có đang bật không?
 
+# the system's package manager
+t11465c20 = trình quản lý gói của hệ thống
+
+# the App Store
+ta8cbd72e = App Store
+
+# the Microsoft Store
+t1df799a1 = Microsoft Store
+
+# just now
+ta715ef0f = vừa xong
+
+# {n} minute ago | {n} minutes ago
+t6c7302d6 =
+    { $n ->
+       *[other] { $n } phút trước
+    }
+
+# {n} hour ago | {n} hours ago
+t137b052e =
+    { $n ->
+       *[other] { $n } giờ trước
+    }
+
+# {n} day ago | {n} days ago
+tb9fa7744 =
+    { $n ->
+       *[other] { $n } ngày trước
+    }
+
+# Downloading… {got} of {total}
+taee668c2 = Đang tải xuống… { $got } / { $total }
+
+# Downloading… {got}
+t4873b921 = Đang tải xuống… { $got }
+
+# authwing {version} is out: {by} updates it ({command}).
+taf85c804 = Đã có authwing { $version }: { $by } sẽ cập nhật nó ({ $command }).
+
+# authwing {version} is out: {by} updates it.
+ta087df4c = Đã có authwing { $version }: { $by } sẽ cập nhật nó.
+
+# No folder to download to.
+t2bfc1370 = Không có thư mục để tải xuống.
+
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+td9ae9d7c = authwing { $version } đã sẵn sàng: bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+
 # Find a code
 t8b2733e6 = Tìm mã
 
@@ -1305,6 +1425,9 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 
 # Not opened: {e}
 t2e0269c8 = Chưa mở được: { $e }
+
+# Settings: an update is out
+t5742fd7e = Cài đặt: đã có bản cập nhật
 
 # All codes
 t113331ee = Tất cả mã

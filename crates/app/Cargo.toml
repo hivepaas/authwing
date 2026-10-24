@@ -28,6 +28,11 @@ authwing-totp.workspace = true
 authwing-context.workspace = true
 authwing-bridge.workspace = true
 authwing-backup.workspace = true
+authwing-update.workspace = true
+# The updater reads the list and the release with reqwest, on a runtime of
+# its own; the cache folder its download goes to.
+tokio.workspace = true
+dirs = "7"
 authwing-scan = { workspace = true, features = ["camera"] }
 # Frames to draw: the camera's, as GPUI takes them.
 image = { version = "0.25", default-features = false }

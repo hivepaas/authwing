@@ -59,6 +59,12 @@ if ! git -C "$ROOT" diff --quiet HEAD -- "$IN" 2>/dev/null; then
   echo "WARNING: $IN has changes not committed: what is signed is the file, not the commit." >&2
 fi
 
+# The tool's ML-DSA is the standard library's from Go 1.27 (crypto/mldsa); the
+# go on PATH is used as it is, never a toolchain downloaded for the occasion.
+GO_VERSION="$(env GOTOOLCHAIN=local go env GOVERSION 2>/dev/null || true)"
+[[ "$GO_VERSION" =~ ^go1\.(2[7-9]|[3-9][0-9])(\.|$) || "$GO_VERSION" =~ ^go[2-9]\. ]] ||
+  fail "Go 1.27 or later is needed on PATH (found: ${GO_VERSION:-none}): its standard library has ML-DSA"
+
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 

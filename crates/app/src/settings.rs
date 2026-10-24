@@ -30,6 +30,7 @@ use crate::vault_slot::VaultSlot;
 use crate::widgets::{
     choice, input_box, labeled, outline_button, primary_button, switch, text_button,
 };
+use crate::workspace::UpdateSnap;
 
 pub enum SettingsEvent {
     Close,
@@ -42,6 +43,14 @@ pub enum SettingsEvent {
     CodesChanged,
     /// Show the welcome again.
     Welcome,
+    /// Settings › About: look for a newer release now.
+    CheckUpdates,
+    /// Download the release offered, or say what updates this copy.
+    GetUpdate,
+    /// Not offered again until a newer one comes.
+    SkipUpdate,
+    /// Quit, install the release downloaded, and start it.
+    RestartToUpdate,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -122,6 +131,8 @@ pub struct SettingsView {
     vault: VaultSlot,
     sync: SyncWorker,
     sync_status: String,
+    /// How looking for updates stands, as the window last said.
+    update: Option<UpdateSnap>,
     place: PlaceForm,
     pass: Entity<TextInput>,
     pass_again: Entity<TextInput>,
@@ -211,6 +222,7 @@ impl SettingsView {
             vault,
             sync,
             sync_status: String::new(),
+            update: None,
             place,
             pass: masked(cx, || tr!("At least 10 characters, hard to guess")),
             pass_again: masked(cx, || tr!("The same again")),
@@ -240,6 +252,11 @@ impl SettingsView {
 
     pub fn set_sync_status(&mut self, status: String, cx: &mut Context<Self>) {
         self.sync_status = status;
+        cx.notify();
+    }
+
+    pub fn set_update(&mut self, update: UpdateSnap, cx: &mut Context<Self>) {
+        self.update = Some(update);
         cx.notify();
     }
 
