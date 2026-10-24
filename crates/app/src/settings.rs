@@ -1762,11 +1762,17 @@ impl SettingsView {
             self.pending.as_ref().map(|p| {
                 card()
                     .border_color(rgb(c.accent))
-                    .child(div().child(tr!(
-                        "{file} is an encrypted {app} file.",
-                        file = p.name.clone(),
-                        app = p.format.name().to_string()
-                    )))
+                    .child(div().child(match p.format {
+                        // A file that says nothing of its app: tried as each.
+                        Format::EncryptedFile => {
+                            tr!("{file} is encrypted.", file = p.name.clone())
+                        }
+                        format => tr!(
+                            "{file} is an encrypted {app} file.",
+                            file = p.name.clone(),
+                            app = format.name().to_string()
+                        ),
+                    }))
                     .child(
                         div()
                             .flex()
@@ -2115,6 +2121,9 @@ fn backup_error(e: &authwing_backup::Error) -> String {
             "The passphrase is too short: at least {n} characters.",
             n = n.to_string()
         ),
+        Error::PasswordNeeded(Format::EncryptedFile) => {
+            tr!("This file is encrypted: enter its password.")
+        }
         Error::PasswordNeeded(f) => tr!(
             "This {app} file is encrypted: enter its password.",
             app = f.name().to_string()
