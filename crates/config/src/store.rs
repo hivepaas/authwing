@@ -24,6 +24,7 @@ const STATE: &str = "state";
 const WINDOW: &str = "window.json";
 const UPDATES: &str = "updates.json";
 const USAGE: &str = "usage.json";
+const WELCOME: &str = "welcome.json";
 
 /// A file that could not be read or parsed.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
@@ -372,6 +373,16 @@ impl Store {
         self.save_state(UPDATES, state)
     }
 
+    /// Whether the welcome was seen on this device (`state/welcome.json`).
+    pub fn welcome_seen(&self) -> bool {
+        self.load_state::<crate::state::WelcomeState>(WELCOME)
+            .is_some_and(|w| w.seen)
+    }
+
+    pub fn save_welcome_seen(&self, seen: bool) -> io::Result<()> {
+        self.save_state(WELCOME, &crate::state::WelcomeState { seen })
+    }
+
     /// How the codes are used on this device (`state/usage.json`).
     pub fn usage(&self) -> crate::Usage {
         self.load_state(USAGE).unwrap_or_default()
@@ -568,6 +579,16 @@ mod tests {
         assert_eq!(s.window_state(), Some(w));
         fs::write(s.dir().join(STATE).join(WINDOW), "{ not json").expect("write");
         assert_eq!(s.window_state(), None);
+    }
+
+    #[test]
+    fn the_welcome_is_seen_once_said() {
+        let s = temp("welcome");
+        assert!(!s.welcome_seen());
+        s.save_welcome_seen(true).expect("save");
+        assert!(s.welcome_seen());
+        s.save_welcome_seen(false).expect("save");
+        assert!(!s.welcome_seen());
     }
 
     #[test]
