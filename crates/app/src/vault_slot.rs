@@ -32,10 +32,19 @@ struct Inner {
 pub struct VaultSlot(Arc<Inner>);
 
 impl VaultSlot {
-    /// Opens the vault with its key in the system keychain.
+    /// Opens the vault with its key in the system keychain: authwing's
+    /// item, or, with `$AUTHWING_CONFIG_DIR` (trying the app on codes of its
+    /// own), an item named by that folder, so that it neither reads nor
+    /// replaces the key of the vault in use.
     #[cfg(not(any(target_os = "ios", target_os = "android")))]
     pub fn open(path: PathBuf) -> Self {
-        Self::open_with(path, authwing_vault::OsKeychain::default())
+        let keys = match std::env::var("AUTHWING_CONFIG_DIR") {
+            Ok(dir) if !dir.is_empty() => {
+                authwing_vault::OsKeychain::named(format!("authwing ({dir})"))
+            }
+            _ => authwing_vault::OsKeychain::default(),
+        };
+        Self::open_with(path, keys)
     }
 
     /// Opens the vault with its key in `keys`: on iOS and Android, a store the
