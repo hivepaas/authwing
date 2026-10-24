@@ -271,6 +271,120 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` está asignado a { $kept } y a 
 # Allow Accessibility to type codes in
 # t5e806dae =
 
+# Updates
+# t483075a5 =
+
+# This build has no release keys, so it cannot tell of updates.
+# t378182cb =
+
+# From the same author
+# te0bcddcb =
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+# t974bcb65 =
+
+# Two-factor codes that know the window you are in.
+# t76a57f34 =
+
+# Version {version} · {os} {arch}
+# t6bead5ae =
+
+# Copy version info
+# t3d37483c =
+
+# Copied: {info}
+# t183c7f9f =
+
+# Show the welcome again
+# t80b070db =
+
+# Visit authwing.app
+# t82dfc39c =
+
+# Report a problem
+# t7b1728e7 =
+
+# Release notes
+# tc52ab62f =
+
+# Open source
+# ta04619ce =
+
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+# tb206fce9 =
+
+# SSH as OpenSSH does it
+# tf31dc063 =
+
+# Tabs and split panes
+# t27fcaa7f =
+
+# SFTP
+# t62703ae8 =
+
+# Port forwarding
+# tb033f949 =
+
+# Encrypted vault
+# t607bfd2b =
+
+# Sync between devices
+# t39de978d =
+
+# Visit shellwing.app
+# t1d2ed540 =
+
+# Open source · GPL-3.0
+# t86466056 =
+
+# A fast, native SSH client for macOS, Windows and Linux
+# tef1f8d16 =
+
+# Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs between your devices, in a GPU-rendered terminal built in Rust.
+# tbddef507 =
+
+# On your servers
+# te5da903f =
+
+# Deploy from Git or a Docker image, with domains and automatic TLS, logs, metrics and scaling across a cluster.
+# t1671a837 =
+
+# On your own computer
+# t75086b1c =
+
+# Install it on your own computer in place of Docker Desktop or Portainer, and still get full app management on top.
+# te7416212 =
+
+# 300+ one-click apps
+# t6a770b0a =
+
+# Deploy on push
+# tb0bfc3e9 =
+
+# Pull request previews
+# t4e4180fc =
+
+# Automatic TLS
+# t9e9776ed =
+
+# Live logs and metrics
+# tebe3a172 =
+
+# Functions
+# t69d796ee =
+
+# Visit hivepaas.com
+# t0632975a =
+
+# Open source · Apache-2.0
+# tf33a768c =
+
+# A self-hosted platform for your apps, built on Docker Swarm
+# t92f3d8ce =
+
+# An open-source, self-hosted alternative to Heroku, Render and Coolify.
+# t2f8bf400 =
+
 # General
 # t5561fd0b =
 
@@ -844,27 +958,6 @@ t538b10e9 = Abrir
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
 # t49b23b02 =
 
-# Version
-# t5dcdd537 =
-
-# License
-# t38e70ee4 =
-
-# Free software: you may share and change it under the GPL.
-# tef971997 =
-
-# Source
-# t61e2a3f8 =
-
-# Updates
-# t483075a5 =
-
-# Not looked for: this build has no release keys to check them with.
-# t208f65bc =
-
-# Show the welcome again
-# t80b070db =
-
 # Settings
 # t4b058728 =
 
@@ -1056,9 +1149,6 @@ t60f438b7 = no se escribieron los ajustes: { $e }
 
 # Welcome to authwing
 # t1c4b12d5 =
-
-# Two-factor codes that know the window you are in.
-# t76a57f34 =
 
 # Bring your codes
 # t852a71f4 =

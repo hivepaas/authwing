@@ -286,6 +286,120 @@ t27cb3b23 = đóng
 # Allow Accessibility to type codes in
 t5e806dae = Cho phép Trợ năng để gõ mã vào
 
+# Updates
+t483075a5 = Cập nhật
+
+# This build has no release keys, so it cannot tell of updates.
+t378182cb = Bản build này không có khoá phát hành, nên không thể báo khi có bản cập nhật.
+
+# From the same author
+te0bcddcb = Cùng tác giả
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+t974bcb65 = © { $year } HivePaaS. Tên và logo authwing là nhãn hiệu của HivePaaS.
+
+# Two-factor codes that know the window you are in.
+t76a57f34 = Mã hai yếu tố biết bạn đang ở cửa sổ nào.
+
+# Version {version} · {os} {arch}
+t6bead5ae = Phiên bản { $version } · { $os } { $arch }
+
+# Copy version info
+t3d37483c = Sao chép thông tin phiên bản
+
+# Copied: {info}
+t183c7f9f = Đã sao chép: { $info }
+
+# Show the welcome again
+t80b070db = Xem lại màn hình chào
+
+# Visit authwing.app
+t82dfc39c = Xem authwing.app
+
+# Report a problem
+t7b1728e7 = Báo lỗi
+
+# Release notes
+tc52ab62f = Ghi chú phát hành
+
+# Open source
+ta04619ce = Mã nguồn mở
+
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tb206fce9 = authwing là phần mềm miễn phí, mã nguồn mở theo giấy phép GPL-3.0-or-later. Bạn có thể đọc mã, tự build, báo lỗi hoặc gửi bản sửa.
+
+# SSH as OpenSSH does it
+tf31dc063 = SSH đúng như OpenSSH
+
+# Tabs and split panes
+t27fcaa7f = Tab và chia khung
+
+# SFTP
+t62703ae8 = SFTP
+
+# Port forwarding
+tb033f949 = Chuyển tiếp cổng
+
+# Encrypted vault
+t607bfd2b = Kho bí mật mã hoá
+
+# Sync between devices
+t39de978d = Đồng bộ giữa các thiết bị
+
+# Visit shellwing.app
+t1d2ed540 = Xem shellwing.app
+
+# Open source · GPL-3.0
+t86466056 = Mã nguồn mở · GPL-3.0
+
+# A fast, native SSH client for macOS, Windows and Linux
+tef1f8d16 = Ứng dụng SSH gốc, nhanh, cho macOS, Windows và Linux
+
+# Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs between your devices, in a GPU-rendered terminal built in Rust.
+tbddef507 = Tab, chia khung, SFTP, chuyển tiếp cổng và kho bí mật mã hoá đồng bộ giữa các thiết bị, trong terminal vẽ bằng GPU, viết bằng Rust.
+
+# On your servers
+te5da903f = Trên máy chủ của bạn
+
+# Deploy from Git or a Docker image, with domains and automatic TLS, logs, metrics and scaling across a cluster.
+t1671a837 = Triển khai từ Git hoặc Docker image, kèm tên miền và TLS tự động, log, metrics và mở rộng trên cả cụm máy chủ.
+
+# On your own computer
+t75086b1c = Ngay trên máy của bạn
+
+# Install it on your own computer in place of Docker Desktop or Portainer, and still get full app management on top.
+te7416212 = Cài ngay trên máy local thay cho Docker Desktop hay Portainer, mà vẫn có nhiều tính năng quản lý ứng dụng cao cấp.
+
+# 300+ one-click apps
+t6a770b0a = 300+ ứng dụng cài một chạm
+
+# Deploy on push
+tb0bfc3e9 = Deploy khi push
+
+# Pull request previews
+t4e4180fc = Bản xem trước cho pull request
+
+# Automatic TLS
+t9e9776ed = TLS tự động
+
+# Live logs and metrics
+tebe3a172 = Log và metrics trực tiếp
+
+# Functions
+t69d796ee = Functions
+
+# Visit hivepaas.com
+t0632975a = Xem hivepaas.com
+
+# Open source · Apache-2.0
+tf33a768c = Mã nguồn mở · Apache-2.0
+
+# A self-hosted platform for your apps, built on Docker Swarm
+t92f3d8ce = Nền tảng self-hosted cho ứng dụng của bạn, chạy trên Docker Swarm
+
+# An open-source, self-hosted alternative to Heroku, Render and Coolify.
+t2f8bf400 = Một giải pháp self-hosted, mã nguồn mở thay thế cho Heroku, Render và Coolify.
+
 # General
 t5561fd0b = Chung
 
@@ -868,27 +982,6 @@ td2a9db60 = Trình duyệt trên máy này
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
 t49b23b02 = Tiện ích chưa có trên các store: hãy build từ thư mục extension của repository và nạp dạng unpacked.
 
-# Version
-t5dcdd537 = Phiên bản
-
-# License
-t38e70ee4 = Giấy phép
-
-# Free software: you may share and change it under the GPL.
-tef971997 = Phần mềm tự do: bạn có thể chia sẻ và sửa đổi theo giấy phép GPL.
-
-# Source
-t61e2a3f8 = Mã nguồn
-
-# Updates
-t483075a5 = Cập nhật
-
-# Not looked for: this build has no release keys to check them with.
-t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
-
-# Show the welcome again
-t80b070db = Xem lại màn hình chào
-
 # Settings
 t4b058728 = Cài đặt
 
@@ -1083,9 +1176,6 @@ t712df601 = Thiết lập đồng bộ…
 
 # Welcome to authwing
 t1c4b12d5 = Chào mừng đến với authwing
-
-# Two-factor codes that know the window you are in.
-t76a57f34 = Mã hai yếu tố biết bạn đang ở cửa sổ nào.
 
 # Bring your codes
 t852a71f4 = Mang mã của bạn vào
