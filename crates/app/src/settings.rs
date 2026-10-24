@@ -19,6 +19,8 @@ use authwing_config::{
 use authwing_i18n::{tr, tr_n};
 use authwing_vault::Presence as _;
 
+mod about;
+
 use crate::colors::colors;
 use crate::input::{TextInput, said};
 use crate::look::ui;
@@ -1907,41 +1909,10 @@ impl SettingsView {
                 "The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked."
             )))
     }
-
-    fn about(&self) -> gpui::Div {
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(12.))
-            .child(heading("authwing".to_string()))
-            .child(
-                card()
-                    .child(row(
-                        tr!("Version"),
-                        String::new(),
-                        div().child(env!("CARGO_PKG_VERSION")),
-                    ))
-                    .child(row(
-                        tr!("License"),
-                        tr!("Free software: you may share and change it under the GPL."),
-                        div().child("GPL-3.0-or-later"),
-                    ))
-                    .child(row(
-                        tr!("Source"),
-                        String::new(),
-                        div().child("github.com/hivepaas/authwing"),
-                    ))
-                    .child(row(
-                        tr!("Updates"),
-                        tr!("Not looked for: this build has no release keys to check them with."),
-                        div(),
-                    )),
-            )
-    }
 }
 
 impl Render for SettingsView {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let header = div()
             .h(px(40.))
@@ -2027,7 +1998,7 @@ impl Render for SettingsView {
             Page::Security => self.security(cx),
             Page::Backup => self.backup_page(cx),
             Page::Browsers => self.browsers_page(cx),
-            Page::About => self.about(),
+            Page::About => self.about(window.scale_factor(), cx),
         };
         let page = div().flex_1().min_h_0().flex().child(nav).child(
             div()
