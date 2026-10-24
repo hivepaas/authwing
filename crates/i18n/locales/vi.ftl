@@ -217,6 +217,45 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
 
+# XXXX-XXXX-…, 13 groups
+tbb504d9f = XXXX-XXXX-…, 13 nhóm
+
+# Waiting for a device that syncs: open authwing there.
+t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
+
+# Approve on {device} if it shows the same code:
+ta89ba4d1 = Duyệt trên { $device } nếu nó hiện cùng mã này:
+
+# Joined. The vault's codes are coming.
+t775b89a0 = Đã tham gia. Các mã của vault đang được tải về.
+
+# The other device refused.
+t74419d8e = Thiết bị kia đã từ chối.
+
+# Nobody approved in time: ask again.
+t5c323bb6 = Không ai duyệt kịp: hãy xin lại.
+
+# Ask a device that syncs
+t2dc61136 = Xin một thiết bị đang đồng bộ
+
+# Stop asking
+t296beec8 = Thôi xin
+
+# It holds a vault from another device: join it
+t25a71781 = Nơi này đang chứa kho của thiết bị khác: hãy tham gia
+
+# Ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
+t58c3578d = Nhờ một thiết bị đang đồng bộ duyệt, hoặc nhập khoá khôi phục của kho. Passphrase đồng bộ của kho cũng dùng được.
+
+# Ask a device that syncs, or type the vault's recovery key.
+tfa918e42 = Nhờ một thiết bị đang đồng bộ duyệt, hoặc nhập khoá khôi phục của kho.
+
+# Joining…
+taa884c51 = Đang tham gia…
+
+# Join with the key
+t9f857a57 = Tham gia bằng khoá
+
 # Hide authwing
 tc980ec1e = Ẩn authwing
 
@@ -886,6 +925,18 @@ t6e62c13a = Cài nó trong terminal, rồi Kết nối lại:
 # Install a newer git (git-scm.com), then Connect again.
 t9a84a209 = Cài git mới hơn (git-scm.com), rồi Kết nối lại.
 
+# Settings too
+ta8aa81ba = Cả cài đặt
+
+# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
+te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
+
+# Or a place of your own
+t7b88a644 = Hoặc một chỗ của riêng bạn
+
+# When it syncs
+t4849994e = Khi đồng bộ
+
 # Your place
 t63cb5f41 = Nơi đồng bộ của bạn
 
@@ -898,20 +949,8 @@ t16f62979 = Hiện khoá khôi phục
 # Stop syncing
 t59fdbd70 = Dừng đồng bộ
 
-# A place of your own
-t8d5f140b = Một nơi của riêng bạn
-
-# What syncs
-ta2fbb093 = Những gì được đồng bộ
-
-# Settings too
-ta8aa81ba = Cả cài đặt
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
-
-# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
-t674d2276 = Thiết bị xin tham gia và khoá khôi phục nằm trong bảng của biểu tượng đám mây trên thanh tiêu đề.
+# Options
+t353e0d45 = Tuỳ chọn
 
 # Hide
 te10c7bcd = Ẩn
@@ -1075,71 +1114,128 @@ t3bd1216e = File này đã được mã hoá: hãy nhập mật khẩu của nó
 # This {app} file is encrypted: enter its password.
 t1aa6da9b = File { $app } này đã được mã hoá: hãy nhập mật khẩu.
 
-# XXXX-XXXX-…, 13 groups
-tbb504d9f = XXXX-XXXX-…, 13 nhóm
+# Not syncing
+t0f346f03 = Chưa đồng bộ
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-t82f98ccc = Hãy cất nó cùng chỗ với giấy tờ quan trọng: nó mở vault từ một thiết bị mới, và là cách lấy lại khi mất hết mọi thiết bị.
+# Synced · {when}
+ta250b3ba = Đã đồng bộ · { $when }
 
-# Waiting for a device that syncs: open authwing there.
-t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
+# Set up
+t43c06abc = Đã thiết lập
 
-# Approve on {device} if it shows the same code:
-ta89ba4d1 = Duyệt trên { $device } nếu nó hiện cùng mã này:
+# Syncing…
+t8ad2ae06 = Đang đồng bộ…
 
-# Joined. The vault's codes are coming.
-t775b89a0 = Đã tham gia. Các mã của vault đang được tải về.
+# Not synced: {why}
+t26991b72 = Chưa đồng bộ: { $why }
 
-# The other device refused.
-t74419d8e = Thiết bị kia đã từ chối.
+# Paused: the vault is locked
+tfff0fb2a = Tạm dừng: kho đang khoá
 
-# Nobody approved in time: ask again.
-t5c323bb6 = Không ai duyệt kịp: hãy xin lại.
+# {n} code | {n} codes
+ta5ca2740 =
+    { $n ->
+       *[other] { $n } mã
+    }
 
-# Ask a device that syncs
-t2dc61136 = Xin một thiết bị đang đồng bộ
+# NOT SYNCING
+t7c7f0ba3 = CHƯA ĐỒNG BỘ
 
-# Stop asking
-t296beec8 = Thôi xin
+# Your codes on every device. Just sign in.
+t64f52192 = Mã của bạn trên mọi thiết bị. Chỉ cần đăng nhập.
 
-# Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
-tc75c83a8 = Chưa đồng bộ. Khai báo nơi đồng bộ trong config.toml rồi quay lại đây: một thư mục được đồng bộ (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 hoặc Git.
+# Your codes, their groups and sites stay on this computer for now.
+tcc5add1d = Mã, nhóm và site của bạn hiện chỉ nằm trên máy này.
 
-# Close
-tcd86acc3 = Đóng
+# See authwing cloud
+t37219794 = Xem authwing cloud
 
-# Only encrypted records are stored there: not even the services' names can be read.
-td7b59080 = Ở đó chỉ lưu các bản ghi đã mã hoá: ngay cả tên dịch vụ cũng không đọc được.
+# A folder, WebDAV, S3 or Git of your own:
+t42ad626a = Thư mục, WebDAV, S3 hoặc Git của riêng bạn:
 
-# Devices asking to join
-tff44c4a4 = Thiết bị đang xin tham gia
+# Settings › Sync
+t6790eaeb = Cài đặt › Đồng bộ
 
-# Approve only if it shows this code.
-t8f54c79f = Chỉ duyệt nếu nó hiện đúng mã này.
+# SYNC
+t476c685a = ĐỒNG BỘ
 
-# Approve
-te6edf55a = Đồng ý
+# Open Settings › Sync
+tbef0fba1 = Mở Cài đặt › Đồng bộ
 
-# Refuse
-t9bcada35 = Từ chối
+# Not synced
+t4d1a6724 = Chưa đồng bộ
 
-# Join from this device
-t54904649 = Tham gia từ thiết bị này
+# With {place}, once it is open
+tf75bc464 = Với { $place }, khi kho được mở
 
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
-te7a28cec = Khi ở đó đã có một vault khác đồng bộ: xin một thiết bị đang đồng bộ, hoặc gõ khoá khôi phục của vault. Mật khẩu đồng bộ của nó cũng dùng được.
-
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key.
-t2d6ea251 = Khi ở đó đã có một vault khác đồng bộ: xin một thiết bị đang đồng bộ, hoặc gõ khoá khôi phục của vault.
-
-# Joining…
-taa884c51 = Đang tham gia…
-
-# Join with the key
-t9f857a57 = Tham gia bằng khoá
+# Unlock…
+tc671ed6b = Mở khoá…
 
 # Sync now
 ta34dd8fe = Đồng bộ ngay
+
+# Your codes, their groups and sites follow you to every computer.
+ta5f11048 = Mã, nhóm và site của bạn theo bạn sang mọi máy tính.
+
+# Nothing to set up: no folder, no server, no key to type on a new device.
+tde7b1d58 = Không phải cài đặt gì: không thư mục, không máy chủ, không khoá nào phải nhập trên thiết bị mới.
+
+# Encrypted on your devices: authwing never sees your codes.
+ta3c7045e = Được mã hoá trên thiết bị của bạn: authwing không bao giờ thấy mã của bạn.
+
+# Create an account
+td7f6c093 = Tạo tài khoản
+
+# Sign in
+t744be623 = Đăng nhập
+
+# or continue with
+t2f60c9bf = hoặc tiếp tục với
+
+# Rather not keep it yourself?
+t616f184a = Không muốn tự giữ?
+
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t69b9a0b0 = authwing cloud giữ giúp bạn: đăng nhập trên mỗi thiết bị, vậy là xong. Vẫn mã hoá đầu-cuối.
+
+# authwing cloud is coming: signing in opens with it.
+t6f15019c = authwing cloud sắp ra mắt: đăng nhập sẽ mở cùng lúc.
+
+# up to {n} code | up to {n} codes
+td320882c =
+    { $n ->
+       *[other] tối đa { $n } mã
+    }
+
+# unlimited · $15/year
+te176f9c3 = không giới hạn · $15/năm
+
+# just now
+ta715ef0f = vừa xong
+
+# a minute ago
+t85ac693d = một phút trước
+
+# {n} minute ago | {n} minutes ago
+t6c7302d6 =
+    { $n ->
+       *[other] { $n } phút trước
+    }
+
+# an hour ago
+t84377069 = một giờ trước
+
+# {n} hour ago | {n} hours ago
+t137b052e =
+    { $n ->
+       *[other] { $n } giờ trước
+    }
+
+# {n} day ago | {n} days ago
+tb9fa7744 =
+    { $n ->
+       *[other] { $n } ngày trước
+    }
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = mật khẩu của nó chưa được lưu trên thiết bị này: hãy kết nối lại trong Cài đặt › Đồng bộ
@@ -1312,27 +1408,6 @@ ta8cbd72e = App Store
 # the Microsoft Store
 t1df799a1 = Microsoft Store
 
-# just now
-ta715ef0f = vừa xong
-
-# {n} minute ago | {n} minutes ago
-t6c7302d6 =
-    { $n ->
-       *[other] { $n } phút trước
-    }
-
-# {n} hour ago | {n} hours ago
-t137b052e =
-    { $n ->
-       *[other] { $n } giờ trước
-    }
-
-# {n} day ago | {n} days ago
-tb9fa7744 =
-    { $n ->
-       *[other] { $n } ngày trước
-    }
-
 # Downloading… {got} of {total}
 taee668c2 = Đang tải xuống… { $got } / { $total }
 
@@ -1360,38 +1435,23 @@ t4774284e = Mật khẩu hoặc khoá khôi phục
 # The quick panel's shortcut {key} cannot be used: {e}
 td4cbf886 = Không dùng được phím tắt { $key } cho bảng tra nhanh: { $e }
 
-# A device asks to join: open Sync (the cloud) to approve it.
-tf1bf552a = Có thiết bị xin tham gia: mở Đồng bộ (biểu tượng đám mây) để duyệt.
+# Let {device} into this vault?
+tfab743ab = Cho { $device } vào kho này?
+
+# It gets every code the vault holds. Approve only if {device} shows the code {code}.
+ta4cf95fb = Thiết bị đó sẽ có mọi mã trong kho. Chỉ duyệt nếu { $device } hiện mã { $code }.
+
+# Approve
+te6edf55a = Đồng ý
+
+# Refuse
+t9bcada35 = Từ chối
 
 # Typed into the page.
 t97706593 = Đã gõ vào trang.
 
 # Not typed into the page: {why}
 t709fb554 = Chưa gõ được vào trang: { $why }
-
-# Not syncing
-t0f346f03 = Chưa đồng bộ
-
-# Syncing…
-t8ad2ae06 = Đang đồng bộ…
-
-# Synced just now
-t4df6f903 = Vừa đồng bộ xong
-
-# Synced {n} minute ago | Synced {n} minutes ago
-tc7922c74 =
-    { $n ->
-       *[other] Đã đồng bộ { $n } phút trước
-    }
-
-# {when}: {pulled} in, {pushed} out
-t9dc23f47 = { $when }: nhận { $pulled }, gửi { $pushed }
-
-# Sync failed: {e}
-tcc341778 = Đồng bộ thất bại: { $e }
-
-# Joined: this device syncs the vault now.
-t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 
 # Not saved: {e}
 ta9354472 = Chưa lưu được: { $e }
@@ -1426,6 +1486,9 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 # Not opened: {e}
 t2e0269c8 = Chưa mở được: { $e }
 
+# Joined: this device syncs the vault now.
+t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
+
 # Settings: an update is out
 t5742fd7e = Cài đặt: đã có bản cập nhật
 
@@ -1446,9 +1509,6 @@ t0965a624 = Nhóm để xếp mã: Công việc, Tiền, Gia đình…
 
 # No group
 t2721e1c1 = Không thuộc nhóm
-
-# Manage
-td7aff116 = Quản lý
 
 # Add code
 t081cfe79 = Thêm mã

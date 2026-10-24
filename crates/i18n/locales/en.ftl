@@ -88,6 +88,19 @@ tb915b010 = config.toml, [shortcuts] { $name }: `{ $key }`: { $error }
 t71adda1f = config.toml, [shortcuts] { $name }: { $why }
 te833da37 = config.toml, [shortcuts]: `{ $key }` is given to both { $kept } and { $lost }; { $kept } keeps it.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
+tbb504d9f = XXXX-XXXX-…, 13 groups
+t33ac6aa2 = Waiting for a device that syncs: open authwing there.
+ta89ba4d1 = Approve on { $device } if it shows the same code:
+t775b89a0 = Joined. The vault's codes are coming.
+t74419d8e = The other device refused.
+t5c323bb6 = Nobody approved in time: ask again.
+t2dc61136 = Ask a device that syncs
+t296beec8 = Stop asking
+t25a71781 = It holds a vault from another device: join it
+t58c3578d = Ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
+tfa918e42 = Ask a device that syncs, or type the vault's recovery key.
+taa884c51 = Joining…
+t9f857a57 = Join with the key
 tc980ec1e = Hide authwing
 tb1ea29d0 = Hide Others
 ta23c130f = Show All
@@ -320,15 +333,15 @@ t1f4d87c1 = Windows installs it with winget, and asks to allow it.
 te5143d09 = Download git
 t6e62c13a = Install it in a terminal, then Connect again:
 t9a84a209 = Install a newer git (git-scm.com), then Connect again.
+ta8aa81ba = Settings too
+te0e876b2 = Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
+t7b88a644 = Or a place of your own
+t4849994e = When it syncs
 t63cb5f41 = Your place
 t6c9fa51a = With { $place }
 t16f62979 = Show the recovery key
 t59fdbd70 = Stop syncing
-t8d5f140b = A place of your own
-ta2fbb093 = What syncs
-ta8aa81ba = Settings too
-te0e876b2 = Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-t674d2276 = Devices joining, and the recovery key, are in the cloud's panel in the title bar.
+t353e0d45 = Options
 te10c7bcd = Hide
 t02c0bf0a = Change the passphrase
 t69755c3c = Set a passphrase
@@ -383,28 +396,62 @@ td41d3da6 = This is not a backup or an export authwing can read.
 t67c24024 = The passphrase is too short: at least { $n } characters.
 t3bd1216e = This file is encrypted: enter its password.
 t1aa6da9b = This { $app } file is encrypted: enter its password.
-tbb504d9f = XXXX-XXXX-…, 13 groups
-t82f98ccc = Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-t33ac6aa2 = Waiting for a device that syncs: open authwing there.
-ta89ba4d1 = Approve on { $device } if it shows the same code:
-t775b89a0 = Joined. The vault's codes are coming.
-t74419d8e = The other device refused.
-t5c323bb6 = Nobody approved in time: ask again.
-t2dc61136 = Ask a device that syncs
-t296beec8 = Stop asking
-tc75c83a8 = Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
-tcd86acc3 = Close
-td7b59080 = Only encrypted records are stored there: not even the services' names can be read.
-tff44c4a4 = Devices asking to join
-t8f54c79f = Approve only if it shows this code.
-te6edf55a = Approve
-t9bcada35 = Refuse
-t54904649 = Join from this device
-te7a28cec = When another vault syncs there already: ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
-t2d6ea251 = When another vault syncs there already: ask a device that syncs, or type the vault's recovery key.
-taa884c51 = Joining…
-t9f857a57 = Join with the key
+t0f346f03 = Not syncing
+ta250b3ba = Synced · { $when }
+t43c06abc = Set up
+t8ad2ae06 = Syncing…
+t26991b72 = Not synced: { $why }
+tfff0fb2a = Paused: the vault is locked
+ta5ca2740 =
+    { $n ->
+        [one] { $n } code
+       *[other] { $n } codes
+    }
+t7c7f0ba3 = NOT SYNCING
+t64f52192 = Your codes on every device. Just sign in.
+tcc5add1d = Your codes, their groups and sites stay on this computer for now.
+t37219794 = See authwing cloud
+t42ad626a = A folder, WebDAV, S3 or Git of your own:
+t6790eaeb = Settings › Sync
+t476c685a = SYNC
+tbef0fba1 = Open Settings › Sync
+t4d1a6724 = Not synced
+tf75bc464 = With { $place }, once it is open
+tc671ed6b = Unlock…
 ta34dd8fe = Sync now
+ta5f11048 = Your codes, their groups and sites follow you to every computer.
+tde7b1d58 = Nothing to set up: no folder, no server, no key to type on a new device.
+ta3c7045e = Encrypted on your devices: authwing never sees your codes.
+td7f6c093 = Create an account
+t744be623 = Sign in
+t2f60c9bf = or continue with
+t616f184a = Rather not keep it yourself?
+t69b9a0b0 = authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t6f15019c = authwing cloud is coming: signing in opens with it.
+td320882c =
+    { $n ->
+        [one] up to { $n } code
+       *[other] up to { $n } codes
+    }
+te176f9c3 = unlimited · $15/year
+ta715ef0f = just now
+t85ac693d = a minute ago
+t6c7302d6 =
+    { $n ->
+        [one] { $n } minute ago
+       *[other] { $n } minutes ago
+    }
+t84377069 = an hour ago
+t137b052e =
+    { $n ->
+        [one] { $n } hour ago
+       *[other] { $n } hours ago
+    }
+tb9fa7744 =
+    { $n ->
+        [one] { $n } day ago
+       *[other] { $n } days ago
+    }
 td2fdfc60 = its password is not saved on this device: connect again in Settings › Sync
 tf8592ea2 = settings not synced: { $e }
 t60f438b7 = settings not written: { $e }
@@ -465,22 +512,6 @@ t5de1c09c = Nothing was heard: is the microphone on?
 t11465c20 = the system's package manager
 ta8cbd72e = the App Store
 t1df799a1 = the Microsoft Store
-ta715ef0f = just now
-t6c7302d6 =
-    { $n ->
-        [one] { $n } minute ago
-       *[other] { $n } minutes ago
-    }
-t137b052e =
-    { $n ->
-        [one] { $n } hour ago
-       *[other] { $n } hours ago
-    }
-tb9fa7744 =
-    { $n ->
-        [one] { $n } day ago
-       *[other] { $n } days ago
-    }
 taee668c2 = Downloading… { $got } of { $total }
 t4873b921 = Downloading… { $got }
 taf85c804 = authwing { $version } is out: { $by } updates it ({ $command }).
@@ -490,20 +521,12 @@ td9ae9d7c = authwing { $version } is ready: it is installed when you quit, or no
 t8b2733e6 = Find a code
 t4774284e = Passphrase or recovery key
 td4cbf886 = The quick panel's shortcut { $key } cannot be used: { $e }
-tf1bf552a = A device asks to join: open Sync (the cloud) to approve it.
+tfab743ab = Let { $device } into this vault?
+ta4cf95fb = It gets every code the vault holds. Approve only if { $device } shows the code { $code }.
+te6edf55a = Approve
+t9bcada35 = Refuse
 t97706593 = Typed into the page.
 t709fb554 = Not typed into the page: { $why }
-t0f346f03 = Not syncing
-t8ad2ae06 = Syncing…
-t4df6f903 = Synced just now
-tc7922c74 =
-    { $n ->
-        [one] Synced { $n } minute ago
-       *[other] Synced { $n } minutes ago
-    }
-t9dc23f47 = { $when }: { $pulled } in, { $pushed } out
-tcc341778 = Sync failed: { $e }
-t6b25e007 = Joined: this device syncs the vault now.
 ta9354472 = Not saved: { $e }
 tae0ab8fe = Saved.
 tb28eb5cc = The counter was not saved: { $e }
@@ -515,6 +538,7 @@ t28110a8b = Turn two-factor sign-in off at { $name } first, or sign in there wit
 t12e9b880 = Not deleted: { $e }
 ta55f9fc6 = The vault's key is in this computer's keychain, so it cannot lock. Set a passphrase and take the key out of the keychain to lock it.
 t2e0269c8 = Not opened: { $e }
+t6b25e007 = Joined: this device syncs the vault now.
 t5742fd7e = Settings: an update is out
 t113331ee = All codes
 t7c2c53ba = Favorites
@@ -522,7 +546,6 @@ t14f472fe = Recently used
 tf57f458d = Groups
 t0965a624 = Groups file codes: Work, Money, Family…
 t2721e1c1 = No group
-td7aff116 = Manage
 t081cfe79 = Add code
 tb1be48b7 = next { $code }
 t8dc21305 = Copied

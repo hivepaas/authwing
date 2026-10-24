@@ -20,6 +20,7 @@ mod group_editor;
 mod groups;
 mod hotkeys;
 mod input;
+mod join;
 mod look;
 mod mark;
 mod menu;

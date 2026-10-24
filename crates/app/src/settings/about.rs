@@ -13,9 +13,10 @@ use crate::colors::colors;
 use crate::look::ui;
 use crate::mark::{self, APP_ICON, SHELLWING_ICON};
 use crate::notice::Notice;
+use crate::sync_panel::ago;
 use crate::widgets::{outline_button, switch};
 use crate::workspace::UpdateStage;
-use crate::workspace::updates::{ago, by_said, download_said};
+use crate::workspace::updates::{by_said, download_said};
 
 const SITE: &str = "https://authwing.app";
 const REPO: &str = "https://github.com/hivepaas/authwing";

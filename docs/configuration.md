@@ -315,15 +315,19 @@ folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"   # any synce
   in Settings and kept sealed in the vault, as this device's own; it never
   syncs, and each device types its own.
 
-The cloud in the title bar says how it stands (green synced, orange failed, a
-light orange not set up) and opens the Sync panel:
+The cloud at the end of the title bar says how it stands (green synced,
+orange with a dot failed, gray paused while the vault is locked, a light
+orange not set up). It opens a panel with how the last sync went and *Sync
+now*; *Settings › Sync* has the rest: authwing cloud (coming: Free up to 50
+codes, Pro unlimited at $15 a year), and a place of your own.
 
 - **The first device** creates the vault there and a **recovery key** (13
   groups of 4 characters). Keep it: it is the way in if every device is lost.
-- **Another device** with the same place joins from the panel:
-  - **Ask a device that syncs**: on a device that syncs (with authwing open),
-    the request shows up in its panel. Both show six digits: approve only if
-    they are the same. A request left 10 minutes is dropped.
+- **Another device** with the same place finds a vault it is not in, and
+  joins it in *Settings › Sync*:
+  - **Ask a device that syncs**: a device that syncs (with authwing open)
+    asks whether to let it in. Both show six digits: approve only if they
+    are the same. A request left 10 minutes is dropped.
   - **Join with the key**: type the recovery key.
 - Syncing runs every minute, right after a code is added, changed or deleted,
   and on *Sync now*; quitting with Cmd/Ctrl+Q waits a moment for the last
