@@ -43,6 +43,33 @@ impl PanelKey {
     }
 }
 
+/// How `key` (`alt+space`) is shown: ⌥Space on macOS, Alt+Space
+/// elsewhere.
+pub fn label(key: &str) -> String {
+    let mac = cfg!(target_os = "macos");
+    key.split('+')
+        .map(
+            |part| match (part.trim().to_ascii_lowercase().as_str(), mac) {
+                ("alt" | "option", true) => "⌥".to_string(),
+                ("ctrl" | "control", true) => "⌃".to_string(),
+                ("shift", true) => "⇧".to_string(),
+                ("cmd" | "command" | "super" | "meta", true) => "⌘".to_string(),
+                ("alt" | "option", false) => "Alt+".to_string(),
+                ("ctrl" | "control", false) => "Ctrl+".to_string(),
+                ("shift", false) => "Shift+".to_string(),
+                ("cmd" | "command" | "super" | "meta", false) => "Win+".to_string(),
+                (key, _) => {
+                    let mut chars = key.chars();
+                    chars
+                        .next()
+                        .map(|c| c.to_uppercase().chain(chars).collect())
+                        .unwrap_or_default()
+                }
+            },
+        )
+        .collect()
+}
+
 /// `key` as a shortcut over any app, if it can be one.
 fn parse(key: &str) -> Result<HotKey, String> {
     let hotkey: HotKey = key.parse().map_err(|e| format!("{e}"))?;
@@ -52,12 +79,11 @@ fn parse(key: &str) -> Result<HotKey, String> {
     Ok(hotkey)
 }
 
-/// Calls `pressed`, on the system's thread, each time the key goes down.
-pub fn listen(pressed: impl Fn() + Send + Sync + 'static) {
+/// Calls `key`, on the system's thread, each time the key goes down
+/// (`true`) or up.
+pub fn listen(key: impl Fn(bool) + Send + Sync + 'static) {
     GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
-        if e.state == HotKeyState::Pressed {
-            pressed();
-        }
+        key(e.state == HotKeyState::Pressed);
     }));
 }
 
@@ -76,6 +102,17 @@ mod tests {
             authwing_config::PANEL_KEY,
         ] {
             assert!(parse(key).is_ok(), "{key}");
+        }
+    }
+
+    #[test]
+    fn keys_are_shown_as_the_system_does() {
+        if cfg!(target_os = "macos") {
+            assert_eq!(super::label("alt+space"), "⌥Space");
+            assert_eq!(super::label("cmd+shift+space"), "⌘⇧Space");
+        } else {
+            assert_eq!(super::label("ctrl+alt+space"), "Ctrl+Alt+Space");
+            assert_eq!(super::label("alt+shift+k"), "Alt+Shift+K");
         }
     }
 

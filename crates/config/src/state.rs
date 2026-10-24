@@ -1,4 +1,27 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
+
+/// What voice has learnt on this device (`state/voice.json`), by the id of
+/// the code.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct VoiceMemory {
+    #[serde(default)]
+    pub codes: BTreeMap<String, Voiced>,
+}
+
+/// What voice knows of one code.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Voiced {
+    /// What Whisper wrote when this code was named and the user then chose
+    /// it by hand: heard again, it picks this code.
+    #[serde(default)]
+    pub taught: Vec<String>,
+    /// How often the code was used, so the most used names are the ones
+    /// Whisper is told to expect.
+    #[serde(default)]
+    pub uses: u32,
+}
 
 /// What the last look for a newer authwing found (`state/updates.json`).
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]

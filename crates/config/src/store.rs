@@ -23,6 +23,7 @@ const SETTINGS: &str = "config.toml";
 const STATE: &str = "state";
 const WINDOW: &str = "window.json";
 const UPDATES: &str = "updates.json";
+const VOICE: &str = "voice.json";
 
 /// A file that could not be read or parsed.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
@@ -175,6 +176,27 @@ impl Store {
                 .or_else(|| home.map(|h| h.join(".config")))
         };
         base.map(|b| b.join("authwing"))
+    }
+
+    /// Where voice's models are downloaded to: big files, each device's
+    /// own, so not with the settings where those roam (Windows) or are for
+    /// small files (Linux). With `$AUTHWING_CONFIG_DIR`, its `models`.
+    pub fn models_dir() -> Option<PathBuf> {
+        if let Some(d) = std::env::var_os("AUTHWING_CONFIG_DIR").filter(|d| !d.is_empty()) {
+            return Some(PathBuf::from(d).join("models"));
+        }
+        let home = std::env::home_dir();
+        let base = if cfg!(target_os = "windows") {
+            std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
+        } else if cfg!(target_os = "macos") {
+            home.map(|h| h.join("Library").join("Application Support"))
+        } else {
+            std::env::var_os("XDG_DATA_HOME")
+                .map(PathBuf::from)
+                .filter(|p| p.is_absolute())
+                .or_else(|| home.map(|h| h.join(".local").join("share")))
+        };
+        base.map(|b| b.join("authwing").join("models"))
     }
 
     pub fn dir(&self) -> &Path {
@@ -348,6 +370,15 @@ impl Store {
 
     pub fn save_update_state(&self, state: &crate::UpdateState) -> io::Result<()> {
         self.save_state(UPDATES, state)
+    }
+
+    /// What voice has learnt on this device (`state/voice.json`).
+    pub fn voice_memory(&self) -> crate::VoiceMemory {
+        self.load_state(VOICE).unwrap_or_default()
+    }
+
+    pub fn save_voice_memory(&self, memory: &crate::VoiceMemory) -> io::Result<()> {
+        self.save_state(VOICE, memory)
     }
 
     fn load_state<T: DeserializeOwned>(&self, file: &str) -> Option<T> {
@@ -537,6 +568,24 @@ mod tests {
         assert_eq!(s.window_state(), Some(w));
         fs::write(s.dir().join(STATE).join(WINDOW), "{ not json").expect("write");
         assert_eq!(s.window_state(), None);
+    }
+
+    #[test]
+    fn voice_memory_round_trips_and_starts_empty() {
+        let s = temp("voice");
+        assert_eq!(s.voice_memory(), crate::VoiceMemory::default());
+        let mut memory = crate::VoiceMemory::default();
+        memory.codes.insert(
+            "0a1b2c3d4e5f6071".into(),
+            crate::Voiced {
+                taught: vec!["Mở viết cơm an".into()],
+                uses: 3,
+            },
+        );
+        s.save_voice_memory(&memory).expect("save");
+        assert_eq!(s.voice_memory(), memory);
+        fs::write(s.dir().join(STATE).join(VOICE), "[").expect("write");
+        assert_eq!(s.voice_memory(), crate::VoiceMemory::default());
     }
 
     #[test]

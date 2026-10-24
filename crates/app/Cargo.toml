@@ -29,6 +29,7 @@ authwing-context.workspace = true
 authwing-bridge.workspace = true
 authwing-backup.workspace = true
 authwing-scan.workspace = true
+authwing-voice = { workspace = true, features = ["whisper", "mic", "download"] }
 gpui.workspace = true
 gpui_platform.workspace = true
 anyhow.workspace = true

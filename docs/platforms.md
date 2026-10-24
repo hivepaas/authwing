@@ -13,15 +13,16 @@ CI only proves that the code builds and the tests pass.
 
 ## Toolchain (to build locally)
 
-All platforms need Rust (via [rustup](https://rustup.rs)). Voice search
-(`authwing-voice` with the `whisper` feature, not built by default) also needs
-CMake, to build whisper.cpp.
+All platforms need Rust (via [rustup](https://rustup.rs)) and CMake: voice
+builds whisper.cpp with it. A CMake that does not run on this computer (an
+Intel build on Apple silicon without Rosetta, say) fails the build of
+`whisper-rs-sys` with "Bad CPU type"; `CMAKE=/path/to/cmake` picks another.
 
 | Platform | Also install |
 | --- | --- |
-| macOS | Xcode Command Line Tools: `xcode-select --install` |
-| Windows | Visual Studio Build Tools with the "Desktop development with C++" workload (MSVC and the Windows SDK) |
-| Debian/Ubuntu | `sudo apt-get install build-essential pkg-config libfontconfig-dev libfreetype-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev` |
+| macOS | Xcode Command Line Tools: `xcode-select --install`; CMake: `brew install cmake` or `pip install cmake` |
+| Windows | Visual Studio Build Tools with the "Desktop development with C++" workload (MSVC, the Windows SDK, and its CMake) |
+| Debian/Ubuntu | `sudo apt-get install build-essential pkg-config libfontconfig-dev libfreetype-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev cmake libasound2-dev` |
 
 `make build` builds a release for this computer into `dist/`; `make` alone lists
 the other targets (`make run`, `make check`, `make doctor`). By hand:

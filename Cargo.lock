@@ -626,6 +626,7 @@ dependencies = [
  "authwing-scan",
  "authwing-totp",
  "authwing-vault",
+ "authwing-voice",
  "enigo",
  "global-hotkey",
  "gpui-pre",
@@ -823,9 +824,13 @@ dependencies = [
  "cpal",
  "deunicode",
  "hound",
+ "reqwest",
+ "rustls",
+ "sha2 0.10.9",
  "strsim",
  "sys-locale",
  "thiserror 2.0.21",
+ "tokio",
  "whisper-rs",
 ]
 

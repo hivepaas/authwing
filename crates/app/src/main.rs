@@ -29,6 +29,7 @@ mod sync_panel;
 mod syncing;
 mod typing;
 mod vault_slot;
+mod voice;
 mod widgets;
 mod workspace;
 
@@ -58,6 +59,7 @@ const ICONS: &[(&str, &[u8])] = &[
     ),
     ("icons/info.svg", include_bytes!("../assets/icons/info.svg")),
     ("icons/lock.svg", include_bytes!("../assets/icons/lock.svg")),
+    ("icons/mic.svg", include_bytes!("../assets/icons/mic.svg")),
     ("icons/plus.svg", include_bytes!("../assets/icons/plus.svg")),
     (
         "icons/refresh.svg",
@@ -258,15 +260,17 @@ fn main() -> anyhow::Result<()> {
                 let quitting = ws.clone();
                 menu::install(cx, move |cx| quitting.update(cx, |ws, cx| ws.quit(cx)));
             }
-            // The shortcut opens the quick panel, from the system's thread.
-            let (pressed, presses) = async_channel::unbounded::<()>();
-            panel_key::listen(move || {
-                let _ = pressed.send_blocking(());
+            // The shortcut opens the quick panel, and held down listens;
+            // from the system's thread.
+            cx.set_global(voice::Voice::new());
+            let (pressed, presses) = async_channel::unbounded::<bool>();
+            panel_key::listen(move |down| {
+                let _ = pressed.send_blocking(down);
             });
             let quick = ws.clone();
             cx.spawn(async move |cx| {
-                while presses.recv().await.is_ok() {
-                    quick.update(cx, |ws, cx| ws.toggle_quick(cx));
+                while let Ok(down) = presses.recv().await {
+                    quick.update(cx, |ws, cx| ws.panel_key(down, cx));
                 }
             })
             .detach();

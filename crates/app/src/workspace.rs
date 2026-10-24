@@ -31,6 +31,8 @@ use crate::vault_slot::VaultSlot;
 use crate::widgets::{icon_button, outline_button, primary_button};
 
 /// How long a notice stays.
+mod listening;
+
 const NOTICE: Duration = Duration::from_secs(6);
 /// How long a card says "Copied".
 const COPIED: Duration = Duration::from_secs(2);
@@ -77,6 +79,16 @@ pub struct Workspace {
         gpui::WindowHandle<QuickPanel>,
         Option<authwing_context::window::Window>,
     )>,
+    /// The quick panel's shortcut, while it is down.
+    held: Option<listening::Held>,
+    /// Presses of the shortcut, so that a hold's timer knows its own.
+    presses: u64,
+    /// The microphone records for the quick panel.
+    listening: bool,
+    /// What voice heard last in the quick panel.
+    last_heard: Option<listening::LastHeard>,
+    /// What voice has learnt on this device.
+    voice_memory: authwing_config::VoiceMemory,
     /// The browser extension, and the tab in front as it last said.
     _bridge: Bridge,
     tab: Option<Tab>,
@@ -121,6 +133,7 @@ impl Workspace {
         })
         .detach();
         let (heard, said) = async_channel::unbounded();
+        let voice_memory = live.store().map(|s| s.voice_memory()).unwrap_or_default();
         let bridge = Bridge::start(move |event| {
             let _ = heard.send_blocking(event);
         });
@@ -161,6 +174,11 @@ impl Workspace {
             passphrase_joins: false,
             elsewhere: None,
             quick: None,
+            held: None,
+            presses: 0,
+            listening: false,
+            last_heard: None,
+            voice_memory,
             _bridge: bridge,
             tab: None,
             bounds_change: 0,
@@ -515,6 +533,7 @@ impl Workspace {
                 self.sync_now();
             }
         }
+        self.used(id);
         Some(code)
     }
 
@@ -600,6 +619,12 @@ impl Workspace {
                 .as_ref()
                 .map(|w| (w.page.clone(), w.like.to_string())),
             can_type: target.is_some() && warning.is_none() && crate::typing::allowed(),
+            voice_hint: crate::voice::ready_model(self.live.settings()).map(|_| {
+                tr!(
+                    "hold {key} and say a name",
+                    key = crate::panel_key::label(&self.live.settings().panel.key)
+                )
+            }),
         };
         let bounds = gpui::Bounds::centered(None, gpui::size(px(560.), px(440.)), cx);
         let opened = cx.open_window(
@@ -633,6 +658,7 @@ impl Workspace {
                     let id = id.clone();
                     ws.type_code(&id, cx);
                 }
+                QuickEvent::Listen => ws.toggle_listening(cx),
             })
             .detach();
         }
@@ -643,6 +669,7 @@ impl Workspace {
     /// Closes the quick panel; `back` gives the keyboard back to the window
     /// it was over, leaving authwing's own window where it was.
     fn close_quick(&mut self, back: bool, cx: &mut Context<Self>) {
+        self.cancel_listening(cx);
         let Some((handle, over)) = self.quick.take() else {
             return;
         };

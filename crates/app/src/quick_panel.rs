@@ -5,6 +5,10 @@
 //! What the panel shows is worked out by the window before it opens (the app
 //! in front then, its title, the page the extension says is open): once the
 //! panel has the focus, the app in front is authwing.
+//!
+//! Holding the shortcut, or the microphone button, names a code aloud: the
+//! window listens ([`crate::voice`]) and tells the panel what it heard
+//! ([`VoiceLine`]), and the codes heard come first.
 
 use std::time::Duration;
 
@@ -45,11 +49,31 @@ pub struct Over {
     /// Whether a code can be typed into the app: the system lets authwing
     /// send keys, and the app is not authwing itself.
     pub can_type: bool,
+    /// How to name a code aloud ("hold ⌥Space and say a name"), when voice
+    /// is set up.
+    pub voice_hint: Option<String>,
+}
+
+/// What voice is doing, under the find field.
+pub enum VoiceLine {
+    Listening,
+    Finding,
+    /// What Whisper wrote, and the codes it names, best first; `sure` when
+    /// the first was named clearly.
+    Heard {
+        said: String,
+        codes: Vec<String>,
+        sure: bool,
+    },
+    /// Why voice gave nothing, or how to set it up.
+    Note(String),
 }
 
 pub enum PanelEvent {
     Type(String),
     Copy(String),
+    /// The microphone button: listen, or stop listening.
+    Listen,
     Close,
 }
 
@@ -59,6 +83,7 @@ pub struct QuickPanel {
     others: Vec<Item>,
     filter: Entity<TextInput>,
     selected: usize,
+    voice: Option<VoiceLine>,
     focus: FocusHandle,
 }
 
@@ -108,13 +133,26 @@ impl QuickPanel {
             others,
             filter,
             selected: 0,
+            voice: None,
             focus: cx.focus_handle(),
         }
     }
 
-    /// The codes shown, the matching ones first; all that match what is
-    /// typed, when something is.
-    fn shown(&self, cx: &App) -> (Vec<&Item>, usize) {
+    /// What voice is doing, from the window.
+    pub fn set_voice(&mut self, line: VoiceLine, cx: &mut Context<Self>) {
+        if matches!(line, VoiceLine::Heard { .. }) {
+            // The codes heard come first, unfiltered.
+            self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx));
+        }
+        self.selected = 0;
+        self.voice = Some(line);
+        cx.notify();
+    }
+
+    /// The codes shown: those heard, those that match the window, the
+    /// others; all that match what is typed, when something is. With how
+    /// many were heard and how many match.
+    fn shown(&self, cx: &App) -> (Vec<&Item>, usize, usize) {
         let words: Vec<String> = self
             .filter
             .read(cx)
@@ -123,16 +161,33 @@ impl QuickPanel {
             .split_whitespace()
             .map(str::to_string)
             .collect();
-        let fits = |i: &&Item| words.iter().all(|w| i.search.contains(w.as_str()));
+        let heard: Vec<&Item> = match &self.voice {
+            Some(VoiceLine::Heard { codes, .. }) if words.is_empty() => codes
+                .iter()
+                .filter_map(|id| {
+                    self.matched
+                        .iter()
+                        .chain(&self.others)
+                        .find(|i| i.id == *id)
+                })
+                .collect(),
+            _ => Vec::new(),
+        };
+        let heard_ids: Vec<String> = heard.iter().map(|h| h.id.clone()).collect();
+        let fits = |i: &&Item| {
+            words.iter().all(|w| i.search.contains(w.as_str())) && !heard_ids.contains(&i.id)
+        };
         let matched: Vec<&Item> = self.matched.iter().filter(fits).collect();
-        let n = matched.len();
-        let mut all = matched;
-        all.extend(self.others.iter().filter(fits));
-        (all, n)
+        let others: Vec<&Item> = self.others.iter().filter(fits).collect();
+        let (h, m) = (heard.len(), matched.len());
+        let mut all = heard;
+        all.extend(matched);
+        all.extend(others);
+        (all, h, m)
     }
 
     fn chosen(&self, cx: &App) -> Option<String> {
-        let (all, _) = self.shown(cx);
+        let (all, _, _) = self.shown(cx);
         all.get(self.selected).map(|i| i.id.clone())
     }
 
@@ -251,6 +306,30 @@ impl QuickPanel {
     }
 }
 
+/// What voice is doing, as said under the find field; whether it is
+/// listening.
+fn voice_line(line: &VoiceLine) -> (String, bool) {
+    match line {
+        VoiceLine::Listening => (tr!("Listening… say the code's name."), true),
+        VoiceLine::Finding => (tr!("Finding what you said…"), false),
+        VoiceLine::Heard { said, codes, sure } => (
+            match (codes.is_empty(), sure) {
+                (true, _) => tr!(
+                    "Heard “{said}”, which names no code. Choose the one you meant: next time it will be found.",
+                    said = said.clone()
+                ),
+                (false, true) => tr!("Heard “{said}”.", said = said.clone()),
+                (false, false) => tr!(
+                    "Heard “{said}”: which one? The one you choose is found by it next time.",
+                    said = said.clone()
+                ),
+            },
+            false,
+        ),
+        VoiceLine::Note(note) => (note.clone(), false),
+    }
+}
+
 fn section(title: String) -> gpui::Div {
     div()
         .px(px(14.))
@@ -265,18 +344,25 @@ fn section(title: String) -> gpui::Div {
 impl Render for QuickPanel {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
-        let (all, matched) = self.shown(cx);
+        let (all, heard, matched) = self.shown(cx);
         let ids: Vec<Item> = all.into_iter().cloned().collect();
         if self.selected >= ids.len() {
             self.selected = ids.len().saturating_sub(1);
         }
         let typing = !self.filter.read(cx).text().trim().is_empty();
+        let said = match &self.voice {
+            Some(VoiceLine::Heard { said, .. }) => said.clone(),
+            _ => String::new(),
+        };
         let mut list = div().flex().flex_col();
         for (i, item) in ids.iter().enumerate() {
-            if i == 0 && matched > 0 && !typing {
+            if i == 0 && heard > 0 {
+                list = list.child(section(tr!("You said “{said}”", said = said.clone())));
+            }
+            if i == heard && matched > 0 && !typing {
                 list = list.child(section(tr!("Matches this window")));
             }
-            if i == matched && matched > 0 && !typing {
+            if i == heard + matched && heard + matched > 0 && !typing {
                 list = list.child(section(tr!("Others")));
             }
             list = list.child(self.row(item, i, cx));
@@ -316,6 +402,7 @@ impl Render for QuickPanel {
             ),
             (None, None) => None,
         };
+        let listening = matches!(self.voice, Some(VoiceLine::Listening));
         let enter = match (&self.over.app, self.over.can_type) {
             (Some(app), true) => tr!("type into {app}", app = app.clone()),
             _ => tr!("copy"),
@@ -350,8 +437,46 @@ impl Render for QuickPanel {
                             .size(px(16.))
                             .text_color(rgb(c.muted)),
                     )
-                    .child(div().flex_1().text_size(ui(15.)).child(self.filter.clone())),
+                    .child(div().flex_1().text_size(ui(15.)).child(self.filter.clone()))
+                    .child(
+                        div()
+                            .id("quick-mic")
+                            .size(px(28.))
+                            .flex_shrink_0()
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .rounded(px(6.))
+                            .cursor_pointer()
+                            .hover(|s| s.bg(rgb(c.hover)))
+                            .when(listening, |d| d.bg(rgb(c.selected)))
+                            .on_click(cx.listener(|_, _, _, cx| cx.emit(PanelEvent::Listen)))
+                            .child(
+                                svg()
+                                    .path("icons/mic.svg")
+                                    .size(px(16.))
+                                    .text_color(rgb(if listening { c.accent } else { c.muted })),
+                            ),
+                    ),
             )
+            .when_some(self.voice.as_ref().map(voice_line), |d, (text, on)| {
+                d.child(
+                    div()
+                        .px(px(14.))
+                        .py(px(7.))
+                        .flex()
+                        .items_center()
+                        .gap(px(8.))
+                        .border_b_1()
+                        .border_color(rgb(c.line))
+                        .text_size(ui(12.))
+                        .text_color(rgb(if on { c.text } else { c.muted }))
+                        .when(on, |d| {
+                            d.child(div().size(px(8.)).rounded_full().bg(rgb(c.bad)))
+                        })
+                        .child(div().flex_1().child(text)),
+                )
+            })
             .child(
                 div()
                     .id("quick-list")
@@ -387,6 +512,11 @@ impl Render for QuickPanel {
                     .when(!self.over.can_type && self.over.app.is_some(), |d| {
                         d.child(div().flex_1())
                             .child(tr!("Allow Accessibility to type codes in"))
+                    })
+                    .when(self.over.can_type || self.over.app.is_none(), |d| {
+                        d.when_some(self.over.voice_hint.clone(), |d, hint| {
+                            d.child(div().flex_1()).child(hint)
+                        })
                     }),
             )
     }

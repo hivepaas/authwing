@@ -10,10 +10,34 @@ pub struct Settings {
     pub appearance: Appearance,
     pub codes: Codes,
     pub panel: Panel,
+    pub voice: Voice,
     pub updates: Updates,
     /// `[shortcuts]`: keys for the window's shortcuts, by name, over the
     /// defaults. This device's own: keys differ between systems.
     pub shortcuts: crate::ShortcutSettings,
+}
+
+/// Finding a code by naming it aloud, in the quick panel. This device's
+/// own: the model is downloaded on each device, and the language is the
+/// one its user speaks.
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[serde(default)]
+pub struct Voice {
+    /// The Whisper model to listen with: `tiny`, `base`, `small` or
+    /// `large`, once downloaded (Settings › Voice); empty: voice is off.
+    pub model: String,
+    /// The language names are said in, as Whisper knows it (`vi`, `de`);
+    /// `auto`: the app's language.
+    pub language: String,
+}
+
+impl Default for Voice {
+    fn default() -> Self {
+        Voice {
+            model: "base".into(),
+            language: "auto".into(),
+        }
+    }
 }
 
 /// Telling when a newer authwing is out.
@@ -262,6 +286,10 @@ mod tests {
         assert_eq!(s, Settings::default());
         assert_eq!(s.codes.clear_clipboard, 20);
         assert_eq!(s.appearance.ui_font.size, UI_FONT_SIZE);
+        assert_eq!(
+            (s.voice.model.as_str(), s.voice.language.as_str()),
+            ("base", "auto")
+        );
     }
 
     #[test]

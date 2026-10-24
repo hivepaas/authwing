@@ -99,19 +99,26 @@ impl Git {
     /// URL rewrites or keys. False when that cannot be told (a local path,
     /// an SSH alias, no answer): only a yes is sure.
     pub fn readable_by_anyone(&self, url: &str) -> bool {
+        self.read_anonymously(url).is_ok_and(|o| o.ok)
+    }
+
+    /// `git ls-remote` of `url` as no one in particular: what
+    /// [`Git::readable_by_anyone`] tells from.
+    fn read_anonymously(&self, url: &str) -> io::Result<Output> {
         let Some(anonymous) = anonymous_url(url) else {
-            return false;
+            return Err(io::Error::other("not an address anyone can read"));
         };
         // An empty home: ~/.gitconfig (a rewrite to SSH, a helper with the
         // user's password) must not sign in for us.
+        // Named by the process and a count: an Instant's Debug has a colon,
+        // which no folder name on Windows may have.
+        static HOMES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let home = std::env::temp_dir().join(format!(
-            "authwing-anonymous-{}-{:?}",
+            "authwing-anonymous-{}-{}",
             std::process::id(),
-            Instant::now()
+            HOMES.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ));
-        if std::fs::create_dir_all(&home).is_err() {
-            return false;
-        }
+        std::fs::create_dir_all(&home)?;
         let mut c = self.command(None);
         c.args([
             "-c",
@@ -129,9 +136,9 @@ impl Git {
         .env_remove("GIT_CONFIG_GLOBAL")
         .env_remove("GIT_CONFIG_COUNT")
         .env_remove("GIT_CONFIG_PARAMETERS");
-        let readable = run(&mut c, Duration::from_secs(20)).is_ok_and(|o| o.ok);
+        let read = run(&mut c, Duration::from_secs(20));
         let _ = std::fs::remove_dir_all(&home);
-        readable
+        read
     }
 
     /// A git command, run where nothing can be typed: no terminal prompt
@@ -856,9 +863,19 @@ mod tests {
         let port = listener.local_addr().expect("addr").port();
         std::thread::spawn(move || {
             for mut s in listener.incoming().flatten() {
+                // The whole head of the request: on Windows, closing a
+                // socket with some of it unread resets the connection, and
+                // git sees an error instead of the answer.
+                let _ = s.set_read_timeout(Some(Duration::from_secs(5)));
+                let mut head = Vec::new();
                 let mut buf = [0u8; 8192];
-                let n = s.read(&mut buf).unwrap_or(0);
-                let request = String::from_utf8_lossy(&buf[..n]).to_string();
+                while !head.windows(4).any(|w| w == b"\r\n\r\n") {
+                    match s.read(&mut buf) {
+                        Ok(0) | Err(_) => break,
+                        Ok(n) => head.extend_from_slice(&buf[..n]),
+                    }
+                }
+                let request = String::from_utf8_lossy(&head).to_string();
                 let path = request.split_whitespace().nth(1).unwrap_or("/");
                 let path = path
                     .split('?')
@@ -875,6 +892,9 @@ mod tests {
                     Err(_) => b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_vec(),
                 };
                 let _ = s.write_all(&answer);
+                // Done writing; then whatever else git sends, until it closes.
+                let _ = s.shutdown(std::net::Shutdown::Write);
+                while s.read(&mut buf).is_ok_and(|n| n > 0) {}
             }
         });
         port
@@ -904,7 +924,12 @@ mod tests {
         assert!(bare.join("info/refs").is_file());
         let public = serve(dir.clone(), false);
         let private = serve(dir.clone(), true);
-        assert!(git.readable_by_anyone(&format!("http://127.0.0.1:{public}/vault.git")));
+        let read = git.read_anonymously(&format!("http://127.0.0.1:{public}/vault.git"));
+        assert!(
+            read.as_ref().is_ok_and(|o| o.ok),
+            "{:?}",
+            read.map(|o| o.stderr)
+        );
         assert!(!git.readable_by_anyone(&format!("http://127.0.0.1:{private}/vault.git")));
         // Signing in as the user is never tried: a password in the address
         // is left out, as the user's own settings are.

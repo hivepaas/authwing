@@ -43,6 +43,7 @@ pub enum SettingsEvent {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Page {
     General,
+    Voice,
     Sync,
     Security,
     Backup,
@@ -51,8 +52,9 @@ pub enum Page {
 }
 
 impl Page {
-    const ALL: [Page; 6] = [
+    const ALL: [Page; 7] = [
         Page::General,
+        Page::Voice,
         Page::Sync,
         Page::Security,
         Page::Backup,
@@ -63,6 +65,7 @@ impl Page {
     fn title(self) -> String {
         match self {
             Page::General => tr!("General"),
+            Page::Voice => tr!("Voice"),
             Page::Sync => tr!("Sync"),
             Page::Security => tr!("Security"),
             Page::Backup => tr!("Backup"),
@@ -1011,6 +1014,198 @@ impl SettingsView {
             ))
     }
 
+    /// Voice in the quick panel: its model, downloaded here, and the
+    /// language names are said in.
+    fn voice_page(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let c = colors();
+        let s = &self.settings;
+        let chosen = authwing_voice::model::by_name(&s.voice.model);
+        let dir = Store::models_dir();
+        let ready = chosen.is_some_and(|m| dir.as_ref().is_some_and(|d| m.is_in(d)));
+        let (downloading, failed) = cx
+            .try_global::<crate::voice::Voice>()
+            .map(|v| {
+                (
+                    v.download.as_ref().map(|d| (d.model, d.done())),
+                    v.failed.clone(),
+                )
+            })
+            .unwrap_or_default();
+        let mb = |bytes: u64| (bytes + 500_000) / 1_000_000;
+
+        let mut models = div().flex().flex_wrap().gap(px(6.));
+        for model in authwing_voice::model::MODELS {
+            let label = if *model == authwing_voice::model::RECOMMENDED {
+                tr!(
+                    "{name} · {mb} MB (recommended)",
+                    name = model.name,
+                    mb = mb(model.bytes)
+                )
+            } else {
+                tr!("{name} · {mb} MB", name = model.name, mb = mb(model.bytes))
+            };
+            let name = model.name;
+            models = models.child(
+                choice(
+                    &format!("voice-model-{name}"),
+                    &label,
+                    chosen.is_some_and(|m| m.name == name),
+                )
+                .on_click(cx.listener(move |view, _, _, cx| {
+                    view.set(
+                        &["voice", "model"],
+                        Some(SettingValue::Str(name.to_string())),
+                        cx,
+                    )
+                })),
+            );
+        }
+        models = models.child(
+            choice("voice-model-off", &tr!("Off"), chosen.is_none()).on_click(cx.listener(
+                |view, _, _, cx| {
+                    view.set(
+                        &["voice", "model"],
+                        Some(SettingValue::Str(String::new())),
+                        cx,
+                    )
+                },
+            )),
+        );
+
+        let state: gpui::AnyElement = match (chosen, downloading) {
+            (_, Some((model, done))) => div()
+                .flex()
+                .items_center()
+                .gap(px(12.))
+                .child(
+                    div()
+                        .flex_1()
+                        .h(px(6.))
+                        .rounded_full()
+                        .bg(rgb(c.line))
+                        .child(
+                            div()
+                                .h_full()
+                                .rounded_full()
+                                .bg(rgb(c.accent))
+                                .w(gpui::relative(done.clamp(0.0, 1.0) as f32)),
+                        ),
+                )
+                .child(div().text_size(ui(12.)).text_color(rgb(c.muted)).child(tr!(
+                    "Downloading {name}: {done} of {mb} MB",
+                    name = model.name,
+                    done = mb((done * model.bytes as f64) as u64),
+                    mb = mb(model.bytes)
+                )))
+                .child(
+                    outline_button("voice-stop", &tr!("Stop")).on_click(cx.listener(
+                        |_, _, _, cx| {
+                            cx.update_global(|v: &mut crate::voice::Voice, _| v.stop_download());
+                        },
+                    )),
+                )
+                .into_any_element(),
+            (Some(model), None) if ready => row(
+                tr!(
+                    "Ready: {name}, {mb} MB",
+                    name = model.name,
+                    mb = mb(model.bytes)
+                ),
+                tr!(
+                    "On this device, in {dir}",
+                    dir = dir
+                        .as_ref()
+                        .map(|d| d.display().to_string())
+                        .unwrap_or_default()
+                ),
+                outline_button("voice-remove", &tr!("Remove")).on_click(cx.listener(
+                    move |view, _, _, cx| {
+                        if let Some(dir) = Store::models_dir()
+                            && let Err(e) = std::fs::remove_file(model.path_in(&dir))
+                        {
+                            view.fail(e.to_string(), cx);
+                        }
+                        cx.notify();
+                    },
+                )),
+            )
+            .into_any_element(),
+            (Some(model), None) => row(
+                tr!("Not downloaded yet"),
+                tr!(
+                    "From Hugging Face, where whisper.cpp publishes it; checked before it is used."
+                ),
+                primary_button(
+                    "voice-download",
+                    &tr!("Download {mb} MB", mb = mb(model.bytes)),
+                )
+                .on_click(cx.listener(move |_, _, _, cx| {
+                    cx.update_global(|v: &mut crate::voice::Voice, cx| v.start_download(model, cx));
+                    cx.notify();
+                })),
+            )
+            .into_any_element(),
+            (None, None) => hint(tr!("Voice is off.")).into_any_element(),
+        };
+
+        let set = s.voice.language.trim();
+        let mut languages = div().flex().flex_wrap().gap(px(6.)).child(
+            choice(
+                "voice-lang-auto",
+                &tr!("As the app"),
+                set == "auto" || set.is_empty(),
+            )
+            .on_click(cx.listener(|view, _, _, cx| view.set(&["voice", "language"], None, cx))),
+        );
+        for (tag, name) in authwing_i18n::LANGUAGES {
+            languages = languages.child(
+                choice(&format!("voice-lang-{tag}"), name, set == *tag).on_click(cx.listener(
+                    move |view, _, _, cx| {
+                        view.set(
+                            &["voice", "language"],
+                            Some(SettingValue::Str((*tag).to_string())),
+                            cx,
+                        )
+                    },
+                )),
+            );
+        }
+
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(12.))
+            .child(heading(tr!("Find a code by voice")))
+            .child(
+                card()
+                    .child(hint(tr!(
+                        "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
+                        key = crate::panel_key::label(&s.panel.key)
+                    )))
+                    .child(row(
+                        tr!("Model"),
+                        tr!("The larger ones are slower, and named no more codes right in our tests."),
+                        div(),
+                    ))
+                    .child(models)
+                    .child(state)
+                    .when_some(failed, |d, why| {
+                        d.child(
+                            div()
+                                .text_size(ui(12.))
+                                .text_color(rgb(c.bad))
+                                .child(tr!("Not downloaded: {why}", why = why)),
+                        )
+                    }),
+            )
+            .child(heading(tr!("The language you speak")))
+            .child(
+                card().child(languages).child(hint(tr!(
+                    "Names said the English way are heard too. This device's own: it does not sync."
+                ))),
+            )
+    }
+
     fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
         let f = &self.place;
         let kinds = [
@@ -1537,6 +1732,7 @@ impl Render for SettingsView {
         }
         let body = match self.page {
             Page::General => self.general(cx),
+            Page::Voice => self.voice_page(cx),
             Page::Sync => self.sync_page(cx),
             Page::Security => self.security(cx),
             Page::Backup => self.backup_page(cx),
