@@ -978,6 +978,22 @@ fn hint(text: String) -> gpui::Div {
         .child(text)
 }
 
+/// The apps whose exports Settings › Backup reads, by kind: their own
+/// names, in no language.
+const IMPORT_AUTHENTICATORS: &str = "Aegis, 2FAS, andOTP, Ente Auth, FreeOTP+, Proton Authenticator, Raivo, Stratum (Authenticator Pro), TOTP Authenticator, Steam (maFile)";
+const IMPORT_PASSWORD_MANAGERS: &str =
+    "1Password, Apple Passwords, Bitwarden, Dashlane, KeePassXC, Proton Pass";
+
+/// A kind of app, or an app, and a line on it.
+fn apps(label: String, text: &str) -> gpui::Div {
+    div()
+        .flex()
+        .flex_col()
+        .gap(px(2.))
+        .child(div().text_size(ui(12.)).child(label))
+        .child(hint(text.to_string()))
+}
+
 impl SettingsView {
     fn general(&self, cx: &mut Context<Self>) -> gpui::Div {
         let s = &self.settings;
@@ -1838,14 +1854,28 @@ impl SettingsView {
             .child(
                 card()
                     .child(hint(tr!(
-                        "An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes."
+                        "An authwing backup, another app's export, or a list of otpauth links. Codes already here are left as they are."
                     )))
+                    .child(apps(tr!("Authenticators"), IMPORT_AUTHENTICATORS))
+                    .child(apps(tr!("Password managers"), IMPORT_PASSWORD_MANAGERS))
                     .child(div().flex().child(
                         outline_button("import", &tr!("Choose a file…"))
                             .on_click(cx.listener(|view, _, _, cx| view.choose_import(cx))),
                     )),
             )
             .children(pending)
+            .child(heading(tr!("Apps with no file to export")))
+            .child(
+                card()
+                    .child(apps(
+                        "Google Authenticator".into(),
+                        &tr!("Transfer accounts › Export accounts shows QR codes: in Add a code, use the camera, or a screenshot, for many codes at once."),
+                    ))
+                    .child(apps(
+                        "Microsoft Authenticator, Authy, Duo Mobile".into(),
+                        &tr!("They keep their codes to themselves: at each site, set up two-step verification again, add the new QR code here, then remove it there."),
+                    )),
+            )
             .child(heading(tr!("Unencrypted")))
             .child(
                 card().child(row(

@@ -760,6 +760,9 @@ t89a71bba = 同期
 # Lock
 # t71b42d62 =
 
+# {file} is encrypted.
+# tf707379d =
+
 # {file} is an encrypted {app} file.
 # t3635feb7 =
 
@@ -781,11 +784,26 @@ t538b10e9 = 開く
 # Restore, or move from another app
 # tea7de02f =
 
-# An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
-# t4f923eb7 =
+# An authwing backup, another app's export, or a list of otpauth links. Codes already here are left as they are.
+# t108c09a7 =
+
+# Authenticators
+# t78d70a21 =
+
+# Password managers
+# t44c4870c =
 
 # Choose a file…
 # t28a576c9 =
+
+# Apps with no file to export
+# tbbed0c21 =
+
+# Transfer accounts › Export accounts shows QR codes: in Add a code, use the camera, or a screenshot, for many codes at once.
+# t53ce8a8a =
+
+# They keep their codes to themselves: at each site, set up two-step verification again, add the new QR code here, then remove it there.
+# t0f07a1dd =
 
 # Unencrypted
 # t39b38862 =
@@ -858,6 +876,9 @@ t538b10e9 = 開く
 
 # The passphrase is too short: at least {n} characters.
 # t67c24024 =
+
+# This file is encrypted: enter its password.
+# t3bd1216e =
 
 # This {app} file is encrypted: enter its password.
 # t1aa6da9b =

@@ -61,8 +61,11 @@ from there; the SSH client does not.
   passphrase, opening only with it or Touch ID / Windows Hello, Lock;
   linking the browsers.
 * **Backup and moving in:** an encrypted backup and restoring it; importing
-  Aegis, 2FAS, Ente Auth and Bitwarden exports and lists of `otpauth://`
-  links; a plain-text export after a question.
+  from Aegis, 2FAS, andOTP, Ente Auth, FreeOTP+, Proton Authenticator,
+  Raivo, Stratum, TOTP Authenticator and Steam maFiles, from 1Password,
+  Apple Passwords, Bitwarden, Dashlane, KeePassXC and Proton Pass, and lists
+  of `otpauth://` links (Google Authenticator's export too); a plain-text
+  export after a question.
 * **Languages:** English and Vietnamese in full; German, Spanish, French,
   Portuguese, Russian, Japanese, Korean and Chinese in part.
 
