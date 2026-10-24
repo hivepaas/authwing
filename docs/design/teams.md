@@ -6,10 +6,10 @@
 Organization (Acme)
 ├─ Members        owner, admin, member
 ├─ Groups         "Backend", "Ops", "Intern": people bundled for granting access
-└─ Collections    "Production", "Staging": shared hosts, secrets and snippets
+└─ Collections    "Ops", "Finance": shared codes
      granted to a group or a person as:
-       Connect   see the hosts and connect
-       Edit      add and change hosts
+       Use       see the codes, copy and type them
+       Edit      add, change and delete codes
        Manage    grant others access to the collection
 ```
 
@@ -18,7 +18,7 @@ Organization (Acme)
 - **One home per record.** A record lives in exactly one space: Personal or one
   collection.
 - **Sidebar.** Each collection is its own section, for example
-  "Acme · Production".
+  "Acme · Ops".
 
 ## Sharing with end-to-end encryption
 
@@ -35,33 +35,30 @@ pair, and each collection key is wrapped once for each member's public key.
 - **Removing a member.**
   - The server stops serving the collection to them.
   - An admin's app rotates the collection key and re-encrypts its records.
-  - The app lists every secret the person could read, so they can be changed.
+  - The app lists every code the person could use, so that two-factor
+    sign-in can be set up again at each of those sites.
 - **SSO.** SSO establishes identity only. The decryption key still comes from a
   trusted device or an admin approving the new one.
 
 Limits to state plainly to customers:
 
-- **"Can connect but cannot see the password" is a UI rule, not cryptography.**
-  The app must decrypt a secret to use it.
-- **Removing a member cannot undo what they already copied.** That is why
-  removal comes with the list of secrets to change.
+- **"Can use a code but cannot see its key" is a UI rule, not cryptography.**
+  The app must hold a code's secret key to make its codes.
+- **Removing a member cannot undo what they already took.** Whoever had a
+  code's key can make its codes for as long as the site accepts that key.
+  That is why removal comes with the list of codes to set up again.
 
-### SSH certificates (Business)
+### Setting a code up again
 
-The real fix for both limits is an SSH certificate authority:
+A one-time code has no equivalent of a certificate that expires: the only way
+to stop a key working is to turn two-factor sign-in off and on again at the
+site, which gives a new key. The removal checklist makes that quick:
 
-- The organization's server signs short-lived user certificates, for example
-  for 8 hours.
-- Target servers trust the CA with `TrustedUserCAKeys`.
-- No private key is shared between people.
-- Removing someone means no new certificates; existing ones simply expire.
-- Each certificate issued is an audit record the server can vouch for.
-
-Client side, russh 0.64 supports certificate login: `authenticate_openssh_cert`,
-and `authenticate_certificate_with` for agent-held keys.
-
-The trade-off is that the CA key lives on the server. That is acceptable when
-self-hosted; in authwing cloud it belongs in a KMS or HSM.
+- Each code on the list links to its site's two-factor settings, from the
+  sites saved with it.
+- The new key is added to the collection from the QR code the site shows
+  (scanned on the screen), and replaces the old code there.
+- The list keeps which codes are done, and who did them, until every one is.
 
 ## Audit log
 
@@ -71,24 +68,22 @@ The server records reliably:
 - Record created, changed or deleted (by id).
 - Membership and permission changes.
 - Who downloaded which collection.
-- Certificates issued.
 
-"Who connected to which host, when" is reported by the client and cannot be
-verified, except through certificates.
+"Who used which code, when" is reported by the client and cannot be verified:
+the codes are made on the device, offline.
 
 ## Editions
 
 | | Community (self-hosted, free) | Team | Business |
 | --- | --- | --- | --- |
 | Users | Up to 3 (**Open**) | Per seat | Per seat |
-| Personal sync, unlimited hosts | Yes | Yes | Yes |
+| Personal sync, unlimited codes | Yes | Yes | Yes |
 | Collections | 1 | Unlimited | Unlimited |
-| Groups, Connect/Edit/Manage | | Yes | Yes |
+| Groups, Use/Edit/Manage | | Yes | Yes |
 | Removal checklist, key rotation | | Yes | Yes |
 | Audit log | | 30 days | Unlimited, export |
 | SSO (OIDC, SAML), SCIM | | | Yes |
-| Policies (no export, vault lock required…) | | | Yes |
-| SSH CA, short-lived certificates | | | Yes |
+| Policies (no export, codes typed but not shown, vault lock required…) | | | Yes |
 
 Team and Business are sold both in authwing cloud and as self-hosted licenses.
 **Open:** prices.
@@ -129,4 +124,4 @@ organization, seats, features and expiry.
 2. Collections, groups and permissions, plus the removal checklist.
 3. Audit log.
 4. SSO and SCIM.
-5. SSH CA.
+5. Policies.
