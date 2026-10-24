@@ -94,23 +94,452 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
 
-# XXXX-XXXX-…, 13 groups
-tbb504d9f = XXXX-XXXX-…, 13 nhóm
+# General
+t5561fd0b = Chung
+
+# Sync
+t89a71bba = Đồng bộ
+
+# Security
+tc2fe21db = Bảo mật
+
+# Backup
+t06bfc1ff = Sao lưu
+
+# Browsers
+td580efd4 = Trình duyệt
+
+# About
+t58e096de = Giới thiệu
+
+# A folder another app keeps in sync
+t27689c98 = Một thư mục được app khác đồng bộ
+
+# The repository's default
+t318b30d3 = Nhánh mặc định của repository
+
+# None: the bucket's top
+tb62e6c7b = Để trống: gốc của bucket
+
+# Access key
+t837b43b8 = Access key
+
+# Kept in the vault, on this device only
+t4893a866 = Giữ trong vault, chỉ trên thiết bị này
+
+# At least 10 characters, hard to guess
+tea4f3495 = Ít nhất 10 ký tự, khó đoán
+
+# The same again
+t3d35edbe = Nhập lại lần nữa
+
+# A passphrase for this backup
+t8f817889 = Mật khẩu cho bản sao lưu này
+
+# The file's password
+teef70b9d = Mật khẩu của file
+
+# Fill in {what}.
+t0804c32b = Hãy điền { $what }.
+
+# the folder
+t48f6f260 = thư mục
+
+# the repository's address
+t5f845286 = địa chỉ repository
+
+# the folder's address
+t3f263e4e = địa chỉ thư mục
+
+# the user
+t9ba42c97 = tên người dùng
+
+# the endpoint
+t025e0e85 = endpoint
+
+# the bucket
+ta347465a = bucket
+
+# the access key
+t4e629821 = access key
+
+# Open the vault first.
+t18fc18b2 = Hãy mở vault trước.
+
+# Fill in the password.
+t396bf9b1 = Hãy điền mật khẩu.
+
+# Fill in the secret key.
+tfddf418b = Hãy điền secret key.
+
+# Saved. Syncing now.
+t3bd89f83 = Đã lưu. Đang đồng bộ.
+
+# Sync is off. What is in the place stays there.
+t9350814a = Đã tắt đồng bộ. Những gì ở nơi đồng bộ vẫn được giữ nguyên.
+
+# Sync here
+te998c2e0 = Đồng bộ ở đây
 
 # This vault has no recovery key yet.
 tdd764294 = Vault này chưa có khoá khôi phục.
 
-# Recovery key
-t02904a59 = Khoá khôi phục
+# A passphrase needs at least 10 characters.
+t848f2c32 = Mật khẩu cần ít nhất 10 ký tự.
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-t82f98ccc = Hãy cất nó cùng chỗ với giấy tờ quan trọng: nó mở vault từ một thiết bị mới, và là cách lấy lại khi mất hết mọi thiết bị.
+# The two passphrases differ.
+teb0402b1 = Hai mật khẩu không khớp nhau.
+
+# Too easy to guess: try several unrelated words.
+tc80e0d6d = Quá dễ đoán: hãy dùng vài từ không liên quan đến nhau.
+
+# The passphrase is set.
+t1c4d5a62 = Đã đặt mật khẩu.
+
+# Saved: {path}
+tac1104ef = Đã lưu: { $path }
+
+# There are no codes to save yet.
+t0e74f33a = Chưa có mã nào để lưu.
+
+# Save unencrypted
+td1b35071 = Lưu không mã hoá
+
+# Save the codes unencrypted?
+tfb35b299 = Lưu các mã mà không mã hoá?
+
+# Anyone who sees the file can make your codes. Use it to move to another app, then delete it.
+tf4321e21 = Ai thấy file này cũng tạo được mã của bạn. Chỉ dùng để chuyển sang app khác, rồi xoá nó đi.
+
+# Import
+t573e0af4 = Nhập
+
+# {n} code added. | {n} codes added.
+tcb4c07d0 =
+    { $n ->
+       *[other] Đã thêm { $n } mã.
+    }
+
+# {n} was here already. | {n} were here already.
+tebfc485d =
+    { $n ->
+       *[other] { $n } mã đã có sẵn.
+    }
+
+# {n} left out: authwing cannot use it. | {n} left out: authwing cannot use them.
+t9292bf58 =
+    { $n ->
+       *[other] { $n } mã bị bỏ qua: authwing không dùng được.
+    }
+
+# No browser the extension runs in was found.
+tbdee3baa = Không tìm thấy trình duyệt nào chạy được tiện ích.
+
+# As the system
+t29f671f7 = Theo hệ thống
+
+# Dark
+t45570065 = Tối
+
+# Light
+t8ad2f8cf = Sáng
+
+# 10 s
+t656f91cd = 10 giây
+
+# 20 s
+t9356dfda = 20 giây
+
+# 45 s
+td029e48f = 45 giây
+
+# 90 s
+ted25e5d5 = 90 giây
+
+# Never
+tb2ff2b29 = Không bao giờ
+
+# Language
+t9a73db9b = Ngôn ngữ
+
+# This device's own: it does not sync.
+t075c5383 = Riêng của thiết bị này: không đồng bộ.
+
+# Appearance
+t31018b9f = Giao diện
+
+# Colors
+t25bb4ed1 = Màu
+
+# Text size
+t2c041143 = Cỡ chữ
+
+# Codes
+t758add25 = Mã
+
+# Clear a copied code from the clipboard after
+tcf387b5b = Xoá mã đã copy khỏi clipboard sau
+
+# Only if the clipboard still holds it.
+tedfee6ca = Chỉ khi clipboard vẫn còn giữ mã đó.
+
+# Off
+t0dc6b4aa = Tắt
+
+# Folder
+t06357afd = Thư mục
+
+# Git
+tb6b5540b = Git
+
+# WebDAV
+t8e2d2e34 = WebDAV
+
+# S3
+t060203c3 = S3
+
+# Saved on this device; type a new one to change it.
+t6f6ad6e7 = Đã lưu trên thiết bị này; gõ cái mới để thay.
+
+# Kept sealed in the vault, on this device only: it never syncs.
+t5529829d = Được niêm phong trong vault, chỉ trên thiết bị này: không bao giờ đồng bộ.
+
+# The codes stay on this device. Keep its recovery key (Security) and a backup.
+t29381d6c = Các mã chỉ ở trên thiết bị này. Hãy giữ khoá khôi phục (Bảo mật) và một bản sao lưu.
+
+# Choose…
+t58daae9c = Chọn…
+
+# Use iCloud Drive
+t789420ac = Dùng iCloud Drive
+
+# Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share.
+taadf45c8 = Bất kỳ thư mục nào được app khác đồng bộ: iCloud Drive, Syncthing, Dropbox, OneDrive, thư mục mạng.
+
+# Repository
+te763c8b5 = Repository
+
+# Branch
+ta3e27665 = Nhánh
+
+# A private repository. This computer's git signs in as it does for you.
+tcf6c891b = Một repository riêng tư. git của máy này đăng nhập như bình thường bạn vẫn dùng.
+
+# Folder's address
+t1331c053 = Địa chỉ thư mục
+
+# User
+te0a63e12 = Người dùng
+
+# Password
+t2cc30838 = Mật khẩu
+
+# Endpoint
+t27e7d69c = Endpoint
+
+# Bucket
+te34e3557 = Bucket
+
+# Folder in it
+tdfe63979 = Thư mục bên trong
+
+# Region
+t492e789d = Region
+
+# Secret key
+t47252d7a = Secret key
+
+# Where the vault syncs
+td7a153f7 = Nơi vault đồng bộ
+
+# Save and sync
+te0b44954 = Lưu và đồng bộ
+
+# Stop syncing
+t59fdbd70 = Dừng đồng bộ
+
+# What syncs
+ta2fbb093 = Những gì được đồng bộ
+
+# Settings too
+ta8aa81ba = Cả cài đặt
+
+# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
+te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
+
+# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
+t674d2276 = Thiết bị xin tham gia và khoá khôi phục nằm trong bảng của biểu tượng đám mây trên thanh tiêu đề.
 
 # Show the recovery key
 t16f62979 = Hiện khoá khôi phục
 
 # Hide
 te10c7bcd = Ẩn
+
+# Change the passphrase
+t02c0bf0a = Đổi mật khẩu
+
+# Set a passphrase
+t69755c3c = Đặt mật khẩu
+
+# Recovery key
+t02904a59 = Khoá khôi phục
+
+# It opens the vault when nothing else can: a lost keychain, a forgotten passphrase, a new device. Write it down and keep it apart from this computer.
+tc3c501b7 = Nó mở vault khi không còn cách nào khác: mất keychain, quên mật khẩu, thiết bị mới. Hãy chép lại và cất ở nơi tách biệt với máy này.
+
+# Passphrase
+t191a2dc5 = Mật khẩu
+
+# A passphrase opens this vault. Set another below.
+tc2369f61 = Vault này được mở bằng mật khẩu. Đặt mật khẩu khác ở dưới.
+
+# No passphrase yet: the keychain alone opens the vault, and it cannot lock.
+t4373fdd8 = Chưa có mật khẩu: chỉ keychain mở được vault, và vault không thể khoá.
+
+# Again
+t58fb56ef = Nhập lại
+
+# Working…
+td5507854 = Đang xử lý…
+
+# Save the passphrase
+t014d0621 = Lưu mật khẩu
+
+# Opening and locking
+tb34987b3 = Mở và khoá
+
+# Open by itself
+t680c6531 = Tự mở
+
+# The vault's key stays in this computer's keychain. Off: the passphrase opens it, and Lock closes it.
+ta2c3bb9f = Khoá của vault nằm trong keychain của máy này. Tắt: mật khẩu mở vault, và nút Khoá đóng nó lại.
+
+# Open with {what}
+td5998b93 = Mở bằng { $what }
+
+# Needs a passphrase set. The system asks when you change it.
+t5b1f668d = Cần đặt mật khẩu trước. Hệ thống sẽ hỏi khi bạn thay đổi.
+
+# Lock now
+t1aa78686 = Khoá ngay
+
+# Closes the vault until its passphrase is typed.
+tba4f5365 = Đóng vault cho tới khi gõ mật khẩu.
+
+# Lock
+t71b42d62 = Khoá
+
+# {file} is an encrypted {app} file.
+t3635feb7 = { $file } là file { $app } đã mã hoá.
+
+# Open
+t538b10e9 = Mở
+
+# A backup
+t2e1d133a = Bản sao lưu
+
+# Every code, its group and its sites, sealed with a passphrase of its own: keep it somewhere else than this computer. Restoring it needs only the file and the passphrase.
+t4d83bdf7 = Mọi mã, cùng nhóm và các trang web của nó, được niêm phong bằng một mật khẩu riêng: hãy cất ở nơi khác ngoài máy này. Khôi phục chỉ cần file và mật khẩu.
+
+# Backup passphrase
+teeca199d = Mật khẩu bản sao lưu
+
+# Save a backup…
+tbc59ad3d = Lưu bản sao lưu…
+
+# Restore, or move from another app
+tea7de02f = Khôi phục, hoặc chuyển từ app khác
+
+# An authwing backup, or an export from Aegis, 2FAS, Ente Auth or Bitwarden, or a list of otpauth links. Codes already here are left as they are. Authy cannot export its codes.
+t4f923eb7 = Một bản sao lưu authwing, file export từ Aegis, 2FAS, Ente Auth hoặc Bitwarden, hoặc một danh sách link otpauth. Mã đã có sẵn được giữ nguyên. Authy không xuất được mã.
+
+# Choose a file…
+t28a576c9 = Chọn file…
+
+# Unencrypted
+t39b38862 = Không mã hoá
+
+# Save as plain text
+tc2fb9143 = Lưu dạng văn bản thường
+
+# One otpauth link per code, which other apps import. Anyone who sees the file can make your codes.
+te3b8adae = Mỗi mã một link otpauth, các app khác nhập được. Ai thấy file này cũng tạo được mã của bạn.
+
+# Save…
+t6dec18f4 = Lưu…
+
+# Linked to this authwing
+ta9f58dac = Đã liên kết với authwing này
+
+# Linked to another copy: {path}
+t92cd5320 = Đã liên kết với một bản authwing khác: { $path }
+
+# Not linked
+ta8dc0817 = Chưa liên kết
+
+# The browser extension
+tdcceb399 = Tiện ích trình duyệt
+
+# With authwing's extension, the app knows the page in front exactly: a code saved with that site comes first and is typed in, and a page that only looks like it gets none. The extension keeps no codes.
+t9ca9ffff = Với tiện ích của authwing, app biết chính xác trang đang mở: mã đã lưu cho trang đó được đưa lên đầu và gõ vào trang, còn trang chỉ trông giống thì không nhận được mã nào. Tiện ích không giữ mã nào.
+
+# Link the browsers
+t813a0fa7 = Liên kết các trình duyệt
+
+# Unlink
+ta3742172 = Bỏ liên kết
+
+# Browsers on this computer
+td2a9db60 = Trình duyệt trên máy này
+
+# The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
+t49b23b02 = Tiện ích chưa có trên các store: hãy build từ thư mục extension của repository và nạp dạng unpacked.
+
+# Version
+t5dcdd537 = Phiên bản
+
+# License
+t38e70ee4 = Giấy phép
+
+# Free software: you may share and change it under the GPL.
+tef971997 = Phần mềm tự do: bạn có thể chia sẻ và sửa đổi theo giấy phép GPL.
+
+# Source
+t61e2a3f8 = Mã nguồn
+
+# Updates
+t483075a5 = Cập nhật
+
+# Not looked for: this build has no release keys to check them with.
+t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
+
+# Open config.toml
+t07a52335 = Mở config.toml
+
+# Done
+t8dd31791 = Xong
+
+# That password does not open this file.
+t90cd5647 = Mật khẩu đó không mở được file này.
+
+# The file is damaged: {why}
+t95bba871 = File bị hỏng: { $why }
+
+# This is not a backup or an export authwing can read.
+td41d3da6 = Đây không phải bản sao lưu hay file export mà authwing đọc được.
+
+# The passphrase is too short: at least {n} characters.
+t67c24024 = Mật khẩu quá ngắn: cần ít nhất { $n } ký tự.
+
+# This {app} file is encrypted: enter its password.
+t1aa6da9b = File { $app } này đã được mã hoá: hãy nhập mật khẩu.
+
+# XXXX-XXXX-…, 13 groups
+tbb504d9f = XXXX-XXXX-…, 13 nhóm
+
+# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
+t82f98ccc = Hãy cất nó cùng chỗ với giấy tờ quan trọng: nó mở vault từ một thiết bị mới, và là cách lấy lại khi mất hết mọi thiết bị.
 
 # Waiting for a device that syncs: open authwing there.
 t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
@@ -132,9 +561,6 @@ t2dc61136 = Xin một thiết bị đang đồng bộ
 
 # Stop asking
 t296beec8 = Thôi xin
-
-# Sync
-t89a71bba = Đồng bộ
 
 # Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
 tc75c83a8 = Chưa đồng bộ. Khai báo nơi đồng bộ trong config.toml rồi quay lại đây: một thư mục được đồng bộ (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 hoặc Git.
@@ -229,12 +655,6 @@ tb28eb5cc = Bộ đếm chưa được lưu: { $e }
 # A code was not saved: {e}
 t6cd84653 = Một mã chưa được lưu: { $e }
 
-# {n} code added. | {n} codes added.
-tcb4c07d0 =
-    { $n ->
-       *[other] Đã thêm { $n } mã.
-    }
-
 # Delete the code for {name}?
 t1690127f = Xoá mã của { $name }?
 
@@ -253,14 +673,8 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 # Not opened: {e}
 t2e0269c8 = Chưa mở được: { $e }
 
-# Cannot open config.toml: {e}
-tb78f406b = Không mở được config.toml: { $e }
-
-# Lock
-t71b42d62 = Khoá
-
-# Settings (config.toml)
-t1fc961bb = Cài đặt (config.toml)
+# Settings
+t4b058728 = Cài đặt
 
 # All codes
 t113331ee = Tất cả mã
@@ -319,9 +733,6 @@ tda76133f = Không có kết quả
 # Try fewer words, or another group.
 t289325a3 = Thử ít từ hơn, hoặc nhóm khác.
 
-# Set a passphrase
-t69755c3c = Đặt mật khẩu
-
 # This computer has no keychain to keep the vault's key in.
 t911809a4 = Máy này không có keychain để giữ khoá của vault.
 
@@ -342,6 +753,3 @@ t99b658f7 = Mở bằng Touch ID hoặc Windows Hello
 
 # Opening…
 tc40f2321 = Đang mở…
-
-# Open
-t538b10e9 = Mở

@@ -14,8 +14,9 @@ TOML, both in its config directory:
 How `config.toml` behaves:
 
 - **Every key is optional**; anything missing takes its default, and a
-  missing file is all defaults. The gear in the title bar opens it in your
-  editor, created with a commented example first.
+  missing file is all defaults. **Settings** (the gear in the title bar, or
+  Cmd/Ctrl+,) changes it for you, keeping your comments; *Open config.toml*
+  there opens it in your editor.
 - **Edits apply to a running window** within half a second.
 - **A file with a mistake is reported** with its line number, and the window
   keeps the last good values.
@@ -65,6 +66,26 @@ settings = true              # the settings that are not this device's own sync 
   sign-in off at the site first, or keep its recovery codes: without the
   code you cannot sign in there.
 
+## Backup, and moving from another app
+
+*Settings › Backup*:
+
+- **A backup** holds every code with its group and sites, sealed with a
+  passphrase of its own (Argon2id, then XChaCha20-Poly1305), in a
+  `.authwing-backup` file. Keep it somewhere else than the computer:
+  restoring needs only the file and the passphrase.
+- **Restore, or move from another app**: an authwing backup, an export from
+  Aegis (plain or encrypted), 2FAS (plain or encrypted), Ente Auth or
+  Bitwarden (unencrypted), or a list of `otpauth://` links (Google
+  Authenticator's `otpauth-migration://` export among them). An encrypted
+  file asks for its password. Codes already here are left as they are, and
+  codes authwing cannot use (MD5, an unknown kind) are counted and left out.
+  Authy cannot export its codes: move each by turning two-factor off and on
+  again at the site.
+- **Save as plain text**: one `otpauth://` link per code, which other apps
+  import, after a question. Anyone who sees the file can make your codes;
+  on macOS and Linux only you can read it.
+
 ## The browser extension
 
 With authwing's extension in the browser, the app knows the page in front
@@ -81,8 +102,9 @@ exactly, not just the window's title:
   checked.
 
 To set it up, build it (`extension/README.md`), load it unpacked, and tell the
-browsers where authwing is, once: `authwing --install-browser-host` (it says
-where it wrote; `--uninstall-browser-host` takes it back). The app must be
+browsers where authwing is, once: *Settings › Browsers › Link the browsers*
+(or `authwing --install-browser-host`; *Unlink* or `--uninstall-browser-host`
+takes it back). The page lists each browser and whether it is linked. The app must be
 running for the extension to link to it; its popup says whether it is.
 
 ## Language
@@ -152,9 +174,21 @@ the recovery key; Touch ID or Windows Hello opens it where they were set up
 for it. **Lock** (Cmd/Ctrl+L) closes it until then; with its key in the
 keychain there is nothing to lock, and the window says so.
 
+*Settings › Security*:
+
+- **The recovery key**: every vault has one from its first opening, synced
+  or not. It opens the vault when nothing else can (a lost keychain, a
+  forgotten passphrase, a new device): write it down.
+- **The passphrase**: at least 10 characters and hard to guess (several
+  unrelated words); it is turned into a key with Argon2id.
+- **Open by itself**: on, the key stays in the keychain; off, only the
+  passphrase (or Touch ID, Windows Hello) opens the vault, and Lock works.
+- **Open with Touch ID / Windows Hello**, once a passphrase is set.
+
 ## Syncing between devices
 
-Where the vault syncs is set under `[sync]`, one place at a time:
+Where the vault syncs is set in *Settings › Sync* (or under `[sync]`), one
+place at a time:
 
 ```toml
 [sync]
@@ -169,10 +203,10 @@ folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"   # any synce
 - **A Git repository** goes through this system's git (2.31 or newer), which
   signs in as it does for you (Git Credential Manager, the keychain, your SSH
   keys and agent).
-- **WebDAV and S3-compatible storage** (`webdav = { url, user }`, `s3 = {
-  endpoint, bucket, prefix, access_key }`) are read too, but their password or
-  secret key is kept sealed in the vault, and the window cannot save it yet:
-  until it can, use a folder or Git.
+- **WebDAV** (Nextcloud, Synology, Koofr) and **S3-compatible storage** (AWS,
+  Cloudflare R2, Backblaze B2, MinIO): their password or secret key is typed
+  in Settings and kept sealed in the vault, as this device's own; it never
+  syncs, and each device types its own.
 
 The cloud in the title bar says how it stands (green synced, orange failed, a
 light orange not set up) and opens the Sync panel:

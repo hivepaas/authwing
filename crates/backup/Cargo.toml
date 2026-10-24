@@ -1,0 +1,32 @@
+[package]
+name = "authwing-backup"
+description = "authwing's encrypted backup, the plain export, and imports from other authenticator apps"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+authwing-totp.workspace = true
+# authwing's own backup: a key from the passphrase and a cipher, as the vault's.
+argon2 = "0.6"
+chacha20poly1305 = "0.10"
+getrandom = "0.3"
+# Aegis and 2FAS seal with AES-256-GCM, under a key from scrypt (Aegis) or
+# PBKDF2-SHA256 (2FAS). The digest 0.10 family, as the vault's sha2 and hkdf.
+aes-gcm = "0.10"
+scrypt = { version = "0.11", default-features = false }
+pbkdf2 = "0.12"
+sha2 = "0.10"
+base64 = "0.22"
+percent-encoding = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror.workspace = true
+# Bitwarden's login addresses, read as the browser reads them.
+url = "2.5"
+zeroize = "1"
+
+[lints]
+workspace = true

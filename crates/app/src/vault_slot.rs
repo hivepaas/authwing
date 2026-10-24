@@ -156,6 +156,48 @@ impl VaultSlot {
         self.0.kept.load(std::sync::atomic::Ordering::Relaxed)
     }
 
+    /// Puts the open vault's key in the system keychain.
+    pub fn keep_in_keychain(&self) -> Result<(), String> {
+        let (Some(vault), Some(keys)) = (self.ready(), &self.0.keys) else {
+            return Err("the vault is not open".into());
+        };
+        vault.keep_in(keys.as_ref()).map_err(|e| e.to_string())?;
+        self.keep(true);
+        Ok(())
+    }
+
+    /// Takes the open vault's key out of the system keychain, so every start
+    /// asks for the passphrase. Needs one set.
+    pub fn leave_keychain(&self) -> Result<(), String> {
+        let (Some(vault), Some(keys)) = (self.ready(), &self.0.keys) else {
+            return Err("the vault is not open".into());
+        };
+        vault.leave_keychain(keys.as_ref()).map_err(|e| match e {
+            authwing_vault::Error::Locked(_) => "set a passphrase first".to_string(),
+            e => e.to_string(),
+        })?;
+        self.keep(false);
+        Ok(())
+    }
+
+    /// Lets the user's presence open the vault on this device, or (`false`)
+    /// stops it: blocks on the system's prompt.
+    pub fn set_presence(&self, on: bool) -> Result<(), String> {
+        let vault = self.ready().ok_or("the vault is not open")?;
+        let p = self
+            .presence()
+            .ok_or("this system has neither Windows Hello nor Touch ID")?;
+        let done = if on {
+            vault.set_presence(&p)
+        } else {
+            vault.remove_presence(&p)
+        };
+        done.map_err(|e| match e {
+            authwing_vault::Error::Locked(_) => "set a passphrase first".to_string(),
+            e => e.to_string(),
+        })
+    }
+
     /// Whether [`VaultSlot::lock`] can lock it: open, with a passphrase to
     /// open it again and its key not in the keychain.
     pub fn can_lock(&self) -> bool {

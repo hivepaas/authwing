@@ -21,6 +21,7 @@ mod look;
 mod notice;
 mod placement;
 mod prompt;
+mod settings;
 mod sync_panel;
 mod syncing;
 mod vault_slot;
