@@ -201,16 +201,42 @@ fn password_needed(format: Format) -> String {
 /// tag, around nothing.
 const MIN_SEALED: usize = 12 + 16;
 
-/// How files that hold no codes start (pictures, PDFs, ZIP archives, SQLite
-/// databases): not text either, but not to be asked a password for.
-const NOT_EXPORTS: [&[u8]; 6] = [
+/// How files that hold no codes start (pictures, sound and video, PDFs,
+/// archives, SQLite databases, programs): not text either, but not to be
+/// asked a password for. Each is four bytes or more, so the random start of
+/// an encrypted file is all but never taken for one.
+const NOT_EXPORTS: [&[u8]; 19] = [
     b"\x89PNG",
     b"\xFF\xD8\xFF",
     b"GIF8",
+    b"RIFF",
+    b"II*\0",
+    b"MM\0*",
+    b"OggS",
+    b"fLaC",
     b"%PDF",
     b"PK\x03\x04",
+    b"7z\xBC\xAF\x27\x1C",
+    b"Rar!",
+    b"\x1F\x8B\x08",
     b"SQLite format 3\0",
+    b"\x7FELF",
+    b"\xCF\xFA\xED\xFE",
+    b"\xCE\xFA\xED\xFE",
+    b"\xCA\xFE\xBA\xBE",
+    b"\0asm",
 ];
+
+/// Whether `bytes` are a Windows program: `MZ`, and where it says, the
+/// `PE` header. `MZ` alone is two bytes, which an encrypted file starts
+/// with too often to go by.
+fn is_windows_program(bytes: &[u8]) -> bool {
+    let at = bytes
+        .get(0x3C..0x40)
+        .map(|offset| u32::from_le_bytes(offset.try_into().expect("four bytes")) as usize);
+    bytes.starts_with(b"MZ")
+        && at.is_some_and(|at| bytes.get(at..at.saturating_add(4)) == Some(b"PE\0\0"))
+}
 
 /// Whether bytes that are not UTF-8 look encrypted: long enough, not a file
 /// of another kind, and not text in another encoding either, where most
@@ -223,6 +249,7 @@ fn looks_sealed(bytes: &[u8]) -> bool {
     bytes.len() >= MIN_SEALED
         && printable * 4 < bytes.len() * 3
         && !NOT_EXPORTS.iter().any(|magic| bytes.starts_with(magic))
+        && !is_windows_program(bytes)
 }
 
 /// Says which format `bytes` are in, from how they look: `None` when no
@@ -564,8 +591,14 @@ mod tests {
         assert_eq!(detect(&sealed), Some(Format::Authwing));
         let migration = b"otpauth-migration://offline?data=CgA";
         assert_eq!(detect(migration), Some(Format::Uris));
-        // Not UTF-8, but no encrypted file: a picture, and text in Latin-1.
+        // Not UTF-8, but no encrypted file: a picture, programs, and text in
+        // Latin-1.
         let png = [&b"\x89PNG\r\n\x1A\n"[..], &[0xC8; 40]].concat();
+        let elf = [&b"\x7FELF\x02\x01\x01"[..], &[0xC8; 40]].concat();
+        let mut exe = vec![0xC8; 0x90];
+        exe[..2].copy_from_slice(b"MZ");
+        exe[0x3C..0x40].copy_from_slice(&0x80u32.to_le_bytes());
+        exe[0x80..0x84].copy_from_slice(b"PE\0\0");
         let latin1 = b"name;secret\nCaf\xE9 Ren\xE9;JBSWY3DPEHPK3PXP\n";
         // A list, but not of andOTP's entries; base64, but not of AES blocks.
         let list = b"[{\"name\": \"x\"}]";
@@ -580,6 +613,8 @@ mod tests {
             b"\xFF\xFE",
             b"",
             &png,
+            &elf,
+            &exe,
             latin1,
             list,
             short,
@@ -597,6 +632,10 @@ mod tests {
     fn an_encrypted_file_no_password_opens_is_the_wrong_password() {
         let noise: Vec<u8> = (0..200u8).map(|n| n.wrapping_mul(151) ^ 0xA5).collect();
         assert_eq!(detect(&noise), Some(Format::EncryptedFile));
+        // Starting as a Windows program does, with no PE header where it
+        // would say: still encrypted.
+        let mz = [&b"MZ"[..], &noise].concat();
+        assert_eq!(detect(&mz), Some(Format::EncryptedFile));
         assert!(matches!(
             import(&noise, None),
             Err(Error::PasswordNeeded(Format::EncryptedFile))
