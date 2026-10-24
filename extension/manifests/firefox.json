@@ -1,0 +1,41 @@
+// Firefox. build.mjs takes out these comments and sets the version from
+// package.json.
+{
+  "manifest_version": 3,
+  "name": "authwing",
+  "version": "0.0.0",
+  "description": "Two-factor codes from the authwing app, for the exact site in front.",
+  // As in chromium.json. Firefox has the address of a tab only with "tabs"
+  // or a host permission, and the user may take host permissions back.
+  "permissions": ["nativeMessaging", "tabs"],
+  // Firefox treats these as optional in Manifest V3 (the user may refuse or
+  // revoke them); the popup asks for them when they are missing.
+  // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/host_permissions
+  "host_permissions": ["<all_urls>"],
+  // Firefox has no background service worker: a background script, run as
+  // an event page.
+  // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background
+  "background": { "scripts": ["background.js"] },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_popup": "popup.html", "default_title": "authwing" },
+  "browser_specific_settings": {
+    "gecko": {
+      // For good once on addons.mozilla.org; the host manifest allows it.
+      "id": "authwing@hivepaas.com",
+      // 140 is the first to take data_collection_permissions, which
+      // addons.mozilla.org asks of new extensions.
+      // https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/
+      "strict_min_version": "140.0",
+      // Addresses go only to the authwing app on the same computer, never
+      // to us or anyone else.
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  }
+}

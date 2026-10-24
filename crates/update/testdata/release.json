@@ -8,7 +8,7 @@
       "releaseDate": "2026-11-02",
       "archives": {
         "linux_x86_64": {
-          "file": "shellwing_0.2.0_linux_x86_64.AppImage",
+          "file": "authwing_0.2.0_linux_x86_64.AppImage",
           "sha256": "fd8f7bed4f39906801f70b89c1c859a28f4b8aa9cf7f4ae07a1ccb39b66236bd"
         }
       }

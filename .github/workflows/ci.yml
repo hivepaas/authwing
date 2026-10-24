@@ -8,14 +8,13 @@ on:
   pull_request:
     branches: [main]
   # macOS and Windows minutes cost more, so they run only when started by hand
-  # (Actions > CI > Run workflow); pushes and pull requests build Linux (and
-  # the core for Android, on Linux) only.
+  # (Actions > CI > Run workflow); pushes and pull requests build Linux only.
   workflow_dispatch:
     inputs:
       platforms:
         description: Platforms to build and test
         type: choice
-        options: [all, macos, windows, linux, android, ios]
+        options: [all, macos, windows, linux]
         default: all
 
 concurrency:
@@ -28,8 +27,6 @@ env:
 jobs:
   build:
     name: ${{ matrix.name }}
-    # Started by hand for the phones only: the desktop builds sit it out.
-    if: github.event_name != 'workflow_dispatch' || !contains(fromJSON('["android","ios"]'), inputs.platforms)
     strategy:
       fail-fast: false
       matrix:
@@ -45,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Linux packages (GPUI: Wayland, X11, Vulkan, fonts; PAM; sftp-server)"
+      - name: "Linux packages (GPUI: Wayland, X11, Vulkan, fonts; PAM)"
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -53,13 +50,7 @@ jobs:
             build-essential pkg-config libfontconfig-dev libfreetype-dev \
             libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
             libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev \
-            openssh-sftp-server   # the SFTP tests talk to OpenSSH's sftp-server
-
-      # libghostty-vt is built from source with Zig.
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.16.0
+            libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -81,74 +72,41 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      # Release: dev builds compile libghostty in Zig's Debug mode, too slow for the flood test.
       - name: Test
-        run: cargo test --release --workspace
+        run: cargo test --workspace
 
       - name: Build
-        run: cargo build --release -p shellwing
+        run: cargo build --release -p authwing
 
       - uses: actions/upload-artifact@v4
         with:
-          name: shellwing-${{ matrix.name }}
-          path: target/release/shellwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+          name: authwing-${{ matrix.name }}
+          path: target/release/authwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
           if-no-files-found: error
           retention-days: 14
 
-  # The UI-free core (term, ssh, config, vault) for the phones, built, not run:
-  # a mobile front end links it. Android cross-builds on Linux with the
-  # runner's NDK; iOS needs Xcode, so it runs only when started by hand.
-  android:
-    name: android-aarch64 (core)
-    if: github.event_name != 'workflow_dispatch' || contains(fromJSON('["all","android"]'), inputs.platforms)
+  extension:
+    name: extension (TypeScript)
+    # The browser extension: with the Linux build, wherever that runs.
+    if: github.event_name != 'workflow_dispatch' || contains(fromJSON('["all","linux"]'), inputs.platforms)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
     steps:
       - uses: actions/checkout@v4
 
-      - uses: mlugg/setup-zig@v2
+      - uses: actions/setup-node@v4
         with:
-          version: 0.16.0
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android
-          components: clippy
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: android-aarch64
-
-      - name: Clippy (core, Android)
+      - name: Type-check and build
         run: |
-          ndk="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
-          bin="$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          export ANDROID_NDK_HOME="$ndk"
-          export CC_aarch64_linux_android="$bin/aarch64-linux-android24-clang"
-          export AR_aarch64_linux_android="$bin/llvm-ar"
-          cargo clippy -p shellwing-core --target aarch64-linux-android -- -D warnings
-
-  ios:
-    name: ios-sim-arm64 (core)
-    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["all","ios"]'), inputs.platforms)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.16.0
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios-sim
-          components: clippy
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ios-sim-arm64
-
-      - name: Clippy (core, iOS Simulator)
-        run: cargo clippy -p shellwing-core --target aarch64-apple-ios-sim -- -D warnings
+          npm ci
+          npm run check
+          npm run build
 
   releasesign:
     name: releasesign (Go)

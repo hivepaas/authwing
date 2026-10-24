@@ -1,6 +1,6 @@
 # Accounts and sync
 
-## Accounts (shellwing portal)
+## Accounts (authwing portal)
 
 The portal is a web app where people sign in (Google, GitHub, …) and buy plans.
 The desktop app works fully without it.
@@ -10,13 +10,13 @@ The desktop app works fully without it.
 1. The app opens the browser at the portal.
 2. The portal does the Google/GitHub OAuth. The app never sees those tokens.
 3. The portal redirects to `http://127.0.0.1:<port>/callback` with a code.
-4. The app exchanges the code, with PKCE, for shellwing tokens.
+4. The app exchanges the code, with PKCE, for authwing tokens.
 
 The device-code flow is the fallback when no browser can open. The refresh
 token is kept in the OS keychain.
 
 **License.** The portal issues a token signed with Ed25519. It carries the
-account, plan, `host_limit` and expiry.
+account, plan, `code_limit` and expiry.
 
 - The app checks the signature offline and refreshes the token daily.
 - After about 14 days without reaching the portal, cloud sync pauses. Nothing
@@ -25,43 +25,22 @@ account, plan, `host_limit` and expiry.
   raise it.
 
 **Signing in never unlocks data.** Encryption keys come from the user's devices
-or recovery key ([vault.md](vault.md)). A compromised portal exposes no hosts or
+or recovery key ([vault.md](vault.md)). A compromised portal exposes no codes or
 secrets.
 
-## Host limits
+## Plan limits
 
-Individual plans limit how many hosts sync through **shellwing cloud**. Draft
-numbers:
+Individual plans may limit how many codes sync through **authwing cloud**
+(**Open:** whether to limit at all, the plans and prices).
 
-| Plan | Hosts synced |
-| --- | --- |
-| Free | None |
-| Pro 1 | 10 |
-| Pro 2 | 20 |
-| Pro 3 | Unlimited |
-
-**Open:** plan names and prices.
-
-What counts toward the limit:
-
-- **Only hosts count.** Groups, snippets, themes and settings sync free. So do
-  secrets used by synced hosts. A fair-use storage cap applies, tens of MB.
-- **A jump host counts.** Syncing `api-1` through `bastion` uses two slots, and
-  the app says so before enabling it.
-- **Hosts that never count:**
-  - `local_only` hosts.
-  - Hosts from `~/.ssh/config`.
-  - Hosts synced through any other backend (Git, S3, folder…), which is
-    unlimited and free.
-- **Team plans** are per seat with unlimited hosts ([teams.md](teams.md)).
+- **Only codes count.** Groups, names taught for voice and settings sync free.
+- **Codes synced through any other backend** (Git, S3, folder…) never count:
+  that is unlimited and free.
 - **When over the limit** (for example after a downgrade), nothing is deleted:
-  1. The user picks which hosts keep syncing.
-  2. The rest become local-only on the devices that have them.
-  3. Their server copies stay read-only for a grace period, then are removed.
+  the user picks which codes keep syncing through the cloud; the rest stay
+  on the devices that have them.
 - **Counting without reading.** The server counts by the record's clear `kind`
-  field. It learns how many hosts there are, not which.
-
-The sidebar shows a cloud mark on synced hosts and a "Synced 8/10" counter.
+  field (`code` or `other`). It learns how many codes there are, not whose.
 
 ## Engine
 
@@ -81,13 +60,13 @@ trait Backend {
 Layout on a backend:
 
 ```
-shellwing/
+authwing/
   format.json            format version, key ids (never keys)
-  records/<ulid>.sw      one encrypted record per host, group, snippet, secret
+  records/<ulid>.sw      one encrypted record per code, group, setting
   devices/<id>.json      last sync per device, to know when tombstones can go
 ```
 
-One file per record means two devices editing different hosts never touch the
+One file per record means two devices editing different codes never touch the
 same file.
 
 ### Merging
@@ -116,7 +95,7 @@ counter and the device id.
 
 ### When it runs
 
-- **shellwing cloud and the self-hosted server** push changes over a WebSocket.
+- **authwing cloud and the self-hosted server** push changes over a WebSocket.
 - **Other backends:**
   - Sync when the window gains focus.
   - Sync every few minutes.
@@ -130,9 +109,9 @@ counter and the device id.
 | Git (GitHub, GitLab, Gitea, any host) | Developers | Private repo URL; git signs in (token optional) | Rejected push | Medium (the system's `git`) |
 | S3-compatible (AWS, R2, B2, MinIO, Wasabi) | Self-hosters | Endpoint, bucket, keys | `If-Match` | Low ([OpenDAL](https://opendal.apache.org)) |
 | WebDAV (Nextcloud, Synology, Koofr) | Self-hosters | URL, user, password | ETag | Low (OpenDAL) |
-| Google Drive, OneDrive, Dropbox | Everyone | OAuth sign-in | Weak | Medium: shellwing must register an OAuth app with each |
-| shellwing cloud | Paying users | Portal sign-in | Full | High (server + portal) |
-| shellwing-server, self-hosted | Teams, self-hosters | URL + sign-in | Full | Shared with the cloud ([teams.md](teams.md)) |
+| Google Drive, OneDrive, Dropbox | Everyone | OAuth sign-in | Weak | Medium: authwing must register an OAuth app with each |
+| authwing cloud | Paying users | Portal sign-in | Full | High (server + portal) |
+| authwing-server, self-hosted | Teams, self-hosters | URL + sign-in | Full | Shared with the cloud ([teams.md](teams.md)) |
 
 Notes:
 
@@ -153,7 +132,7 @@ Build order:
 2. S3 and WebDAV, through OpenDAL (built: `crates/remote`). Moved ahead of
    the cloud: no server of ours is needed.
 3. Git, through the system's `git` (built: `crates/remote/src/git.rs`).
-4. shellwing cloud and the portal.
+4. authwing cloud and the portal.
 5. Drive, OneDrive and Dropbox.
 
 **S3 and WebDAV as built.**
@@ -204,12 +183,12 @@ Build order:
   Windows, and a time limit.
 - **The clone** (in the cache folder, per repository and branch) is a cache:
   `git init` with the remote, then each round `fetch --depth 1`, `reset
-  --hard` to the remote branch, the engine over its `shellwing/` folder,
-  `add`, `commit --no-verify` (no signing, as `shellwing`), `push`. Never a
+  --hard` to the remote branch, the engine over its `authwing/` folder,
+  `add`, `commit --no-verify` (no signing, as `authwing`), `push`. Never a
   Git merge: a refused push starts the round again over the new commits
   (`Backend::refresh` / `publish`, run by `transact`).
 - **Commits say nothing of the device:** `Sync from <id>` by
-  `shellwing@<id>`, the vault's random device id (its clock stamps' own),
+  `authwing@<id>`, the vault's random device id (its clock stamps' own),
   never the host name, which pairing still shows; and `TZ=UTC`, as a local
   offset says where the device is. A repository may be public, or made so
   later.

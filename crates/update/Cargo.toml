@@ -1,5 +1,5 @@
 [package]
-name = "shellwing-update"
+name = "authwing-update"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -11,7 +11,7 @@ license.workspace = true
 test-source = []
 
 [dependencies]
-shellwing-spawn.workspace = true
+authwing-spawn.workspace = true
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 base64 = "0.22"
@@ -24,7 +24,7 @@ thiserror.workspace = true
 # Reading the list: reqwest on rustls with ring, as crates/remote has them.
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
-# A macOS release is Shellwing.app, tarred and gzipped.
+# A macOS release is Authwing.app, tarred and gzipped.
 flate2 = "1"
 tar = { version = "0.4", default-features = false }
 

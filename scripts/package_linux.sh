@@ -1,20 +1,20 @@
 #!/bin/bash
 #
-# Packages a release build of shellwing for Linux into dist/: the AppImage the
+# Packages a release build of authwing for Linux into dist/: the AppImage the
 # updater replaces itself with, a .deb, and a tar.gz of the binary (see
 # docs/releasing.md).
 #
-#   cargo build --release -p shellwing
+#   cargo build --release -p authwing
 #   scripts/package_linux.sh
 #
-#   dist/shellwing_0.1.0_linux_x86_64.AppImage
-#   dist/shellwing_0.1.0_linux_x86_64.tar.gz
-#   dist/shellwing_0.1.0_amd64.deb
+#   dist/authwing_0.1.0_linux_x86_64.AppImage
+#   dist/authwing_0.1.0_linux_x86_64.tar.gz
+#   dist/authwing_0.1.0_amd64.deb
 #
 # appimagetool and the AppImage runtime are downloaded at the versions pinned
 # below and checked against their SHA-256 before they run.
 #
-# Environment: BIN (default target/release/shellwing), ARCH (default the
+# Environment: BIN (default target/release/authwing), ARCH (default the
 # machine's: x86_64 or aarch64), DIST (default dist).
 
 set -euo pipefail
@@ -24,7 +24,7 @@ cd "$ROOT"
 
 VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
 ARCH="${ARCH:-$(uname -m)}"
-BIN="${BIN:-target/release/shellwing}"
+BIN="${BIN:-target/release/authwing}"
 DIST="${DIST:-dist}"
 WORK="target/package-linux"
 
@@ -48,7 +48,7 @@ aarch64)
 	;;
 esac
 
-[ -x "$BIN" ] || { echo "no build at $BIN: cargo build --release -p shellwing" >&2; exit 1; }
+[ -x "$BIN" ] || { echo "no build at $BIN: cargo build --release -p authwing" >&2; exit 1; }
 rm -rf "$WORK"
 mkdir -p "$WORK" "$DIST"
 
@@ -56,13 +56,13 @@ mkdir -p "$WORK" "$DIST"
 # launcher and the icons.
 install_tree() {
 	local prefix="$1"
-	install -Dm755 "$BIN" "$prefix/bin/shellwing"
-	strip "$prefix/bin/shellwing"
-	install -Dm644 packaging/linux/shellwing.desktop "$prefix/share/applications/shellwing.desktop"
-	install -Dm644 packaging/icons/shellwing.svg "$prefix/share/icons/hicolor/scalable/apps/shellwing.svg"
+	install -Dm755 "$BIN" "$prefix/bin/authwing"
+	strip "$prefix/bin/authwing"
+	install -Dm644 packaging/linux/authwing.desktop "$prefix/share/applications/authwing.desktop"
+	install -Dm644 packaging/icons/authwing.svg "$prefix/share/icons/hicolor/scalable/apps/authwing.svg"
 	for size in 16 32 48 64 128 256 512; do
-		install -Dm644 "packaging/icons/png/shellwing-$size.png" \
-			"$prefix/share/icons/hicolor/${size}x${size}/apps/shellwing.png"
+		install -Dm644 "packaging/icons/png/authwing-$size.png" \
+			"$prefix/share/icons/hicolor/${size}x${size}/apps/authwing.png"
 	done
 }
 
@@ -74,30 +74,30 @@ fetch() {
 }
 
 ## The AppImage
-APPDIR="$WORK/shellwing.AppDir"
+APPDIR="$WORK/authwing.AppDir"
 install_tree "$APPDIR/usr"
-cp packaging/linux/shellwing.desktop "$APPDIR/shellwing.desktop"
-cp packaging/icons/png/shellwing-256.png "$APPDIR/shellwing.png"
-ln -s usr/share/icons/hicolor/256x256/apps/shellwing.png "$APPDIR/.DirIcon"
+cp packaging/linux/authwing.desktop "$APPDIR/authwing.desktop"
+cp packaging/icons/png/authwing-256.png "$APPDIR/authwing.png"
+ln -s usr/share/icons/hicolor/256x256/apps/authwing.png "$APPDIR/.DirIcon"
 cat >"$APPDIR/AppRun" <<'EOF'
 #!/bin/sh
-exec "$(dirname "$(readlink -f "$0")")/usr/bin/shellwing" "$@"
+exec "$(dirname "$(readlink -f "$0")")/usr/bin/authwing" "$@"
 EOF
 chmod 755 "$APPDIR/AppRun"
 
 fetch "$APPIMAGETOOL_URL" "$APPIMAGETOOL_SHA" "$WORK/appimagetool"
 fetch "$RUNTIME_URL" "$RUNTIME_SHA" "$WORK/runtime"
 chmod 755 "$WORK/appimagetool"
-APPIMAGE="$DIST/shellwing_${VERSION}_linux_${ARCH}.AppImage"
+APPIMAGE="$DIST/authwing_${VERSION}_linux_${ARCH}.AppImage"
 # Extracted rather than mounted: CI machines have no FUSE.
 APPIMAGE_EXTRACT_AND_RUN=1 ARCH="$ARCH" VERSION="$VERSION" \
 	"$WORK/appimagetool" --no-appstream --runtime-file "$WORK/runtime" "$APPDIR" "$APPIMAGE"
 
 ## The tar.gz: the binary, its launcher and icons, as /usr/local would have them
-NAME="shellwing-${VERSION}-linux-${ARCH}"
+NAME="authwing-${VERSION}-linux-${ARCH}"
 install_tree "$WORK/$NAME"
 cp LICENSE README.md "$WORK/$NAME/"
-tar -C "$WORK" --owner=0 --group=0 -czf "$DIST/shellwing_${VERSION}_linux_${ARCH}.tar.gz" "$NAME"
+tar -C "$WORK" --owner=0 --group=0 -czf "$DIST/authwing_${VERSION}_linux_${ARCH}.tar.gz" "$NAME"
 
 ## The .deb
 # The binary in /opt, linked from /usr/bin: the updater takes one under /usr for
@@ -105,31 +105,31 @@ tar -C "$WORK" --owner=0 --group=0 -czf "$DIST/shellwing_${VERSION}_linux_${ARCH
 # updated by downloading the next .deb.
 DEB="$WORK/deb"
 install_tree "$DEB/usr"
-mkdir -p "$DEB/opt/shellwing"
-mv "$DEB/usr/bin/shellwing" "$DEB/opt/shellwing/shellwing"
-ln -s /opt/shellwing/shellwing "$DEB/usr/bin/shellwing"
-install -Dm644 LICENSE "$DEB/usr/share/doc/shellwing/copyright"
+mkdir -p "$DEB/opt/authwing"
+mv "$DEB/usr/bin/authwing" "$DEB/opt/authwing/authwing"
+ln -s /opt/authwing/authwing "$DEB/usr/bin/authwing"
+install -Dm644 LICENSE "$DEB/usr/share/doc/authwing/copyright"
 # The libraries it links, as the system names their packages.
 mkdir -p "$WORK/shlibs/debian"
-printf 'Source: shellwing\n\nPackage: shellwing\nArchitecture: any\n' >"$WORK/shlibs/debian/control"
-DEPENDS="$(cd "$WORK/shlibs" && dpkg-shlibdeps -O "$ROOT/$DEB/opt/shellwing/shellwing" 2>/dev/null | sed -n 's/^shlibs:Depends=//p')"
+printf 'Source: authwing\n\nPackage: authwing\nArchitecture: any\n' >"$WORK/shlibs/debian/control"
+DEPENDS="$(cd "$WORK/shlibs" && dpkg-shlibdeps -O "$ROOT/$DEB/opt/authwing/authwing" 2>/dev/null | sed -n 's/^shlibs:Depends=//p')"
 mkdir -p "$DEB/DEBIAN"
 cat >"$DEB/DEBIAN/control" <<EOF
-Package: shellwing
+Package: authwing
 Version: $VERSION
 Architecture: $DEB_ARCH
 Maintainer: HivePaaS <support@hivepaas.com>
 Installed-Size: $(du -sk --exclude=DEBIAN "$DEB" | cut -f1)
 Depends: $DEPENDS
 Recommends: libwayland-client0, libxcb1, libx11-xcb1, libvulkan1, mesa-vulkan-drivers
-Section: net
+Section: utils
 Priority: optional
-Homepage: https://shellwing.app
-Description: Fast, native SSH client
- Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs
- between devices, in a GPU-rendered terminal built with Rust and Zig.
+Homepage: https://github.com/hivepaas/authwing
+Description: Two-factor codes that know the window you are in
+ TOTP, HOTP and Steam Guard codes, offered first for the app or site in
+ use, in an encrypted vault that syncs between devices. Built with Rust.
 EOF
 chmod -R go-w "$DEB"
-dpkg-deb --root-owner-group --build "$DEB" "$DIST/shellwing_${VERSION}_${DEB_ARCH}.deb"
+dpkg-deb --root-owner-group --build "$DEB" "$DIST/authwing_${VERSION}_${DEB_ARCH}.deb"
 
 ls -l "$DIST"

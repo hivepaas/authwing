@@ -1,6 +1,6 @@
 [package]
-name = "shellwing-i18n"
-description = "shellwing's words in the user's language"
+name = "authwing-i18n"
+description = "authwing's words in the user's language"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

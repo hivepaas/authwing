@@ -1,7 +1,7 @@
 //! Places to sync the vault with over the network, WebDAV and S3-compatible
 //! storage (through OpenDAL) and Git repositories (through the system's
 //! `git`, see [`git`]), beside the folder on disk. Files go under
-//! `shellwing/` in the place given, as the folder backend puts them.
+//! `authwing/` in the place given, as the folder backend puts them.
 //!
 //! The engine reads every record at each sync. Over the network that would
 //! be a request per record every minute, so a remote keeps what it last
@@ -20,8 +20,8 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use authwing_vault::{Backend, Folder};
 use opendal::{ErrorKind, Operator, blocking, layers, services};
-use shellwing_vault::{Backend, Folder};
 
 pub mod git;
 pub use git::{Git, GitRepo, Install, NoGit};
@@ -110,7 +110,7 @@ impl Place {
                 password,
             } => {
                 let (origin, path) = split_url(url)?;
-                let root = format!("{}/shellwing/", path.trim_end_matches('/'));
+                let root = format!("{}/authwing/", path.trim_end_matches('/'));
                 let builder = services::Webdav::default()
                     .endpoint(origin)
                     .root(&root)
@@ -132,8 +132,8 @@ impl Place {
                 secret_key,
             } => {
                 let root = match prefix.trim_matches('/') {
-                    "" => "/shellwing/".to_string(),
-                    p => format!("/{p}/shellwing/"),
+                    "" => "/authwing/".to_string(),
+                    p => format!("/{p}/authwing/"),
                 };
                 let builder = services::S3::default()
                     .endpoint(endpoint.trim_end_matches('/'))
@@ -177,7 +177,7 @@ fn clone_dir(url: &str, branch: &str) -> io::Result<PathBuf> {
         hash = (hash ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3);
     }
     Ok(cache
-        .join("shellwing")
+        .join("authwing")
         .join("git")
         .join(format!("{hash:016x}")))
 }
@@ -228,7 +228,7 @@ pub struct Remote {
 
 /// Writing a file over WebDAV ourselves, to send `If-Match`.
 struct DavPut {
-    /// The address files are under, ending in `/shellwing/`.
+    /// The address files are under, ending in `/authwing/`.
     base: String,
     user: String,
     password: String,
@@ -265,7 +265,7 @@ impl Remote {
         opendal_http_transport_reqwest::install_default();
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(1)
-            .thread_name("shellwing-remote")
+            .thread_name("authwing-remote")
             .enable_all()
             .build()?;
         let op = op
@@ -621,7 +621,7 @@ fn poisoned<T>(_: T) -> io::Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shellwing_vault::{FolderState, MemoryKeys, Vault};
+    use authwing_vault::{FolderState, MemoryKeys, Vault};
 
     /// A remote on OpenDAL's memory service: the same code as WebDAV's and
     /// S3's above the transport, which has no ETags, so nothing is cached.
@@ -642,7 +642,7 @@ mod tests {
     #[test]
     fn two_devices_sync_through_a_remote() {
         let (_rt, remote) = memory();
-        let dir = std::env::temp_dir().join(format!("shellwing-remote-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-remote-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         let a = Vault::open(&dir.join("a.db"), &MemoryKeys::default()).expect("a");
@@ -787,7 +787,7 @@ mod tests {
             password: "pw".into(),
         };
         let (a_side, b_side) = (place.open().expect("a"), place.open().expect("b"));
-        let dir = std::env::temp_dir().join(format!("shellwing-dav-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-dav-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         let a = Vault::open(&dir.join("a.db"), &MemoryKeys::default()).expect("a");
@@ -830,7 +830,7 @@ mod tests {
             password: "pw".into(),
         };
         let (a_side, b_side) = (place.open().expect("a"), place.open().expect("b"));
-        let dir = std::env::temp_dir().join(format!("shellwing-dav-img-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-dav-img-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("dir");
         let a = Vault::open(&dir.join("a.db"), &MemoryKeys::default()).expect("a");
@@ -838,17 +838,17 @@ mod tests {
         let mut image = b"\x89PNG\r\n\x1a\n".to_vec();
         image.extend(std::iter::repeat_n(7u8, 4096));
         let id = a.add_attachment(&image).expect("image");
-        let note = shellwing_vault::Note {
+        let note = authwing_vault::Note {
             id: String::new(),
             title: "Dashboard".into(),
             category: String::new(),
-            format: shellwing_vault::NoteFormat::Markdown,
+            format: authwing_vault::NoteFormat::Markdown,
             hosts: vec![],
             sensitive: false,
             changed: String::new(),
             size: 0,
         };
-        a.save_note(&note, Some(&shellwing_vault::attachment_line(&id)))
+        a.save_note(&note, Some(&authwing_vault::attachment_line(&id)))
             .expect("note");
         let rk = a.start_sync(a_side.as_ref()).expect("start").to_string();
         assert_eq!(a.sync(a_side.as_ref()).expect("sync a").images_pushed, 1);
@@ -869,7 +869,7 @@ mod tests {
     #[test]
     fn s3_syncs_two_devices() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
-        let dir = std::env::temp_dir().join(format!("shellwing-s3-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-s3-{}", std::process::id()));
         let port = s3_server(&rt, &dir);
         let place = |secret: &str| Place::S3 {
             endpoint: format!("http://127.0.0.1:{port}"),
@@ -930,7 +930,7 @@ mod tests {
         let rk = a.start_sync(a_side.as_ref()).expect("start").to_string();
         a.sync(a_side.as_ref()).expect("sync a");
         assert!(
-            dir.join("server/vault/me/shellwing/format.json").exists(),
+            dir.join("server/vault/me/authwing/format.json").exists(),
             "under the prefix"
         );
         b.join(b_side.as_ref(), &rk).expect("join");
@@ -1040,11 +1040,11 @@ mod tests {
 
     /// Saves note `id` (new when empty), "Disk usage", holding `text`: its id.
     pub(crate) fn write_note(v: &Vault, id: &str, text: &str) -> String {
-        let note = shellwing_vault::Note {
+        let note = authwing_vault::Note {
             id: id.into(),
             title: "Disk usage".into(),
             category: String::new(),
-            format: shellwing_vault::NoteFormat::Markdown,
+            format: authwing_vault::NoteFormat::Markdown,
             hosts: vec![],
             sensitive: false,
             changed: String::new(),
@@ -1127,7 +1127,7 @@ mod tests {
     fn webdav_keeps_both_texts_of_a_note_changed_on_two_devices() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let (url, _) = dav_server(&rt);
-        let dir = std::env::temp_dir().join(format!("shellwing-dav-note-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-dav-note-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let place = Place::WebDav {
             url,
@@ -1143,7 +1143,7 @@ mod tests {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let (url, _) = dav_server(&rt);
         let dir =
-            std::env::temp_dir().join(format!("shellwing-dav-note-race-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-dav-note-race-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let place = Place::WebDav {
             url,
@@ -1158,7 +1158,7 @@ mod tests {
     fn webdav_refuses_a_write_over_another_devices() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let (url, _) = dav_server(&rt);
-        let dir = std::env::temp_dir().join(format!("shellwing-dav-race-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-dav-race-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         race(
             &dir,
@@ -1232,7 +1232,7 @@ mod tests {
     #[test]
     fn s3_writes_only_over_what_it_saw() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
-        let dir = std::env::temp_dir().join(format!("shellwing-s3-cas-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-s3-cas-{}", std::process::id()));
         let port = s3_server(&rt, &dir);
         conditional_writes(&Place::S3 {
             endpoint: format!("http://127.0.0.1:{port}"),

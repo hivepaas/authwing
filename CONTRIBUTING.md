@@ -1,4 +1,4 @@
-# Contributing to shellwing
+# Contributing to authwing
 
 Thank you for helping. Issues and pull requests are welcome; for anything large,
 open an issue first so we can agree on the shape before you write it.
@@ -13,7 +13,7 @@ open an issue first so we can agree on the shape before you write it.
 
 ## Licensing your contribution
 
-shellwing is licensed under GPL-3.0-or-later and maintained by HivePaaS, who
+authwing is licensed under GPL-3.0-or-later and maintained by HivePaaS, who
 also ships builds where the GPL cannot be used as is (for example on app
 stores). So that this stays possible, by submitting a contribution you agree
 that:

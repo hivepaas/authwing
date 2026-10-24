@@ -1,5 +1,5 @@
 [package]
-name = "shellwing-vault"
+name = "authwing-vault"
 description = "Encrypted secrets (passwords, key passphrases) unlocked through the OS keychain"
 version.workspace = true
 edition.workspace = true

@@ -45,11 +45,11 @@ pub use sync::{Backend, Folder, FolderState, SyncReport, transact};
 const KEY_LEN: usize = 32;
 const SPACE: &str = "personal";
 const KEY_VERSION: i64 = 1;
-/// The design keeps only "host" or "other" in the clear: hosts are counted for
-/// plans, everything else (secrets, groups) looks alike.
+/// The design keeps only "code" or "other" in the clear: codes are counted
+/// for plans, everything else (groups, settings) looks alike.
 pub(crate) fn clear_kind(record_type: &str) -> &'static str {
-    if record_type == "host" {
-        "host"
+    if record_type == "code" {
+        "code"
     } else {
         "other"
     }
@@ -79,7 +79,7 @@ pub enum Error {
     #[error("sync folder: {0}")]
     Sync(String),
     /// Sealed by a newer version with an algorithm this one does not know.
-    #[error("a vault record uses an unknown cipher ({0}); update shellwing")]
+    #[error("a vault record uses an unknown cipher ({0}); update authwing")]
     UnknownCipher(u8),
     #[error("a vault record is malformed: {0}")]
     Format(#[from] serde_json::Error),
@@ -260,14 +260,14 @@ pub const MIN_PASSPHRASE: usize = 10;
 pub fn passphrase_strength(passphrase: &str) -> u8 {
     zxcvbn::zxcvbn(passphrase, &[]).score() as u8
 }
-const PASSPHRASE_AAD: &[u8] = b"shellwing account key wrapped by a passphrase v1";
-const RECOVERY_WRAP_AAD: &[u8] = b"shellwing account key wrapped by the recovery key v1";
-const PRESENCE_AAD: &[u8] = b"shellwing account key wrapped by the user's presence v1";
+const PASSPHRASE_AAD: &[u8] = b"authwing account key wrapped by a passphrase v1";
+const RECOVERY_WRAP_AAD: &[u8] = b"authwing account key wrapped by the recovery key v1";
+const PRESENCE_AAD: &[u8] = b"authwing account key wrapped by the user's presence v1";
 /// What the system shows when it asks.
-const PRESENCE_REASON: &str = "open shellwing's vault";
+const PRESENCE_REASON: &str = "open authwing's vault";
 
 fn device_secret_aad(name: &str) -> Vec<u8> {
-    format!("shellwing device secret v1 {name}").into_bytes()
+    format!("authwing device secret v1 {name}").into_bytes()
 }
 
 /// How a passphrase becomes a key: Argon2id, about half a second and 64 MiB,
@@ -488,8 +488,9 @@ fn random<const N: usize>() -> Result<[u8; N]> {
     Ok(b)
 }
 
-/// A ULID-like id: time first, so ids sort by creation.
-fn new_id() -> Result<String> {
+/// A new record's id: ULID-like, time first, so ids sort by creation; hex,
+/// as synced files' names must start with.
+pub fn new_id() -> Result<String> {
     let r: [u8; 10] = random()?;
     let hex: String = r.iter().map(|b| format!("{b:02x}")).collect();
     Ok(format!("{:012x}{hex}", now_ms()))
@@ -535,7 +536,7 @@ fn record_aad(id: &str, kind: &str) -> Vec<u8> {
     format!("{id}\0{kind}\0{SPACE}\0{KEY_VERSION}").into_bytes()
 }
 
-const SPACE_AAD: &[u8] = b"shellwing space key: personal v1";
+const SPACE_AAD: &[u8] = b"authwing space key: personal v1";
 
 pub struct Vault {
     db: Mutex<Connection>,
@@ -556,11 +557,11 @@ pub(crate) struct RawRow {
     pub data: Vec<u8>,
     pub hlc: String,
     pub deleted: bool,
-    /// "host" or "other", part of the additional data.
+    /// "code" or "other", part of the additional data.
     pub kind: String,
 }
 
-const RECOVERY_KEY_AAD: &[u8] = b"shellwing recovery key wrapped by the account key v1";
+const RECOVERY_KEY_AAD: &[u8] = b"authwing recovery key wrapped by the account key v1";
 
 impl Vault {
     /// Opens (or creates) `vault.db` at `path`, unlocking it with the account key
@@ -1656,8 +1657,8 @@ impl Vault {
             .collect())
     }
 
-    /// Records of one type (`"host"`, `"group"`) as plain values, without
-    /// stamps: what a file like hosts.toml holds.
+    /// Records of one type (`"code"`, `"group"`) as plain values, without
+    /// stamps.
     pub fn entries(&self, record_type: &str) -> Result<Vec<(String, BTreeMap<String, String>)>> {
         Ok(self
             .records()?
@@ -1759,7 +1760,7 @@ mod tests {
 
     fn temp(name: &str) -> std::path::PathBuf {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-{}-{name}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-vault-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         dir.join("vault.db")
     }
@@ -2026,26 +2027,30 @@ mod tests {
                 .map(|(k, f)| (k.clone(), f.t.clone()))
                 .collect()
         };
-        let host = vals(&[("name", "web"), ("address", "10.0.0.5"), ("port", "22")]);
-        assert!(v.update("h1", "host", "web", &host).expect("create"));
+        let code = vals(&[
+            ("issuer", "GitHub"),
+            ("account", "me@example.com"),
+            ("digits", "6"),
+        ]);
+        assert!(v.update("c1", "code", "GitHub", &code).expect("create"));
         let first = stamps(&v);
         assert!(
-            !v.update("h1", "host", "web", &host).expect("same"),
+            !v.update("c1", "code", "GitHub", &code).expect("same"),
             "nothing changed"
         );
-        let edited = vals(&[("name", "web"), ("address", "10.0.0.6")]);
-        assert!(v.update("h1", "host", "web", &edited).expect("edit"));
+        let edited = vals(&[("issuer", "GitHub"), ("account", "me@work.example")]);
+        assert!(v.update("c1", "code", "GitHub", &edited).expect("edit"));
         let second = stamps(&v);
         assert_eq!(
-            first["name"], second["name"],
+            first["issuer"], second["issuer"],
             "untouched field keeps its stamp"
         );
-        assert_ne!(first["address"], second["address"]);
+        assert_ne!(first["account"], second["account"]);
         assert_ne!(
-            first["port"], second["port"],
+            first["digits"], second["digits"],
             "a removed field is stamped empty"
         );
-        assert_eq!(v.entries("host").expect("entries")[0].1, edited);
+        assert_eq!(v.entries("code").expect("entries")[0].1, edited);
         assert!(v.entries("group").expect("entries").is_empty());
     }
 
@@ -2085,7 +2090,7 @@ mod tests {
 
     #[test]
     fn without_a_keychain_a_passphrase_keeps_the_key() {
-        let dir = std::env::temp_dir().join(format!("shellwing-vault-pass-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-pass-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let path = dir.join("vault.db");
         assert_eq!(locked(Vault::open(&path, &NoKeychain)), Lock::New);
@@ -2161,7 +2166,7 @@ mod tests {
 
     #[test]
     fn a_keychain_that_lost_the_key_leaves_the_recovery_key() {
-        let dir = std::env::temp_dir().join(format!("shellwing-vault-lost-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-lost-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let path = dir.join("vault.db");
         let keys = MemoryKeys::default();
@@ -2187,8 +2192,7 @@ mod tests {
 
     #[test]
     fn leaving_the_keychain_asks_for_the_passphrase_at_the_next_start() {
-        let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-leave-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-leave-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let path = dir.join("vault.db");
         let keys = MemoryKeys::default();
@@ -2214,7 +2218,7 @@ mod tests {
     #[test]
     fn a_device_secret_is_kept_sealed_and_can_be_forgotten() {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-device-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-vault-device-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let path = dir.join("vault.db");
         let keys = MemoryKeys::default();
@@ -2247,7 +2251,7 @@ mod tests {
     #[test]
     fn the_users_presence_opens_the_vault_beside_its_passphrase() {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-presence-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-vault-presence-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let path = dir.join("vault.db");
         let keys = MemoryKeys::default();
@@ -2300,7 +2304,7 @@ mod tests {
     #[test]
     fn snippets_and_environments_stay_within_limits() {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-limits-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-vault-limits-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let v = Vault::open(&dir.join("vault.db"), &MemoryKeys::default()).expect("open");
         let s = Snippet {
@@ -2350,8 +2354,7 @@ mod tests {
 
     #[test]
     fn config_files_keep_their_bytes_and_stay_within_a_megabyte() {
-        let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-files-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-files-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let v = Vault::open(&dir.join("vault.db"), &MemoryKeys::default()).expect("open");
         let mut f = ConfigFile {
@@ -2405,8 +2408,7 @@ mod tests {
 
     #[test]
     fn notes_keep_their_parts_apart() {
-        let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-notes-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-notes-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let v = Vault::open(&dir.join("vault.db"), &MemoryKeys::default()).expect("open");
         let mut n = Note {
@@ -2459,7 +2461,7 @@ mod tests {
     #[test]
     fn an_open_vault_confirms_its_passphrase_only() {
         let dir =
-            std::env::temp_dir().join(format!("shellwing-vault-confirm-{}", std::process::id()));
+            std::env::temp_dir().join(format!("authwing-vault-confirm-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let v = Vault::open(&dir.join("vault.db"), &MemoryKeys::default()).expect("open");
         assert!(matches!(
@@ -2479,7 +2481,7 @@ mod tests {
 
     #[test]
     fn environments_keep_values_apart_from_their_names() {
-        let dir = std::env::temp_dir().join(format!("shellwing-vault-env-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("authwing-vault-env-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let v = Vault::open(&dir.join("vault.db"), &MemoryKeys::default()).expect("open");
         let id = v

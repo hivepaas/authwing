@@ -1,0 +1,46 @@
+[package]
+name = "authwing-context"
+description = "Where the user is (app, window, web page) and which codes belong there"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Page addresses read as browsers read them: WHATWG URLs, hosts through IDNA (UTS 46).
+url = "2.5"
+idna = "1"
+# The Public Suffix List, compiled in. Its publisher releases a new version
+# when the list changes: `cargo update -p psl` takes it in.
+psl = "2"
+# UTS 39 skeletons, for hosts made of characters that look like others.
+unicode-security = "0.1"
+# Edit distance, for hosts a letter or two off.
+strsim = "0.11"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "libc", "NSWorkspace", "NSRunningApplication"] }
+objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFBase", "CFString", "CFDictionary", "CFNumber"] }
+objc2-application-services = { version = "0.3", default-features = false, features = ["std", "libc", "HIServices", "AXUIElement", "AXError"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# X11 in pure Rust: no libxcb to link.
+x11rb = "0.13"
+
+# `deny`, not the workspace's `forbid`: the window's title on macOS and the
+# foreground window on Windows are reachable only through unsafe calls,
+# allowed function by function in window/macos.rs and window/win32.rs.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "warn"
+dbg_macro = "deny"

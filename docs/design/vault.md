@@ -4,11 +4,11 @@
 
 | Type | Contents | Syncs |
 | --- | --- | --- |
-| `password` | A host's login password | Yes |
-| `ssh_key` | A private key imported or generated in the app (OpenSSH format), its public key and comment | Yes |
-| `key_passphrase` | Passphrase for a key outside the vault (such as `~/.ssh/id_ed25519`). Matched by the key's fingerprint, since paths differ per device. | Yes |
-| `totp` | One-time-code secret, to fill keyboard-interactive prompts | Yes, off by default. Keeping it next to the password weakens two-factor login, so the user turns it on. |
-| `certificate` | Short-lived SSH certificate from the organization's CA ([teams.md](teams.md)) | No, it is requested again |
+| `code` | A two-factor code: its service and account, its secret, how codes are made from it (`totp`, `hotp`, `steam`; algorithm, digits, period or counter), its group and the sites it belongs to (`crates/totp/src/fields.rs`, `crates/app/src/codes.rs`) | Yes |
+| `settings` | The settings of config.toml that are not the device's own, one record | Yes, with `[sync] settings` |
+
+shellwing's types (`password`, `ssh_key`, `key_passphrase`, `note`, …) are
+still understood by the vault crate; authwing writes none of them.
 
 Not in the vault: credentials for the sync backends and the portal refresh
 token. The vault cannot be fetched without them, so they live in the OS keychain
@@ -23,13 +23,13 @@ OS keychain, per device ───────────┘                   �
                                                        ├─ wraps ─▶ user key pair (X25519 + Ed25519)
                                                        └─ wraps ─▶ Personal space key
 Collection key ◀── wrapped for each member's X25519 public key
-Space or collection key ── encrypts ──▶ each record (host, password, ssh_key, snippet…)
+Space or collection key ── encrypts ──▶ each record (code, group, settings…)
 ```
 
 **Why a space key sits between the AK and the records:**
 
 - Data keys can be rotated without touching the AK.
-- Personal is a collection with one member. Moving a host into a team is
+- Personal is a collection with one member. Moving a code into a team is
   re-encrypting one record under another key.
 
 **Unlocking on a device you already use.**
@@ -108,7 +108,7 @@ The same envelope is used on disk and on every backend:
 
 ```
 id     01JAQ9…                  clear
-kind   host | other             clear; the cloud only needs to count hosts
+kind   code | other             clear; the cloud only needs to count codes
 space  personal | col_01J…      clear
 key    3                        version of the space key used
 data   cipher id ‖ nonce ‖ AEAD(space key, nonce, payload,
@@ -133,10 +133,9 @@ byte (`nonce ‖ ciphertext`, XChaCha20-Poly1305) and are rewritten on open.
 crafted ciphertext could decrypt under two keys. Shared collections should add
 a key commitment (a hash of the key) to the envelope.
 
-- **The AAD binds the ciphertext to its record.** A server cannot swap host A's
-  data into host B.
-- **`kind` is only host or other.** The server cannot tell passwords from keys
-  from snippets.
+- **The AAD binds the ciphertext to its record.** A server cannot swap code A's
+  data into code B.
+- **`kind` is only code or other.** The server cannot tell groups from settings.
 - **Signatures matter only in collections.** There, every member holds the key
   and could otherwise write as someone else.
 
@@ -148,7 +147,6 @@ The payload is JSON. Each field carries its HLC for merging ([sync.md](sync.md))
        "comment":     {"val": "deploy@ci", "t": "1792312831000-0003-dev7"}}}
 ```
 
-Hosts from `hosts.toml` are turned into the same records when they sync.
 
 ## vault.db
 
@@ -157,7 +155,7 @@ SQLite, so a sync is one transaction and a crash mid-write loses nothing.
 ```sql
 CREATE TABLE records (
   id       TEXT PRIMARY KEY,   -- ULID
-  kind     TEXT NOT NULL,      -- 'host' | 'other'
+  kind     TEXT NOT NULL,      -- 'code' | 'other'
   space    TEXT NOT NULL,
   key_ver  INTEGER NOT NULL,
   data     BLOB NOT NULL,      -- cipher id, nonce, ciphertext and tag
@@ -181,8 +179,7 @@ CREATE TABLE sync (            -- not yet: comes with sync
 );
 ```
 
-`hosts.toml` stays plain text on disk, as `~/.ssh/config` is. Synced copies of
-hosts are always encrypted.
+Codes are never on disk unencrypted: config.toml holds settings only.
 
 ## Implementation
 
@@ -191,12 +188,8 @@ hosts are always encrypted.
   - Key pairs: `x25519-dalek`, `ed25519-dalek`.
   - Secrets in memory: `zeroize`, `secrecy`, so secrets leave RAM after use.
   - Storage: `keyring` for the OS keychain, `rusqlite` with the bundled SQLite.
-- **`$SHELLWING_PASSWORD`.** For development only: debug builds read it, release
-  builds do not.
 - **Export.** Encrypted by default. Plain-text export needs confirmation and
   shows a warning.
-- **Later (Pro).** shellwing as an SSH agent, so `git`, `ssh` and other tools use
-  vault keys, as 1Password and Bitwarden do.
 
 ## Threats
 
@@ -204,6 +197,6 @@ hosts are always encrypted.
 | --- | --- |
 | Portal or sync server is breached | Only ciphertext and counts are exposed. |
 | A backend is leaked (Git repo made public, S3 bucket opened) | Ciphertext is exposed. With a passphrase enabled, offline guessing is possible, which is why Argon2id and the strength check matter. |
-| A locked laptop is stolen | The vault stays shut. `hosts.toml` (names and addresses) is readable, as `~/.ssh/config` would be. |
+| A locked laptop is stolen | The vault stays shut. config.toml (settings, where it syncs) is readable. |
 | An unlocked laptop is stolen | Everything that user can open is exposed. Mitigations are the idle lock and revoking the device from another one. |
-| A removed team member | Keeps what they already copied. The answer is the removal checklist, and SSH certificates in Business. |
+| A removed team member | Keeps what they already copied. The answer is the removal checklist, and turning two-factor off and on again for shared codes. |

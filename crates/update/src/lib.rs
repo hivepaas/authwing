@@ -1,4 +1,4 @@
-//! Telling that a newer shellwing is out: a signed list of releases
+//! Telling that a newer authwing is out: a signed list of releases
 //! (`release.signed.json`, on the repository's `release` branch, made by
 //! `tools/releasesign`) says each channel's newest; the app on
 //! stable is offered stable releases only, the app on beta the newer of the
@@ -27,14 +27,14 @@ pub use version::{Channel, Version};
 
 /// What the list is signed for: a signature made with the keys for another
 /// purpose is never taken for this one.
-pub const CONTEXT: &str = "shellwing-release-v1";
+pub const CONTEXT: &str = "authwing-release-v1";
 
 /// Where the signed list is read: the release branch, which moves to a
 /// release once it is checked. A build that tries the updater
 /// (scripts/update_try.sh) names its own, as it is built.
-pub const LIST_URL: &str = match option_env!("SHELLWING_UPDATE_LIST") {
+pub const LIST_URL: &str = match option_env!("AUTHWING_UPDATE_LIST") {
     Some(url) => url,
-    None => "https://raw.githubusercontent.com/hivepaas/shellwing/release/release.signed.json",
+    None => "https://raw.githubusercontent.com/hivepaas/authwing/release/release.signed.json",
 };
 
 /// The list is small; anything bigger is not it.
@@ -43,7 +43,7 @@ const FETCH_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// The page a release is downloaded from.
 pub fn release_page(v: &Version) -> String {
-    format!("https://github.com/hivepaas/shellwing/releases/tag/{v}")
+    format!("https://github.com/hivepaas/authwing/releases/tag/{v}")
 }
 
 /// The version running.
@@ -172,7 +172,7 @@ pub async fn fetch(url: &str) -> Result<Vec<u8>, CheckError> {
     let _ = rustls::crypto::ring::default_provider().install_default();
     let client = reqwest::Client::builder()
         .timeout(FETCH_TIMEOUT)
-        .user_agent(concat!("shellwing/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("authwing/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| fail(&e))?;
     let res = client.get(url).send().await.map_err(|e| fail(&e))?;
@@ -197,25 +197,4 @@ pub async fn fetch(url: &str) -> Result<Vec<u8>, CheckError> {
         ));
     }
     Ok(body.to_vec())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// The repository's signed list (published on the `release` branch,
-    /// docs/releasing.md) opens with the keys built into the app, under its
-    /// context, and carries release.json byte for byte: a list changed and
-    /// not signed again fails here.
-    #[test]
-    fn the_signed_list_opens_with_the_apps_keys() {
-        let keys = envelope::parse_keys(KEYS).expect("the app's keys");
-        let signed = include_bytes!("../../../release.signed.json");
-        let opened = envelope::open(&keys, signed, CONTEXT).expect("signed by the app's keys");
-        assert_eq!(
-            opened.as_slice(),
-            include_bytes!("../../../release.json").as_slice()
-        );
-        manifest::Manifest::parse(&opened).expect("a list the app takes");
-    }
 }

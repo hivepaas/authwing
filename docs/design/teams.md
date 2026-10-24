@@ -61,7 +61,7 @@ Client side, russh 0.64 supports certificate login: `authenticate_openssh_cert`,
 and `authenticate_certificate_with` for agent-held keys.
 
 The trade-off is that the CA key lives on the server. That is acceptable when
-self-hosted; in shellwing cloud it belongs in a KMS or HSM.
+self-hosted; in authwing cloud it belongs in a KMS or HSM.
 
 ## Audit log
 
@@ -90,12 +90,12 @@ verified, except through certificates.
 | Policies (no export, vault lock required…) | | | Yes |
 | SSH CA, short-lived certificates | | | Yes |
 
-Team and Business are sold both in shellwing cloud and as self-hosted licenses.
+Team and Business are sold both in authwing cloud and as self-hosted licenses.
 **Open:** prices.
 
-## shellwing-server
+## authwing-server
 
-**One codebase.** shellwing cloud runs the same server, with billing turned on.
+**One codebase.** authwing cloud runs the same server, with billing turned on.
 
 **Licensing.** This is open core in one repository:
 

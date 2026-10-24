@@ -1,0 +1,32 @@
+// Chrome, Edge, Brave, Vivaldi, Arc. build.mjs takes out these comments,
+// sets the version from package.json, and leaves out "key" with --store.
+{
+  "manifest_version": 3,
+  "name": "authwing",
+  "version": "0.0.0",
+  "description": "Two-factor codes from the authwing app, for the exact site in front.",
+  "minimum_chrome_version": "120",
+  // nativeMessaging: to talk to the authwing app (through "authwing --native-host").
+  // tabs: Chrome warns "Read your browsing history" for it. It is how the
+  // extension knows the address of the tab in front without a click, and
+  // still knows it on sites where the user has withheld site access: the
+  // address is what the app checks a code's account against, to refuse a
+  // look-alike site.
+  "permissions": ["nativeMessaging", "tabs"],
+  // To look for a code field, and fill it, on whatever site asks for a code.
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_popup": "popup.html", "default_title": "authwing" },
+  // Fixes the id of the unpacked build (jabndagnjdpnmkblgpdjonlpjllpocbl), which
+  // debug builds of authwing allow. Only the public key: the private one was
+  // not kept. The stores give ids of their own and take no "key".
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyHhoIU4e5DtXy0NHLg88lGmaT7mJ0jqxinEziA4/0sQxEiBeUmt1cWWyrdqi8LtxvQN/ZIqo5PAb3a0FUTcbCvu7JukvPBAbftR8vzdK+6pFH/LA8aa0yvo2HS0+7T+nujdxOe9vtAJiLFvP4cnnggb8u5DBOobcADSybtALC1Ztl5ykpGwwKCtHZIq1C23SzEGW0IcGJ3/TL6zrp3q2zeX01C+Ld8Dd9u0Qv4e+D76aNrvDQBF/ocDL2lcVmZ4BScAAlck6UoJxPbECkCn2AW5oHF/OBxDEfTyQW040JsTxkLnC4TvL7t5YlqyvdjDrzTEonJ4pjFsVuSCEuitdFwIDAQAB"
+}

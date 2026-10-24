@@ -267,7 +267,7 @@ mod tests {
 
     fn temp(name: &str) -> std::path::PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "shellwing-attachments-{}-{name}",
+            "authwing-attachments-{}-{name}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&dir);

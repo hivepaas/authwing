@@ -1,8 +1,8 @@
 //! The system's own way to know the user is there, holding a secret for
-//! shellwing's vault that it gives only then:
+//! authwing's vault that it gives only then:
 //!
 //! - **Windows Hello** (a fingerprint, the face, or the device's PIN): a key
-//!   in the TPM, made for shellwing, that signs only after Hello. It signs
+//!   in the TPM, made for authwing, that signs only after Hello. It signs
 //!   one challenge, always the same; the secret is the signature's SHA-256
 //!   (RSA PKCS#1 v1.5 signatures do not change). KeePass's Windows Hello
 //!   plugins do the same.
@@ -102,7 +102,7 @@ impl System {
 /// The name the system keeps it under, per vault.
 #[cfg_attr(not(any(windows, target_os = "macos")), allow(dead_code))]
 fn name_for(id: &str) -> String {
-    format!("shellwing vault {id}")
+    format!("authwing vault {id}")
 }
 
 #[cfg(windows)]
@@ -116,7 +116,7 @@ mod hello {
     use super::{Secret, name_for};
 
     /// What the key signs: always the same, so the secret is too.
-    const CHALLENGE: &[u8] = b"shellwing: the secret that opens the vault, signed by Windows Hello";
+    const CHALLENGE: &[u8] = b"authwing: the secret that opens the vault, signed by Windows Hello";
 
     pub fn supported() -> bool {
         KeyCredentialManager::IsSupportedAsync()
@@ -131,7 +131,7 @@ mod hello {
     fn status(s: KeyCredentialStatus) -> String {
         match s {
             KeyCredentialStatus::UserCanceled => "cancelled".into(),
-            KeyCredentialStatus::NotFound => "Windows Hello has no key for shellwing".into(),
+            KeyCredentialStatus::NotFound => "Windows Hello has no key for authwing".into(),
             KeyCredentialStatus::SecurityDeviceLocked => {
                 "the security device is locked: too many tries".into()
             }
@@ -210,7 +210,7 @@ mod touch_id {
 
     use super::{Secret, name_for};
 
-    const SERVICE: &str = "shellwing vault presence";
+    const SERVICE: &str = "authwing vault presence";
     const USER_CANCELED: i32 = -128;
     const AUTH_FAILED: i32 = -25293;
     const NOT_FOUND: i32 = -25300;
@@ -225,7 +225,7 @@ mod touch_id {
     fn err(e: security_framework::base::Error) -> String {
         match e.code() {
             MISSING_ENTITLEMENT => {
-                "Touch ID needs a signed build of shellwing (this one is not)".into()
+                "Touch ID needs a signed build of authwing (this one is not)".into()
             }
             _ => e
                 .message()
@@ -245,7 +245,7 @@ mod touch_id {
         .map_err(err)?;
         let mut o = options(id);
         o.set_access_control(access);
-        o.set_label("shellwing: opens the vault with Touch ID");
+        o.set_label("authwing: opens the vault with Touch ID");
         set_generic_password_options(&secret, o).map_err(err)?;
         // Read back at once: the user confirms with Touch ID now, and a
         // Mac without it says so here, not at the next lock.
@@ -266,7 +266,7 @@ mod touch_id {
                 s.copy_from_slice(&bytes);
                 Ok(Secret::Given(s))
             }
-            Ok(_) => Err("the Keychain item is not shellwing's".into()),
+            Ok(_) => Err("the Keychain item is not authwing's".into()),
             Err(e) if matches!(e.code(), USER_CANCELED | AUTH_FAILED | NOT_FOUND) => {
                 Ok(Secret::Refused)
             }

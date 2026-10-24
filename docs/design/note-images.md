@@ -75,7 +75,7 @@ Attachments sit in their own folder on the backend, apart from the records the
 engine merges:
 
 ```
-shellwing/
+authwing/
   records/<id>.sw         merged every round
   attachments/<id>.sw     listed every round, never merged or read twice
 ```
@@ -108,7 +108,7 @@ the repository only grows. Settings › Sync says so under Git, before it is
 chosen; images are not left out of Git sync, since a note would then show
 them on one device only.
 
-**shellwing cloud.** Attachments count toward the account's storage cap
+**authwing cloud.** Attachments count toward the account's storage cap
 ([sync.md](sync.md)), never toward hosts. **Open:** the cap.
 
 ## Removal
@@ -147,7 +147,7 @@ line break is added before or after where text would share it).
 Images go into Markdown notes only, while they are edited (not in Preview);
 otherwise the window says why.
 
-**Preparing an image** (`shellwing_core::images::prepare`, off the UI thread):
+**Preparing an image** (`authwing_core::images::prepare`, off the UI thread):
 
 - Formats read: PNG, JPEG, GIF (its first frame), WebP, BMP, TIFF (macOS puts
   screenshots on the clipboard as TIFF).

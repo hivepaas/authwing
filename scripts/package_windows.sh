@@ -1,20 +1,20 @@
 #!/bin/bash
 #
-# Packages a release build of shellwing for Windows into dist/: the installer
+# Packages a release build of authwing for Windows into dist/: the installer
 # the updater runs quietly over the installed app, and a zip of the program to
 # run from a folder (see docs/releasing.md). Run from Git Bash or MSYS2, with
 # NSIS 3 installed (or makensis on PATH; on Linux the nsis package's works too).
 #
-#   cargo build --release -p shellwing
+#   cargo build --release -p authwing
 #   scripts/package_windows.sh
 #
-#   dist/shellwing_0.1.0_windows_x86_64-setup.exe
-#   dist/shellwing_0.1.0_windows_x86_64.zip
+#   dist/authwing_0.1.0_windows_x86_64-setup.exe
+#   dist/authwing_0.1.0_windows_x86_64.zip
 #
 # Neither is signed (no Authenticode certificate yet): SmartScreen asks the
 # first time the installer runs (More info > Run anyway).
 #
-# Environment: EXE (default target/release/shellwing.exe), ARCH (default
+# Environment: EXE (default target/release/authwing.exe), ARCH (default
 # x86_64), DIST (default dist), MAKENSIS (default: on PATH, else where NSIS
 # installs itself).
 
@@ -25,7 +25,7 @@ cd "$ROOT"
 
 VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
 ARCH="${ARCH:-x86_64}"
-EXE="$(realpath "${EXE:-target/release/shellwing.exe}")"
+EXE="$(realpath "${EXE:-target/release/authwing.exe}")"
 DIST="${DIST:-dist}"
 WORK="target/package-windows"
 
@@ -36,7 +36,7 @@ if [ -z "${MAKENSIS:-}" ]; then
 	done
 fi
 [ -n "$MAKENSIS" ] || { echo "no makensis: install NSIS 3 (choco install nsis)" >&2; exit 1; }
-[ -f "$EXE" ] || { echo "no build at $EXE: cargo build --release -p shellwing" >&2; exit 1; }
+[ -f "$EXE" ] || { echo "no build at $EXE: cargo build --release -p authwing" >&2; exit 1; }
 rm -rf "$WORK"
 mkdir -p "$WORK" "$DIST"
 
@@ -44,7 +44,7 @@ mkdir -p "$WORK" "$DIST"
 native() { if command -v cygpath >/dev/null; then cygpath -w "$1"; else echo "$1"; fi; }
 
 ## The installer
-SETUP="$DIST/shellwing_${VERSION}_windows_${ARCH}-setup.exe"
+SETUP="$DIST/authwing_${VERSION}_windows_${ARCH}-setup.exe"
 FILEVERSION="${VERSION%%-*}.0"
 # The paths are Windows' already: MSYS is not to rewrite them.
 MSYS2_ARG_CONV_EXCL='*' "$MAKENSIS" -V3 \
@@ -53,11 +53,11 @@ MSYS2_ARG_CONV_EXCL='*' "$MAKENSIS" -V3 \
 	"$(native "$ROOT/packaging/windows/installer.nsi")"
 
 ## The zip: the program and its license, in a folder of their own
-NAME="shellwing-${VERSION}-windows-${ARCH}"
+NAME="authwing-${VERSION}-windows-${ARCH}"
 mkdir -p "$WORK/$NAME"
-cp "$EXE" "$WORK/$NAME/shellwing.exe"
+cp "$EXE" "$WORK/$NAME/authwing.exe"
 cp LICENSE "$WORK/$NAME/LICENSE.txt"
-ZIP="$ROOT/$DIST/shellwing_${VERSION}_windows_${ARCH}.zip"
+ZIP="$ROOT/$DIST/authwing_${VERSION}_windows_${ARCH}.zip"
 rm -f "$ZIP"
 if command -v 7z >/dev/null; then
 	(cd "$WORK" && 7z a -tzip -bso0 "$(native "$ZIP")" "$NAME")

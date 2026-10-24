@@ -1,7 +1,6 @@
-//! Questions that need an answer before going on (quitting, closing a pane
-//! that is connected), drawn in the app's look on every system, so they read
-//! the same on macOS, Windows and Linux (which has no dialog of its own for
-//! GPUI to use).
+//! Questions that need an answer before going on (deleting a code), drawn
+//! in the app's look on every system, so they read the same on macOS,
+//! Windows and Linux (which has no dialog of its own for GPUI to use).
 
 use gpui::{
     App, Context, EventEmitter, FocusHandle, Focusable, FontWeight, KeyDownEvent, MouseButton,
@@ -10,8 +9,8 @@ use gpui::{
 };
 
 use crate::colors::colors;
-use crate::host_editor::{outline_button, primary_button};
 use crate::look::ui;
+use crate::widgets::{outline_button, primary_button};
 
 /// The UI font, set by the workspace: a prompt is drawn outside its tree.
 #[derive(Default)]
@@ -200,18 +199,4 @@ pub fn render(
     open.retain(|p| p.upgrade().is_some());
     open.push(view.downgrade());
     handle.with_view(view, window, cx)
-}
-
-/// Answers every question open as Escape does: shellwing locking, nobody
-/// may answer one drawn over the lock (letting a device into the vault,
-/// deleting a note).
-pub fn dismiss_all(cx: &mut App) {
-    let open = std::mem::take(&mut cx.default_global::<Open>().0);
-    for p in open.into_iter().filter_map(|p| p.upgrade()) {
-        p.update(cx, |p, cx| {
-            if let Some(ix) = p.cancel() {
-                cx.emit(PromptResponse(ix));
-            }
-        });
-    }
 }

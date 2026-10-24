@@ -1,4 +1,4 @@
-//! shellwing's words in the user's language.
+//! authwing's words in the user's language.
 //!
 //! The English is in the code, where it is said: `tr!("Sync now")`,
 //! `tr!("Cannot sync: {why}", why = e)`, `tr_n!(n, "{n} host", "{n} hosts")`.
@@ -319,26 +319,29 @@ mod tests {
         let _turn = ONE_AT_A_TIME.lock();
         // Russian's three forms that show, by the count.
         set_language(Some("ru"));
-        let hosts = |n: i64| tr_n!(n, "{n} host", "{n} hosts");
-        assert_ne!(hosts(1), hosts(3));
-        assert_ne!(hosts(3), hosts(5));
-        assert_eq!(hosts(21), hosts(1).replace('1', "21"));
+        let added = |n: i64| tr_n!(n, "{n} code added.", "{n} codes added.");
+        assert_ne!(added(1), added(3));
+        assert_ne!(added(3), added(5));
+        assert_eq!(added(21), added(1).replace('1', "21"));
         // Every language says every message whole: no `{` left of Fluent's.
         for (tag, _) in CATALOGS {
             set_language(Some(tag));
             for n in [1, 2, 5] {
-                let said = tr_n!(n, "{n} host", "{n} hosts");
+                let said = tr_n!(n, "{n} code added.", "{n} codes added.");
                 assert!(said.contains(&n.to_string()), "{tag}: {said}");
             }
-            let said = tr!("Sync: {e}", e = "x");
+            let said = tr!("Sync failed: {e}", e = "x");
             assert!(said.contains('x') && !said.contains('$'), "{tag}: {said}");
         }
         set_language(Some("vi"));
         assert_eq!(tr!("Sync now"), "Đồng bộ ngay");
-        assert_eq!(tr_n!(3, "{n} host", "{n} hosts"), "3 máy chủ");
         assert_eq!(
-            tr!("Sync: {e}", e = "offline"),
-            "Đồng bộ: offline",
+            tr_n!(3, "{n} code added.", "{n} codes added."),
+            "Đã thêm 3 mã."
+        );
+        assert_eq!(
+            tr!("Sync failed: {e}", e = "offline"),
+            "Đồng bộ thất bại: offline",
             "a value is said in place"
         );
         set_language(Some("en"));

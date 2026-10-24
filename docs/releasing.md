@@ -8,24 +8,24 @@ app is told of it.
 
 | Platform | Files | Made by |
 | --- | --- | --- |
-| Linux x86_64, aarch64 | `shellwing_<v>_linux_<arch>.AppImage`, `.tar.gz`, `shellwing_<v>_<amd64\|arm64>.deb` | `scripts/package_linux.sh` |
-| macOS aarch64, x86_64 | `shellwing_<v>_macos_<arch>.dmg`, `.app.tar.gz` | `scripts/package_macos.sh` |
-| Windows x86_64 | `shellwing_<v>_windows_x86_64-setup.exe`, `.zip` | `scripts/package_windows.sh` |
+| Linux x86_64, aarch64 | `authwing_<v>_linux_<arch>.AppImage`, `.tar.gz`, `authwing_<v>_<amd64\|arm64>.deb` | `scripts/package_linux.sh` |
+| macOS aarch64, x86_64 | `authwing_<v>_macos_<arch>.dmg`, `.app.tar.gz` | `scripts/package_macos.sh` |
+| Windows x86_64 | `authwing_<v>_windows_x86_64-setup.exe`, `.zip` | `scripts/package_windows.sh` |
 
 and `SHA256SUMS`. The updater installs the AppImage, the `.app.tar.gz` and the
 installer; the others are for people.
 
 - **Linux** builds on Ubuntu 22.04, so the packages run on glibc 2.35 and newer.
   The binary links only libc and xkbcommon; Wayland, X11 and Vulkan are loaded
-  when it starts. The `.deb` puts it in `/opt/shellwing` (linked from
+  when it starts. The `.deb` puts it in `/opt/authwing` (linked from
   `/usr/bin`): under `/usr` the updater would take it for a distribution's own
   package and leave it to apt.
-- **macOS**: `shellwing.app`, signed ad hoc. With no Developer ID, Gatekeeper
+- **macOS**: `authwing.app`, signed ad hoc. With no Developer ID, Gatekeeper
   asks the first time it opens (*Open Anyway* in *System Settings › Privacy &
   Security*; Control-click › Open on macOS 14 and older). The updater accepts a new `.app`
   whose signature verifies, as it does while the app is signed by no team.
 - **Windows**: an NSIS installer, for the user, into
-  `%LOCALAPPDATA%\Programs\shellwing` (where the updater looks for it), with a
+  `%LOCALAPPDATA%\Programs\authwing` (where the updater looks for it), with a
   Start menu entry and an uninstaller. It is not signed: SmartScreen asks the
   first time (More info › Run anyway).
 

@@ -1,136 +1,74 @@
-//! shellwing: a native SSH client.
+//! authwing: two-factor codes that know the window you are in.
 //!
-//! Usage: `shellwing [-L|-R|-D spec]... [[user@]host[:port]]`. Without a host the
-//! window opens with the host list. `-L`, `-R` and `-D` forward ports as ssh's
-//! options do, in the tab the host opens in. `host` may be a host from `hosts.toml` in the config directory
-//! or an alias from `~/.ssh/config` (`$SHELLWING_SSH_CONFIG` overrides the file).
-//! Settings and themes come from the config directory too (see
-//! `docs/configuration.md`). Authentication follows OpenSSH: agent keys, key
-//! files, keyboard-interactive, password; any passphrase, code or password is
-//! asked for in the terminal. A new host key is shown with its fingerprint and
-//! must be accepted; a changed one is refused. In a debug build
-//! `$SHELLWING_PASSWORD` is tried once before asking (a release ignores it),
-//! and `$SHELLWING_KNOWN_HOSTS` replaces `~/.ssh/known_hosts` (both meant for
-//! scripts and benchmarks).
+//! Usage: `authwing`, or `authwing --install-browser-host` (and
+//! `--uninstall-browser-host`) to tell the browsers where authwing is, for
+//! its extension. The codes live in the vault in the config directory
+//! (`$AUTHWING_CONFIG_DIR` overrides it); settings in its `config.toml`
+//! (see `docs/configuration.md`). Started by a browser, authwing is its
+//! extension's native messaging host instead (see `authwing_bridge`).
 
 // A GUI program on Windows: no console window opens beside it.
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
-mod app_lock;
+mod add_code;
+mod browser;
 mod chrome;
+mod codes;
 mod colors;
-mod copies;
-mod editors;
-mod environment;
-mod files;
-mod group_editor;
-mod host_editor;
 mod hotkeys;
-mod import_view;
 mod input;
-mod keys_view;
-mod known_hosts_view;
-mod library;
-mod library_window;
 mod look;
-mod note_images;
-mod note_window;
 mod notice;
-mod palette;
-mod pane;
 mod placement;
-mod placing;
 mod prompt;
-mod scrollbar;
-mod settings_view;
-mod shell_syntax;
-mod sidebar;
-mod snippet_window;
-mod snippets;
-mod snippets_view;
 mod sync_panel;
 mod syncing;
-mod tab_overview;
-mod view;
+mod vault_slot;
+mod widgets;
 mod workspace;
 
-#[cfg(all(test, feature = "ui-tests"))]
-mod ui_tests;
-
-use std::sync::Arc;
 use std::time::Duration;
 
-use gpui::{App, AppContext as _, Entity, WindowDecorations, WindowOptions};
-use shellwing_config::Store;
-
-// The UI-free half, under the names the app's modules use.
-use shellwing_core::{Writer, bench, local, secrets, session, target};
+use authwing_config::Store;
+use gpui::{App, AppContext as _, Focusable as _, WindowDecorations, WindowOptions};
 
 /// Icons drawn into the binary: the app has no other files.
 struct Assets;
 
 const ICONS: &[(&str, &[u8])] = &[
-    (
-        "icons/folder-plus.svg",
-        include_bytes!("../assets/icons/folder-plus.svg"),
-    ),
-    ("icons/home.svg", include_bytes!("../assets/icons/home.svg")),
-    ("icons/info.svg", include_bytes!("../assets/icons/info.svg")),
-    (
-        "icons/laptop.svg",
-        include_bytes!("../assets/icons/laptop.svg"),
-    ),
-    (
-        "icons/refresh.svg",
-        include_bytes!("../assets/icons/refresh.svg"),
-    ),
-    (
-        "icons/upload.svg",
-        include_bytes!("../assets/icons/upload.svg"),
-    ),
     ("icons/logo.svg", include_bytes!("../assets/icons/logo.svg")),
-    ("icons/tabs.svg", include_bytes!("../assets/icons/tabs.svg")),
-    (
-        "icons/cloud.svg",
-        include_bytes!("../assets/icons/cloud.svg"),
-    ),
     (
         "icons/check.svg",
         include_bytes!("../assets/icons/check.svg"),
     ),
+    (
+        "icons/cloud.svg",
+        include_bytes!("../assets/icons/cloud.svg"),
+    ),
+    ("icons/copy.svg", include_bytes!("../assets/icons/copy.svg")),
     ("icons/eye.svg", include_bytes!("../assets/icons/eye.svg")),
     (
         "icons/eye-off.svg",
         include_bytes!("../assets/icons/eye-off.svg"),
     ),
+    ("icons/info.svg", include_bytes!("../assets/icons/info.svg")),
+    ("icons/lock.svg", include_bytes!("../assets/icons/lock.svg")),
+    ("icons/plus.svg", include_bytes!("../assets/icons/plus.svg")),
     (
-        "icons/terminal.svg",
-        include_bytes!("../assets/icons/terminal.svg"),
-    ),
-    (
-        "icons/folder.svg",
-        include_bytes!("../assets/icons/folder.svg"),
-    ),
-    ("icons/file.svg", include_bytes!("../assets/icons/file.svg")),
-    (
-        "icons/panel-close.svg",
-        include_bytes!("../assets/icons/panel-close.svg"),
-    ),
-    (
-        "icons/panel-open.svg",
-        include_bytes!("../assets/icons/panel-open.svg"),
+        "icons/refresh.svg",
+        include_bytes!("../assets/icons/refresh.svg"),
     ),
     (
         "icons/search.svg",
         include_bytes!("../assets/icons/search.svg"),
     ),
     (
-        "icons/server.svg",
-        include_bytes!("../assets/icons/server.svg"),
-    ),
-    (
         "icons/settings.svg",
         include_bytes!("../assets/icons/settings.svg"),
+    ),
+    (
+        "icons/trash.svg",
+        include_bytes!("../assets/icons/trash.svg"),
     ),
     (
         "icons/minimize.svg",
@@ -180,48 +118,53 @@ impl gpui::AssetSource for Assets {
     }
 }
 
-/// How often the config files are checked for edits.
+/// How often config.toml is checked for edits.
 const CONFIG_POLL: Duration = Duration::from_millis(500);
 
-const USAGE: &str = "usage: shellwing [-L|-R|-D spec]... [[user@]host[:port]]
-       shellwing --local
-  host     a name from hosts.toml, an alias from ~/.ssh/config, or a host name
-  --local  a shell on this computer
-  -L spec  [bind:]port:host:hostport  a port here reaches host:hostport from the server
-  -R spec  [bind:]port:host:hostport  a port on the server reaches host:hostport from here
-  -D spec  [bind:]port                a SOCKS proxy here, going out from the server";
+const USAGE: &str = "usage: authwing [--install-browser-host | --uninstall-browser-host]
+  Two-factor codes. Settings: config.toml in the config directory.
+  --install-browser-host    tell the browsers where authwing is, for its extension
+  --uninstall-browser-host  take that back";
 
-/// The host to open and the forwards for it, from the command line.
-fn parse_args(
-    mut args: impl Iterator<Item = String>,
-) -> Result<(Option<String>, Vec<String>), String> {
-    let (mut host, mut forwards) = (None, vec![]);
-    while let Some(a) = args.next() {
-        match a.as_str() {
-            "-L" | "-R" | "-D" => {
-                let spec = args.next().ok_or(format!("{a} needs a value"))?;
-                forwards.push(format!("{a} {spec}"));
+/// Writes or removes the browsers' manifests for the extension's host:
+/// what the process should exit with.
+fn browser_host(install: bool) -> i32 {
+    use authwing_bridge::install::{self, Dirs, Os};
+    let dirs = match Dirs::for_user() {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("authwing: {e}");
+            return 1;
+        }
+    };
+    let done = if install {
+        match std::env::current_exe() {
+            Ok(program) => install::install(Os::CURRENT, &dirs, &program),
+            Err(e) => Err(e),
+        }
+    } else {
+        install::uninstall(Os::CURRENT, &dirs)
+    };
+    match done {
+        Ok(places) if places.is_empty() => {
+            println!("No browser the extension runs in was found.");
+            0
+        }
+        Ok(places) => {
+            for (browser, place) in places {
+                println!("{}: {}", browser.name(), place.manifest().display());
             }
-            "--local" if host.is_some() => return Err("only one host can be given".into()),
-            "--local" => host = Some(local::SPEC.to_string()),
-            s if ["-L", "-R", "-D"].iter().any(|f| s.starts_with(f)) => forwards.push(a),
-            s if s.starts_with('-') => return Err(format!("unknown option {s}")),
-            _ if host.is_some() => return Err("only one host can be given".into()),
-            _ => host = Some(a),
+            0
+        }
+        Err(e) => {
+            eprintln!("authwing: {e}");
+            1
         }
     }
-    for f in &forwards {
-        f.parse::<shellwing_ssh::Forward>()
-            .map_err(|e| e.to_string())?;
-    }
-    if !forwards.is_empty() && host.as_deref().is_none_or(|h| h == local::SPEC) {
-        return Err("forwards need a host to go through".into());
-    }
-    Ok((host, forwards))
 }
 
 /// Windows starts a GUI program without a console. Started from a terminal,
-/// the app takes that one, so `--help`, errors and logs are written there.
+/// the app takes that one, so `--help` and errors are written there.
 #[cfg(windows)]
 #[allow(unsafe_code)]
 fn attach_console() {
@@ -232,72 +175,59 @@ fn attach_console() {
 }
 
 fn main() -> anyhow::Result<()> {
+    // Started by a browser: its stdout is the extension's, so nothing else
+    // may be written first.
+    let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
+    if authwing_bridge::host::is_native_host_invocation(&args) {
+        std::process::exit(authwing_bridge::host::run_native_host(&args));
+    }
     #[cfg(windows)]
     attach_console();
-    if std::env::args().skip(1).any(|a| a == "-h" || a == "--help") {
-        println!("{USAGE}");
+    if let Some(a) = std::env::args().nth(1) {
+        match a.as_str() {
+            "-h" | "--help" => println!("{USAGE}"),
+            "--install-browser-host" => std::process::exit(browser_host(true)),
+            "--uninstall-browser-host" => std::process::exit(browser_host(false)),
+            _ => {
+                eprintln!("authwing: unknown argument {a}\n{USAGE}");
+                std::process::exit(2);
+            }
+        }
         return Ok(());
     }
-    let (arg, forwards) = match parse_args(std::env::args().skip(1)) {
-        Ok(a) => a,
-        Err(e) => {
-            eprintln!("shellwing: {e}\n{USAGE}");
-            std::process::exit(2);
-        }
-    };
     let (live, problems) = look::Live::open(Store::default_dir().map(Store::new));
     // The app's language, before anything is said.
-    shellwing_i18n::set_language(live.settings().general.language.as_deref());
-    // A note's text kept from another device's edit is titled in it.
-    shellwing_vault::title_copies(syncing::copy_title);
-    // One network runtime for every tab.
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .thread_name("shellwing-net")
-        .build()?;
-    let rt_handle = rt.handle().clone();
-    let bench = std::env::var("SHELLWING_BENCH")
-        .ok()
-        .filter(|m| !m.is_empty())
-        .map(|m| (m, Arc::new(bench::Probe::new())));
+    authwing_i18n::set_language(live.settings().general.language.as_deref());
 
     gpui_platform::application()
         .with_assets(Assets)
         .run(move |cx: &mut App| {
-            // Questions are drawn in the app's look on every system, not in
-            // each one's own dialog (and Linux has none: GPUI would draw a
-            // white box).
+            // Questions are drawn in the app's look on every system.
             cx.set_prompt_builder(prompt::render);
-            // The notes' editor: its keys, while it has the focus.
-            shellwing_note_editor::bind_keys(cx);
-            app_lock::guard_other_windows(cx);
             let window_bounds = placement::initial(live.store().and_then(|s| s.window_state()), cx);
             // GNOME's Wayland compositor draws no window frame, so Linux gets
-            // client-side decorations. macOS and Windows keep the system's frame
-            // but hide its title bar, and the app draws its own in its place,
-            // with the tabs in it (see chrome::window_chrome).
+            // client-side decorations. macOS and Windows keep the system's
+            // frame but hide its title bar, and the app draws its own in its
+            // place (see chrome::window_chrome).
             let client_side = cfg!(any(target_os = "linux", target_os = "freebsd"));
             let options = WindowOptions {
                 window_bounds: Some(window_bounds),
                 window_decorations: client_side.then_some(WindowDecorations::Client),
                 titlebar: (!client_side).then(|| gpui::TitlebarOptions {
-                    title: Some("shellwing".into()),
+                    title: Some("authwing".into()),
                     appears_transparent: true,
                     traffic_light_position: Some(chrome::TRAFFIC_LIGHTS),
                 }),
-                app_id: Some("shellwing".into()),
+                app_id: Some("authwing".into()),
                 ..Default::default()
             };
-            let mut setup = Some((live, problems, bench));
-            let Ok(window) = cx.open_window(options, |window, cx| {
+            let mut setup = Some((live, problems));
+            let Ok(window) = cx.open_window(options, |_, cx| {
                 cx.new(|cx| {
-                    let (live, problems, bench) = setup
+                    let (live, problems) = setup
                         .take()
-                        .unwrap_or_else(|| (look::Live::open(None).0, vec![], None));
-                    let mut ws =
-                        workspace::Workspace::new(live, problems, rt_handle.clone(), bench, cx);
-                    ws.start(arg.as_deref(), &forwards, window, cx);
-                    ws
+                        .unwrap_or_else(|| (look::Live::open(None).0, vec![]));
+                    workspace::Workspace::new(live, problems, cx)
                 })
             }) else {
                 eprintln!("cannot open a window");
@@ -307,29 +237,15 @@ fn main() -> anyhow::Result<()> {
             let Ok(ws) = window.update(cx, |_, _, cx| cx.entity()) else {
                 return;
             };
-            let ws: Entity<workspace::Workspace> = ws;
             let _ = window.update(cx, |ws, window, cx| {
-                let active = ws.active_index();
-                ws.activate(active, window, cx);
+                window.focus(&ws.focus_handle(cx), cx);
                 cx.activate(true);
-                ws.track_bounds(window, cx);
                 ws.track_appearance(window, cx);
-                ws.guard_close(window, cx);
+                ws.track_bounds(window, cx);
             });
-            // One window: closing it quits, on macOS too, where apps otherwise stay
-            // in the Dock with no window and no way to open one.
-            // Note windows go with the main one.
-            cx.on_window_closed(|cx, _| {
-                let main = cx
-                    .windows()
-                    .iter()
-                    .any(|w| w.downcast::<workspace::Workspace>().is_some());
-                if !main {
-                    cx.quit();
-                }
-            })
-            .detach();
-            // Edits to the config files apply while running.
+            // One window: closing it quits, on macOS too.
+            cx.on_window_closed(|cx, _| cx.quit()).detach();
+            // Edits to config.toml apply while running.
             cx.spawn(async move |cx| {
                 loop {
                     cx.background_executor().timer(CONFIG_POLL).await;
@@ -338,43 +254,5 @@ fn main() -> anyhow::Result<()> {
             })
             .detach();
         });
-    drop(rt);
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::parse_args;
-
-    fn parse(args: &[&str]) -> Result<(Option<String>, Vec<String>), String> {
-        parse_args(args.iter().map(|a| a.to_string()))
-    }
-
-    #[test]
-    fn reads_a_host_and_its_forwards() {
-        assert_eq!(parse(&[]), Ok((None, vec![])));
-        assert_eq!(
-            parse(&["--local"]),
-            Ok((Some(crate::local::SPEC.into()), vec![]))
-        );
-        assert_eq!(
-            parse(&["-L", "8080:localhost:80", "-D1080", "me@web"]),
-            Ok((
-                Some("me@web".into()),
-                vec!["-L 8080:localhost:80".into(), "-D1080".into()]
-            ))
-        );
-        for (args, why) in [
-            (&["-L"][..], "needs a value"),
-            (&["-L", "80", "web"], "bad forward"),
-            (&["-D", "1080"], "need a host"),
-            (&["-x", "web"], "unknown option"),
-            (&["a", "b"], "only one host"),
-            (&["--local", "web"], "only one host"),
-            (&["-D", "1080", "--local"], "need a host"),
-        ] {
-            let e = parse(args).expect_err(why);
-            assert!(e.contains(why), "{args:?}: {e}");
-        }
-    }
 }

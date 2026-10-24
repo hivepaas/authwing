@@ -2,9 +2,9 @@
 //!
 //! | platform | file |
 //! |---|---|
-//! | `linux_x86_64`, `linux_aarch64` | `shellwing_0.2.0_linux_x86_64.AppImage` |
-//! | `macos_aarch64`, `macos_x86_64` | `shellwing_0.2.0_macos_aarch64.app.tar.gz` (`Shellwing.app`, tarred) |
-//! | `windows_x86_64`, `windows_aarch64` | `shellwing_0.2.0_windows_x86_64-setup.exe` (an installer, quiet with `/S`) |
+//! | `linux_x86_64`, `linux_aarch64` | `authwing_0.2.0_linux_x86_64.AppImage` |
+//! | `macos_aarch64`, `macos_x86_64` | `authwing_0.2.0_macos_aarch64.app.tar.gz` (`Authwing.app`, tarred) |
+//! | `windows_x86_64`, `windows_aarch64` | `authwing_0.2.0_windows_x86_64-setup.exe` (an installer, quiet with `/S`) |
 
 use crate::version::Version;
 
@@ -43,17 +43,17 @@ pub fn archive_file(v: &Version, platform: &str) -> Option<String> {
     let plain = plain.trim_start_matches('v');
     let os = platform.split('_').next()?;
     Some(match os {
-        "linux" => format!("shellwing_{plain}_{platform}.AppImage"),
-        "macos" => format!("shellwing_{plain}_{platform}.app.tar.gz"),
-        _ => format!("shellwing_{plain}_{platform}-setup.exe"),
+        "linux" => format!("authwing_{plain}_{platform}.AppImage"),
+        "macos" => format!("authwing_{plain}_{platform}.app.tar.gz"),
+        _ => format!("authwing_{plain}_{platform}-setup.exe"),
     })
 }
 
 /// Where releases' files are: a release's assets on GitHub; a build that
 /// tries the updater (scripts/update_try.sh) names its own, as it is built.
-const DOWNLOADS: &str = match option_env!("SHELLWING_UPDATE_FILES") {
+const DOWNLOADS: &str = match option_env!("AUTHWING_UPDATE_FILES") {
     Some(url) => url,
-    None => "https://github.com/hivepaas/shellwing/releases/download",
+    None => "https://github.com/hivepaas/authwing/releases/download",
 };
 
 /// Where a release's file is downloaded from.
@@ -70,20 +70,20 @@ mod tests {
         let v = Version::parse("v0.3.0-beta2").expect("version");
         assert_eq!(
             archive_file(&v, "linux_x86_64").as_deref(),
-            Some("shellwing_0.3.0-beta2_linux_x86_64.AppImage")
+            Some("authwing_0.3.0-beta2_linux_x86_64.AppImage")
         );
         assert_eq!(
             archive_file(&v, "macos_aarch64").as_deref(),
-            Some("shellwing_0.3.0-beta2_macos_aarch64.app.tar.gz")
+            Some("authwing_0.3.0-beta2_macos_aarch64.app.tar.gz")
         );
         assert_eq!(
             archive_file(&v, "windows_x86_64").as_deref(),
-            Some("shellwing_0.3.0-beta2_windows_x86_64-setup.exe")
+            Some("authwing_0.3.0-beta2_windows_x86_64-setup.exe")
         );
         assert_eq!(archive_file(&v, "plan9_mips"), None);
         assert_eq!(
             download_url(&v, "x.AppImage"),
-            "https://github.com/hivepaas/shellwing/releases/download/v0.3.0-beta2/x.AppImage"
+            "https://github.com/hivepaas/authwing/releases/download/v0.3.0-beta2/x.AppImage"
         );
         assert!(current().is_some_and(|p| PLATFORMS.contains(&p)));
     }

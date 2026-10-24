@@ -4,10 +4,10 @@
 
 use std::sync::Arc;
 
+use authwing_config::shortcuts::{Fixed, Refusal, ShortcutProblem};
+use authwing_config::{Chord, Hotkey, Keymap, Mods, Os};
+use authwing_i18n::tr;
 use gpui::{App, Global, Keystroke};
-use shellwing_config::shortcuts::{Fixed, Refusal, ShortcutProblem};
-use shellwing_config::{Chord, Hotkey, Keymap, Mods, Os};
-use shellwing_i18n::tr;
 
 /// The shortcuts in effect.
 pub struct Bound(pub Arc<Keymap>);
@@ -39,43 +39,12 @@ pub fn pressed(k: &Keystroke) -> Option<Chord> {
     )
 }
 
-/// What a shortcut does, as the Keyboard page lists it.
-pub fn label(h: Hotkey) -> String {
-    match h {
-        Hotkey::Palette => tr!("Command palette"),
-        Hotkey::NewTab => tr!("New tab"),
-        Hotkey::ClosePane => tr!("Close the pane"),
-        Hotkey::SplitRight => tr!("Split right"),
-        Hotkey::SplitDown => tr!("Split down"),
-        Hotkey::PaneLeft => tr!("Pane to the left"),
-        Hotkey::PaneRight => tr!("Pane to the right"),
-        Hotkey::PaneUp => tr!("Pane above"),
-        Hotkey::PaneDown => tr!("Pane below"),
-        Hotkey::NextTab => tr!("Next tab"),
-        Hotkey::PreviousTab => tr!("Previous tab"),
-        Hotkey::GoToTab => tr!("Go to tab 1–9"),
-        Hotkey::Tabs => tr!("Every tab, by host"),
-        Hotkey::HostList => tr!("Host list"),
-        Hotkey::Files => tr!("Files"),
-        Hotkey::Find => tr!("Find in the pane"),
-        Hotkey::Broadcast => tr!("Type in every pane"),
-        Hotkey::Settings => tr!("Settings"),
-        Hotkey::NextTheme => tr!("Next theme"),
-        Hotkey::PreviousTheme => tr!("Previous theme"),
-        Hotkey::Quit => tr!("Quit"),
-    }
-}
-
 pub fn fixed_label(f: Fixed) -> String {
     match f {
         Fixed::Copy => tr!("Copy"),
+        Fixed::Cut => tr!("Cut"),
         Fixed::Paste => tr!("Paste"),
-        Fixed::ZoomIn => tr!("Larger text"),
-        Fixed::ZoomOut => tr!("Smaller text"),
-        Fixed::ZoomReset => tr!("Text at its set size"),
-        Fixed::PageUp => tr!("Scroll up a page"),
-        Fixed::PageDown => tr!("Scroll down a page"),
-        Fixed::Bottom => tr!("Back to the bottom"),
+        Fixed::SelectAll => tr!("Select all"),
     }
 }
 
@@ -91,7 +60,7 @@ pub fn refusal(r: &Refusal, key: &str) -> String {
             key = key
         ),
         Refusal::System => tr!(
-            "{key} belongs to the system: it never reaches Shellwing.",
+            "{key} belongs to the system: it never reaches Authwing.",
             key = key
         ),
         Refusal::Fixed(f) => tr!(
@@ -131,7 +100,7 @@ pub fn problem(p: &ShortcutProblem) -> String {
             lost = lost.name()
         ),
         ShortcutProblem::Misfit { name, key } => tr!(
-            "config.toml, [shortcuts] {name}: `{key}` does not fit; only go_to_tab takes `digit` (1 to 9), and it takes nothing else.",
+            "config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.",
             name = name,
             key = key
         ),
