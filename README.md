@@ -30,7 +30,8 @@ from there; the SSH client does not.
 **Works now**
 
 * **Codes:** TOTP, HOTP and Steam Guard (SHA-1/256/512, 5 to 10 digits), added
-  from an `otpauth://` link, a Google Authenticator export or a typed key;
+  by reading the site's QR code on the screen or in an image, or from an
+  `otpauth://` link, a Google Authenticator export or a typed key;
   cards that count down and show the next code at the end of the period;
   copy with a click, Enter or Cmd/Ctrl+1…9, the clipboard cleared after 20 s.
 * **Find and file:** type to find by service, account, group or site; groups
@@ -64,8 +65,8 @@ from there; the SSH client does not.
 * **Voice** (`authwing-voice`): "open Vietcombank", "Öffne PayPal": Whisper on
   the device, the name matched in any language.
 
-**Next:** voice in the quick panel, scanning a QR code on the screen, the
-extension in the stores, release signing.
+**Next:** voice in the quick panel, the extension in the stores, release
+signing.
 
 ---
 
@@ -104,6 +105,7 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 | `crates/app` | The GPUI window: codes, adding them, the quick panel, Settings, the Sync panel |
 | `crates/backup` | authwing's encrypted backup, the plain export, other apps' exports |
 | `crates/totp` | One-time codes, `otpauth://` links, Google Authenticator's export |
+| `crates/scan` | QR codes read from the screen, an image file or the clipboard |
 | `crates/context` | The active app and window, sites against look-alikes, codes ranked for a context |
 | `crates/voice` | Matching a spoken name to a code; Whisper and the microphone as features |
 | `crates/bridge` | The browser extension's protocol, Native Messaging host and installer |

@@ -22,11 +22,56 @@ ta13f22fd =
        *[other] File export không có mã nào authwing dùng được ({ $n } mã bị bỏ qua).
     }
 
+# macOS asks first: turn authwing on in System Settings › Privacy & Security › Screen Recording, then open authwing again.
+t878591bf = macOS hỏi trước: bật authwing trong Cài đặt hệ thống › Quyền riêng tư & Bảo mật › Ghi màn hình, rồi mở lại authwing.
+
+# Read
+t4f0befe5 = Đọc
+
+# This QR code is not a two-factor code.
+t9c06ff6c = Mã QR này không phải mã hai yếu tố.
+
+# No QR code on the screen: show the site's page with it, and scan again.
+t3aeb1d3b = Không có mã QR nào trên màn hình: hãy mở trang của site có mã đó, rồi quét lại.
+
+# No QR code in this image.
+tb5e0504c = Không có mã QR nào trong ảnh này.
+
+# One of {n} two-factor QR codes: add it, then scan again for the next. | One of {n} two-factor QR codes: add it, then scan again for the next.
+t4a7417f5 =
+    { $n ->
+       *[other] Một trong { $n } mã QR hai yếu tố: hãy thêm mã này, rồi quét lại để lấy mã tiếp theo.
+    }
+
+# Read from the QR code. Check the names, then add it.
+t494fced8 = Đã đọc từ mã QR. Kiểm tra tên, rồi thêm.
+
+# The screen was not shared, so nothing was read.
+t4c77286d = Màn hình không được chia sẻ nên không đọc được gì.
+
+# Not read: {why}
+t9133669c = Không đọc được: { $why }
+
+# This is not an image authwing can read.
+t5d87f9dd = Đây không phải ảnh authwing đọc được.
+
 # Add a code
 t82066414 = Thêm mã
 
-# When a site turns on two-factor sign-in it shows a QR code, and a link or a key beside it. Paste either here; a QR code from your phone's camera gives the link too.
-t0378be46 = Khi bật đăng nhập hai lớp, trang web hiện một mã QR, kèm một link hoặc một khoá bên cạnh. Dán cái nào cũng được; quét mã QR bằng camera điện thoại cũng ra link đó.
+# When a site turns on two-factor sign-in it shows a QR code, and often a key beside it. Read the QR code where it is, or paste its link or the key.
+t33420425 = Khi một site bật đăng nhập hai yếu tố, nó hiện một mã QR, và thường kèm một khoá. Hãy đọc mã QR ngay tại chỗ, hoặc dán link của nó hay khoá.
+
+# Reading…
+t6aad8485 = Đang đọc…
+
+# Scan the screen
+t1eac14ed = Quét màn hình
+
+# Choose an image…
+t4b006b9a = Chọn ảnh…
+
+# or paste or drop one here
+t0591d55d = hoặc dán, kéo thả ảnh vào đây
 
 # Link or key
 td5c6ff95 = Link hoặc khoá
@@ -93,6 +138,24 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
+
+# Hide authwing
+tc980ec1e = Ẩn authwing
+
+# Hide Others
+tb1ea29d0 = Ẩn ứng dụng khác
+
+# Show All
+ta23c130f = Hiện tất cả
+
+# Quit authwing
+t92d4b253 = Thoát authwing
+
+# Edit
+tc2c76cb1 = Sửa
+
+# Select All
+tcd7e3b12 = Chọn tất cả
 
 # a key alone, or with Shift alone, is for typing
 t0d0135fa = một phím đơn, hoặc chỉ kèm Shift, là để gõ chữ
@@ -772,8 +835,8 @@ t8f247c27 = Cho cửa sổ vừa dùng: { $place }
 # No codes yet
 t33ff9c8a = Chưa có mã nào
 
-# Turn on two-factor sign-in at a site, then paste the link of the QR code it shows.
-t2d0ad3d3 = Bật đăng nhập hai lớp ở một trang web, rồi dán link của mã QR mà trang đó hiện ra.
+# Turn on two-factor sign-in at a site, then read the QR code it shows.
+t34aa395e = Bật đăng nhập hai yếu tố ở một site, rồi đọc mã QR nó hiện.
 
 # Add your first code
 t4a8c2b9a = Thêm mã đầu tiên

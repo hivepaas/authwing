@@ -19,11 +19,53 @@ t304ff7fb = 无
 # The export holds no code authwing can use ({n} left out). | The export holds no code authwing can use ({n} left out).
 # ta13f22fd =
 
+# macOS asks first: turn authwing on in System Settings › Privacy & Security › Screen Recording, then open authwing again.
+# t878591bf =
+
+# Read
+# t4f0befe5 =
+
+# This QR code is not a two-factor code.
+# t9c06ff6c =
+
+# No QR code on the screen: show the site's page with it, and scan again.
+# t3aeb1d3b =
+
+# No QR code in this image.
+# tb5e0504c =
+
+# One of {n} two-factor QR codes: add it, then scan again for the next. | One of {n} two-factor QR codes: add it, then scan again for the next.
+# t4a7417f5 =
+
+# Read from the QR code. Check the names, then add it.
+# t494fced8 =
+
+# The screen was not shared, so nothing was read.
+# t4c77286d =
+
+# Not read: {why}
+# t9133669c =
+
+# This is not an image authwing can read.
+# t5d87f9dd =
+
 # Add a code
 # t82066414 =
 
-# When a site turns on two-factor sign-in it shows a QR code, and a link or a key beside it. Paste either here; a QR code from your phone's camera gives the link too.
-# t0378be46 =
+# When a site turns on two-factor sign-in it shows a QR code, and often a key beside it. Read the QR code where it is, or paste its link or the key.
+# t33420425 =
+
+# Reading…
+# t6aad8485 =
+
+# Scan the screen
+# t1eac14ed =
+
+# Choose an image…
+# t4b006b9a =
+
+# or paste or drop one here
+# t0591d55d =
 
 # Link or key
 # td5c6ff95 =
@@ -90,6 +132,24 @@ te833da37 = config.toml, [shortcuts]：`{ $key }` 同时分配给了 { $kept } �
 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 # t87e7ceec =
+
+# Hide authwing
+# tc980ec1e =
+
+# Hide Others
+# tb1ea29d0 =
+
+# Show All
+# ta23c130f =
+
+# Quit authwing
+# t92d4b253 =
+
+# Edit
+# tc2c76cb1 =
+
+# Select All
+# tcd7e3b12 =
 
 # a key alone, or with Shift alone, is for typing
 # t0d0135fa =
@@ -757,8 +817,8 @@ t12e9b880 = 未删除：{ $e }
 # No codes yet
 # t33ff9c8a =
 
-# Turn on two-factor sign-in at a site, then paste the link of the QR code it shows.
-# t2d0ad3d3 =
+# Turn on two-factor sign-in at a site, then read the QR code it shows.
+# t34aa395e =
 
 # Add your first code
 # t4a8c2b9a =

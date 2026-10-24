@@ -233,6 +233,9 @@ impl Workspace {
         };
         self.restyle();
         self.apply_panel_key(cx);
+        if cfg!(target_os = "macos") {
+            crate::menu::set_menus(cx);
+        }
         cx.set_global(crate::hotkeys::Bound(self.live.keymap()));
         if let Some(sync) = &self.sync {
             let place = self.live.sync_place();
@@ -914,17 +917,19 @@ impl Workspace {
             }
             Hotkey::Lock => self.lock(cx),
             Hotkey::Settings => self.toggle_settings(window, cx),
-            Hotkey::Quit => {
-                // The last edits go out first, if a sync is quick.
-                if let Some(s) = &self.sync
-                    && s.place().is_some()
-                {
-                    s.sync_and_wait(Duration::from_secs(3));
-                }
-                cx.quit()
-            }
+            Hotkey::Quit => self.quit(cx),
         }
         cx.stop_propagation();
+    }
+
+    /// Quits, the last edits sent first if a sync is quick.
+    pub fn quit(&mut self, cx: &mut Context<Self>) {
+        if let Some(s) = &self.sync
+            && s.place().is_some()
+        {
+            s.sync_and_wait(Duration::from_secs(3));
+        }
+        cx.quit()
     }
 
     /// Keys in the find field: Enter copies the first code shown, Escape
@@ -1437,9 +1442,7 @@ impl Workspace {
         let body = if self.codes.is_empty() {
             empty(
                 tr!("No codes yet"),
-                tr!(
-                    "Turn on two-factor sign-in at a site, then paste the link of the QR code it shows."
-                ),
+                tr!("Turn on two-factor sign-in at a site, then read the QR code it shows."),
             )
             .child(
                 primary_button("first-code", &tr!("Add your first code"))

@@ -28,6 +28,7 @@ authwing-totp.workspace = true
 authwing-context.workspace = true
 authwing-bridge.workspace = true
 authwing-backup.workspace = true
+authwing-scan.workspace = true
 gpui.workspace = true
 gpui_platform.workspace = true
 anyhow.workspace = true

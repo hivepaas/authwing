@@ -11,8 +11,26 @@ ta13f22fd =
         [one] The export holds no code authwing can use ({ $n } left out).
        *[other] The export holds no code authwing can use ({ $n } left out).
     }
+t878591bf = macOS asks first: turn authwing on in System Settings › Privacy & Security › Screen Recording, then open authwing again.
+t4f0befe5 = Read
+t9c06ff6c = This QR code is not a two-factor code.
+t3aeb1d3b = No QR code on the screen: show the site's page with it, and scan again.
+tb5e0504c = No QR code in this image.
+t4a7417f5 =
+    { $n ->
+        [one] One of { $n } two-factor QR codes: add it, then scan again for the next.
+       *[other] One of { $n } two-factor QR codes: add it, then scan again for the next.
+    }
+t494fced8 = Read from the QR code. Check the names, then add it.
+t4c77286d = The screen was not shared, so nothing was read.
+t9133669c = Not read: { $why }
+t5d87f9dd = This is not an image authwing can read.
 t82066414 = Add a code
-t0378be46 = When a site turns on two-factor sign-in it shows a QR code, and a link or a key beside it. Paste either here; a QR code from your phone's camera gives the link too.
+t33420425 = When a site turns on two-factor sign-in it shows a QR code, and often a key beside it. Read the QR code where it is, or paste its link or the key.
+t6aad8485 = Reading…
+t1eac14ed = Scan the screen
+t4b006b9a = Choose an image…
+t0591d55d = or paste or drop one here
 td5c6ff95 = Link or key
 tb643c704 = Service
 t59f8a2fc = Account
@@ -35,6 +53,12 @@ tb915b010 = config.toml, [shortcuts] { $name }: `{ $key }`: { $error }
 t71adda1f = config.toml, [shortcuts] { $name }: { $why }
 te833da37 = config.toml, [shortcuts]: `{ $key }` is given to both { $kept } and { $lost }; { $kept } keeps it.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
+tc980ec1e = Hide authwing
+tb1ea29d0 = Hide Others
+ta23c130f = Show All
+t92d4b253 = Quit authwing
+tc2c76cb1 = Edit
+tcd7e3b12 = Select All
 t0d0135fa = a key alone, or with Shift alone, is for typing
 te54f3559 = Type to find, or press Enter
 t127fa712 = Matches this window
@@ -273,7 +297,7 @@ t6ae50f4f = { $page } only looks like it. Pages like this copy a real sign-in to
 tf0c6b3bc = Matched by { $why }
 t8f247c27 = For the window used last: { $place }
 t33ff9c8a = No codes yet
-t2d0ad3d3 = Turn on two-factor sign-in at a site, then paste the link of the QR code it shows.
+t34aa395e = Turn on two-factor sign-in at a site, then read the QR code it shows.
 t4a8c2b9a = Add your first code
 tda76133f = Nothing matches
 t289325a3 = Try fewer words, or another group.

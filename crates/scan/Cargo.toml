@@ -1,0 +1,40 @@
+[package]
+name = "authwing-scan"
+description = "Two-factor QR codes, read from an image, a file, the clipboard or the screen"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# GPUI's version, so its images are these. The formats are those a file or
+# the clipboard brings; GPUI builds them all already.
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff"] }
+# QR codes found and read, in pure Rust.
+rqrr = { version = "0.11", default-features = false }
+thiserror.workspace = true
+
+# Each display captured: CoreGraphics on macOS, GDI on Windows. Not on Linux,
+# where it would link PipeWire and libgbm for its screen recording.
+[target.'cfg(any(target_os = "macos", windows))'.dependencies]
+xcap = "0.9.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-core-graphics = { version = "0.3", default-features = false, features = ["std", "CGWindow"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Wayland: the desktop portal's screenshot, over D-Bus in pure Rust, as
+# GPUI calls its portals.
+ashpd = { version = "0.13", default-features = false, features = ["async-io", "screenshot"] }
+async-io = "2"
+url = "2.5"
+# X11 in pure Rust: no libxcb to link.
+x11rb = { version = "0.13", features = ["image", "randr"] }
+
+[dev-dependencies]
+# QR codes made in the tests, to read back.
+qrcode = { version = "0.14", default-features = false }
+
+[lints]
+workspace = true
