@@ -58,6 +58,12 @@ settings = true              # the settings that are not this device's own sync 
     screen; on macOS authwing steps aside while it does. macOS asks once
     for the Screen Recording permission, which applies when authwing is
     opened again; under Wayland the system asks to share the screen.
+  - *Use the camera* reads a QR code held up to it: on a phone, on another
+    computer, on paper. An export shown as several QR codes (Google
+    Authenticator's *Transfer accounts*) is put together as each is shown,
+    and all its codes are added at once. The camera is on only while its
+    picture shows, and nothing it sees is kept; macOS asks for it the first
+    time.
   - An image of the QR code works too: chosen, dropped on the dialog, or
     pasted (Cmd/Ctrl+V).
   - Or paste the link a QR code holds (`otpauth://totp/…`), a Google

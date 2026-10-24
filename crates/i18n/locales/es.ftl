@@ -40,6 +40,27 @@ t304ff7fb = Ninguno
 # Read from the QR code. Check the names, then add it.
 # t494fced8 =
 
+# No camera was found.
+# tc5a6210e =
+
+# QR code {read} of {of} read: show the next one.
+# t9a91fa26 =
+
+# {n} code read from the export: Add adds it. | {n} codes read from the export: Add adds them all.
+# te4a9664a =
+
+# {n} code read from the export: Add adds it ({left} left out). | {n} codes read from the export: Add adds them all ({left} left out).
+# t7b1b6860 =
+
+# macOS asks first: turn authwing on in System Settings › Privacy & Security › Camera, then try again.
+# tdfd4f8b3 =
+
+# The camera may not be used.
+# t40813ca5 =
+
+# The camera could not be used: {why}
+# t8d5dc2f5 =
+
 # The screen was not shared, so nothing was read.
 # t4c77286d =
 
@@ -48,6 +69,12 @@ t304ff7fb = Ninguno
 
 # This is not an image authwing can read.
 # t5d87f9dd =
+
+# Starting the camera…
+# tacf1655f =
+
+# Hold the QR code up to the camera: the phone's, or on paper. Nothing it sees is kept.
+# t32699fea =
 
 # Edit the code
 # tb79e0e3f =
@@ -63,6 +90,12 @@ t304ff7fb = Ninguno
 
 # Scan the screen
 # t1eac14ed =
+
+# Stop the camera
+# tf594afdd =
+
+# Use the camera
+# t9f05fab6 =
 
 # Choose an image…
 # t4b006b9a =

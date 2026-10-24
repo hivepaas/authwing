@@ -22,14 +22,33 @@ t4a7417f5 =
        *[other] One of { $n } two-factor QR codes: add it, then scan again for the next.
     }
 t494fced8 = Read from the QR code. Check the names, then add it.
+tc5a6210e = No camera was found.
+t9a91fa26 = QR code { $read } of { $of } read: show the next one.
+te4a9664a =
+    { $n ->
+        [one] { $n } code read from the export: Add adds it.
+       *[other] { $n } codes read from the export: Add adds them all.
+    }
+t7b1b6860 =
+    { $n ->
+        [one] { $n } code read from the export: Add adds it ({ $left } left out).
+       *[other] { $n } codes read from the export: Add adds them all ({ $left } left out).
+    }
+tdfd4f8b3 = macOS asks first: turn authwing on in System Settings › Privacy & Security › Camera, then try again.
+t40813ca5 = The camera may not be used.
+t8d5dc2f5 = The camera could not be used: { $why }
 t4c77286d = The screen was not shared, so nothing was read.
 t9133669c = Not read: { $why }
 t5d87f9dd = This is not an image authwing can read.
+tacf1655f = Starting the camera…
+t32699fea = Hold the QR code up to the camera: the phone's, or on paper. Nothing it sees is kept.
 tb79e0e3f = Edit the code
 t82066414 = Add a code
 t33420425 = When a site turns on two-factor sign-in it shows a QR code, and often a key beside it. Read the QR code where it is, or paste its link or the key.
 t6aad8485 = Reading…
 t1eac14ed = Scan the screen
+tf594afdd = Stop the camera
+t9f05fab6 = Use the camera
 t4b006b9a = Choose an image…
 t0591d55d = or paste or drop one here
 td5c6ff95 = Link or key

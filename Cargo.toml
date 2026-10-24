@@ -52,6 +52,11 @@ strip = true
 [profile.dev.package."*"]
 opt-level = 2
 
+# Reading QR codes goes over every pixel of every camera frame: optimized
+# in debug builds too, or the camera's preview stutters.
+[profile.dev.package.authwing-scan]
+opt-level = 2
+
 # The UI tests on CI (`--profile ui-tests`): release speed, with debug
 # assertions: GPUI records where elements are drawn only with them, so the
 # tests could not click without, and they catch what only a debug build would.

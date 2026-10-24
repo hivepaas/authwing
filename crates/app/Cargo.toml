@@ -28,7 +28,9 @@ authwing-totp.workspace = true
 authwing-context.workspace = true
 authwing-bridge.workspace = true
 authwing-backup.workspace = true
-authwing-scan.workspace = true
+authwing-scan = { workspace = true, features = ["camera"] }
+# Frames to draw: the camera's, as GPUI takes them.
+image = { version = "0.25", default-features = false }
 authwing-voice = { workspace = true, features = ["whisper", "mic", "download"] }
 gpui.workspace = true
 gpui_platform.workspace = true
