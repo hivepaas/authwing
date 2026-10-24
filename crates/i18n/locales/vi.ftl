@@ -283,6 +283,12 @@ t837b43b8 = Access key
 # Kept in the vault, on this device only
 t4893a866 = Giữ trong vault, chỉ trên thiết bị này
 
+# none: git signs in as it does for you
+ta76cffea = để trống: git đăng nhập như vẫn làm với bạn
+
+# any (Gitea: yours)
+t97f35ca8 = bất kỳ (Gitea: user của bạn)
+
 # At least 10 characters, hard to guess
 tea4f3495 = Ít nhất 10 ký tự, khó đoán
 
@@ -307,11 +313,20 @@ t5f845286 = địa chỉ repository
 # the folder's address
 t3f263e4e = địa chỉ thư mục
 
+# The address starts with https://.
+t2ed84724 = Địa chỉ bắt đầu bằng https://.
+
 # the user
 t9ba42c97 = tên người dùng
 
+# Fill in the password.
+t396bf9b1 = Hãy điền mật khẩu.
+
 # the endpoint
 t025e0e85 = endpoint
+
+# The endpoint starts with https://.
+t64b883b1 = Endpoint bắt đầu bằng https://.
 
 # the bucket
 ta347465a = bucket
@@ -319,20 +334,41 @@ ta347465a = bucket
 # the access key
 t4e629821 = access key
 
+# Fill in the secret key.
+tfddf418b = Hãy điền secret key.
+
 # Open the vault first.
 t18fc18b2 = Hãy mở vault trước.
 
-# Fill in the password.
-t396bf9b1 = Hãy điền mật khẩu.
+# Cannot keep the password: {e}
+tcf7fa2ce = Không giữ được mật khẩu: { $e }
 
-# Fill in the secret key.
-tfddf418b = Hãy điền secret key.
+# What the vault keeps there is encrypted, but anyone can see how many codes it holds and when your devices sync. A private repository is safer.
+t45771a0b = Những gì vault giữ ở đó đều được mã hoá, nhưng ai cũng thấy được nó có bao nhiêu mã và các thiết bị của bạn đồng bộ lúc nào. Một repository riêng tư thì an toàn hơn.
+
+# Use another repository
+tbbd1ade5 = Dùng repository khác
+
+# Use it anyway
+t52386b1a = Vẫn dùng
+
+# Anyone can read this repository
+t8df04abb = Ai cũng đọc được repository này
 
 # Saved. Syncing now.
 t3bd89f83 = Đã lưu. Đang đồng bộ.
 
 # Sync is off. What is in the place stays there.
 t9350814a = Đã tắt đồng bộ. Những gì ở nơi đồng bộ vẫn được giữ nguyên.
+
+# git {version} is installed: Connect again.
+t92082827 = Đã cài git { $version }: hãy Kết nối lại.
+
+# When Apple's installer is done, Connect again.
+t2a710b03 = Khi trình cài của Apple xong, hãy Kết nối lại.
+
+# git was not installed: {e}
+t7a63a93e = Chưa cài được git: { $e }
 
 # Sync here
 te998c2e0 = Đồng bộ ở đây
@@ -526,35 +562,59 @@ t244ca1cf = Ngôn ngữ bạn nói
 # Names said the English way are heard too. This device's own: it does not sync.
 tb454f61c = Tên đọc theo kiểu tiếng Anh cũng nghe được. Riêng của thiết bị này: không đồng bộ.
 
-# Folder
-t06357afd = Thư mục
+# A folder
+te84ceb50 = Một thư mục
 
-# Git
-tb6b5540b = Git
+# S3-compatible
+tdfb04144 = Tương thích S3
 
-# WebDAV
-t8e2d2e34 = WebDAV
+# iCloud Drive, Syncthing, a Dropbox or OneDrive folder, a network share.
+tc7eed334 = iCloud Drive, Syncthing, thư mục Dropbox hay OneDrive, ổ mạng.
 
-# S3
-t060203c3 = S3
-
-# Saved on this device; type a new one to change it.
-t6f6ad6e7 = Đã lưu trên thiết bị này; gõ cái mới để thay.
-
-# Kept sealed in the vault, on this device only: it never syncs.
-t5529829d = Được niêm phong trong vault, chỉ trên thiết bị này: không bao giờ đồng bộ.
-
-# The codes stay on this device. Keep its recovery key (Security) and a backup.
-t29381d6c = Các mã chỉ ở trên thiết bị này. Hãy giữ khoá khôi phục (Bảo mật) và một bản sao lưu.
-
-# Choose…
-t58daae9c = Chọn…
+# Choose a folder…
+t6268d49f = Chọn thư mục…
 
 # Use iCloud Drive
 t789420ac = Dùng iCloud Drive
 
-# Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share.
-taadf45c8 = Bất kỳ thư mục nào được app khác đồng bộ: iCloud Drive, Syncthing, Dropbox, OneDrive, thư mục mạng.
+# Nextcloud, ownCloud, Synology, Koofr, Fastmail: the address of a folder there.
+t5f763441 = Nextcloud, ownCloud, Synology, Koofr, Fastmail: địa chỉ của một thư mục ở đó.
+
+# Address
+t700560f3 = Địa chỉ
+
+# User
+te0a63e12 = Người dùng
+
+# Password (saved; type a new one to change it)
+t0b2e430e = Mật khẩu (đã lưu; gõ cái mới để thay)
+
+# Password
+t2cc30838 = Mật khẩu
+
+# AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi: a bucket, and a key that can read and write it.
+t179167f5 = AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi: một bucket, và một khoá đọc ghi được nó.
+
+# Endpoint
+t27e7d69c = Endpoint
+
+# Region (if it asks for one)
+t23e4c7d3 = Region (nếu nó hỏi)
+
+# Bucket
+te34e3557 = Bucket
+
+# Folder in the bucket
+t4c3f6707 = Thư mục trong bucket
+
+# Secret key (saved; type a new one to change it)
+t6d3d5748 = Secret key (đã lưu; gõ cái mới để thay)
+
+# Secret key
+t47252d7a = Secret key
+
+# A private repository on GitHub, GitLab, Gitea or your own server, through this system's git: it signs in as it does for you (its credential manager, your SSH keys and agent). Each change is a commit.
+t33e11efe = Một repository riêng tư trên GitHub, GitLab, Gitea hay máy chủ của bạn, qua git của hệ thống: nó đăng nhập như vẫn làm với bạn (trình quản lý thông tin đăng nhập, khoá SSH và agent của bạn). Mỗi thay đổi là một commit.
 
 # Repository
 te763c8b5 = Repository
@@ -562,41 +622,59 @@ te763c8b5 = Repository
 # Branch
 ta3e27665 = Nhánh
 
-# A private repository. This computer's git signs in as it does for you.
-tcf6c891b = Một repository riêng tư. git của máy này đăng nhập như bình thường bạn vẫn dùng.
+# Token (if git cannot sign in by itself)
+t7919b94b = Token (nếu git không tự đăng nhập được)
 
-# Folder's address
-t1331c053 = Địa chỉ thư mục
+# The token's user
+tb1ad1226 = User của token
 
-# User
-te0a63e12 = Người dùng
+# Your codes travel through a folder another app syncs, a WebDAV server, S3-compatible storage or Git. Everything there is encrypted with your recovery key: the server never sees a code.
+t6d7c69f6 = Các mã của bạn đi qua một thư mục mà app khác đồng bộ, một máy chủ WebDAV, kho tương thích S3 hay Git. Mọi thứ ở đó đều được mã hoá bằng khoá khôi phục: máy chủ không bao giờ thấy một mã nào.
 
-# Password
-t2cc30838 = Mật khẩu
+# The password, secret key or token stays on this device, in the vault; other devices sign in with their own.
+t2527393b = Mật khẩu, secret key hay token chỉ ở trên thiết bị này, trong vault; thiết bị khác đăng nhập bằng cái của riêng nó.
 
-# Endpoint
-t27e7d69c = Endpoint
+# Connect
+tdb89a899 = Kết nối
 
-# Bucket
-te34e3557 = Bucket
+# Asking the repository…
+t2f6d38a9 = Đang hỏi repository…
 
-# Folder in it
-tdfe63979 = Thư mục bên trong
+# Installing git…
+t77685894 = Đang cài git…
 
-# Region
-t492e789d = Region
+# macOS installs it with Apple's Command Line Tools, in a dialog of its own.
+t4d2669ba = macOS cài nó bằng Command Line Tools của Apple, trong một hộp thoại riêng.
 
-# Secret key
-t47252d7a = Secret key
+# Install git…
+te826846c = Cài git…
 
-# Where the vault syncs
-td7a153f7 = Nơi vault đồng bộ
+# Windows installs it with winget, and asks to allow it.
+t1f4d87c1 = Windows cài nó bằng winget, và hỏi để cho phép.
 
-# Save and sync
-te0b44954 = Lưu và đồng bộ
+# Download git
+te5143d09 = Tải git
+
+# Install it in a terminal, then Connect again:
+t6e62c13a = Cài nó trong terminal, rồi Kết nối lại:
+
+# Install a newer git (git-scm.com), then Connect again.
+t9a84a209 = Cài git mới hơn (git-scm.com), rồi Kết nối lại.
+
+# Your place
+t63cb5f41 = Nơi đồng bộ của bạn
+
+# With {place}
+t6c9fa51a = Với { $place }
+
+# Show the recovery key
+t16f62979 = Hiện khoá khôi phục
 
 # Stop syncing
 t59fdbd70 = Dừng đồng bộ
+
+# A place of your own
+t8d5f140b = Một nơi của riêng bạn
 
 # What syncs
 ta2fbb093 = Những gì được đồng bộ
@@ -609,9 +687,6 @@ te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím
 
 # Devices joining, and the recovery key, are in the cloud's panel in the title bar.
 t674d2276 = Thiết bị xin tham gia và khoá khôi phục nằm trong bảng của biểu tượng đám mây trên thanh tiêu đề.
-
-# Show the recovery key
-t16f62979 = Hiện khoá khôi phục
 
 # Hide
 te10c7bcd = Ẩn

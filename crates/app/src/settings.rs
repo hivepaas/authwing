@@ -78,7 +78,6 @@ impl Page {
 /// Where the vault syncs, as the form has it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Kind {
-    Off,
     Folder,
     Git,
     WebDav,
@@ -100,6 +99,16 @@ struct PlaceForm {
     s3_access: Entity<TextInput>,
     /// The WebDAV password or the S3 secret key: kept in the vault.
     secret: Entity<TextInput>,
+    /// A token for git, where it cannot sign in by itself, and its user:
+    /// the token kept in the vault, as the secret is.
+    git_token: Entity<TextInput>,
+    git_user: Entity<TextInput>,
+    /// What is missing, after Connect.
+    problem: Option<String>,
+    /// Why git cannot be used here, after Connect, with how to get it.
+    no_git: Option<authwing_remote::NoGit>,
+    /// Installing git now.
+    installing: bool,
 }
 
 pub struct SettingsView {
@@ -145,10 +154,6 @@ fn set_text(field: &Entity<TextInput>, text: &str, cx: &mut Context<SettingsView
     field.update(cx, |f, cx| f.set_text(text, text.len()..text.len(), cx));
 }
 
-fn text_of(field: &Entity<TextInput>, cx: &App) -> String {
-    field.read(cx).text().trim().to_string()
-}
-
 /// iCloud Drive's folder on this Mac, if it has one.
 fn icloud_drive() -> Option<PathBuf> {
     let dir = std::env::home_dir()?
@@ -173,7 +178,7 @@ impl SettingsView {
             cx.new(|cx| TextInput::said(hint, cx).masked())
         };
         let place = PlaceForm {
-            kind: Kind::Off,
+            kind: Kind::Folder,
             folder: said(cx, || tr!("A folder another app keeps in sync")),
             git_url: said(cx, || "git@github.com:me/vault.git".to_string()),
             git_branch: said(cx, || tr!("The repository's default")),
@@ -189,6 +194,11 @@ impl SettingsView {
             s3_prefix: said(cx, || tr!("None: the bucket's top")),
             s3_access: said(cx, || tr!("Access key")),
             secret: masked(cx, || tr!("Kept in the vault, on this device only")),
+            git_token: masked(cx, || tr!("none: git signs in as it does for you")),
+            git_user: said(cx, || tr!("any (Gitea: yours)")),
+            problem: None,
+            no_git: None,
+            installing: false,
         };
         let mut view = SettingsView {
             page: Page::General,
@@ -241,7 +251,7 @@ impl SettingsView {
         } else if s.git.is_some() {
             Kind::Git
         } else {
-            Kind::Off
+            Kind::Folder
         };
         let (folder, webdav, s3, git) = (
             s.folder.clone(),
@@ -266,6 +276,7 @@ impl SettingsView {
         if let Some(g) = git {
             set_text(&self.place.git_url, &g.url, cx);
             set_text(&self.place.git_branch, &g.branch, cx);
+            set_text(&self.place.git_user, &g.user, cx);
         }
     }
 
@@ -292,10 +303,9 @@ impl SettingsView {
     }
 
     /// Saves the place in the form (its secret in the vault) and syncs.
-    fn save_place(&mut self, cx: &mut Context<Self>) {
-        let Some(store) = self.store.clone() else {
-            return;
-        };
+    /// The place the form has, and its secret (none for Git without a
+    /// token), or what is missing.
+    fn place_typed(&self, cx: &App) -> Result<(SyncPlaceText, Option<String>), String> {
         let f = &self.place;
         let need = |v: String, what: String| -> Result<String, String> {
             if v.is_empty() {
@@ -304,76 +314,155 @@ impl SettingsView {
                 Ok(v)
             }
         };
-        let secret = text_of(&f.secret, cx);
-        let place = match f.kind {
-            Kind::Off => Ok(None),
-            Kind::Folder => need(text_of(&f.folder, cx), tr!("the folder"))
-                .map(|p| Some(SyncPlaceText::Folder(p))),
+        let typed = |i: &Entity<TextInput>| i.read(cx).text().trim().to_string();
+        let saved = self
+            .vault
+            .ready()
+            .and_then(|v| v.device_secret(PLACE_SECRET).ok().flatten())
+            .is_some();
+        // The password or secret key, or the one saved before.
+        let secret = |missing: String| -> Result<Option<String>, String> {
+            match typed(&f.secret) {
+                s if !s.is_empty() => Ok(Some(s)),
+                _ if saved => Ok(None),
+                _ => Err(missing),
+            }
+        };
+        match f.kind {
+            Kind::Folder => Ok((
+                SyncPlaceText::Folder(need(typed(&f.folder), tr!("the folder"))?),
+                None,
+            )),
             Kind::Git => {
-                need(text_of(&f.git_url, cx), tr!("the repository's address")).map(|url| {
-                    Some(SyncPlaceText::Git(GitSync {
-                        url,
-                        branch: text_of(&f.git_branch, cx),
-                        user: String::new(),
-                    }))
-                })
+                let place = GitSync {
+                    url: need(typed(&f.git_url), tr!("the repository's address"))?,
+                    branch: typed(&f.git_branch),
+                    user: typed(&f.git_user),
+                };
+                let token = typed(&f.git_token);
+                Ok((
+                    SyncPlaceText::Git(place),
+                    (!token.is_empty()).then_some(token),
+                ))
             }
             Kind::WebDav => {
-                need(text_of(&f.dav_url, cx), tr!("the folder's address")).and_then(|url| {
-                    need(text_of(&f.dav_user, cx), tr!("the user"))
-                        .map(|user| Some(SyncPlaceText::WebDav(WebDavSync { url, user })))
-                })
+                let url = need(typed(&f.dav_url), tr!("the folder's address"))?;
+                if !url.starts_with("https://") && !url.starts_with("http://") {
+                    return Err(tr!("The address starts with https://."));
+                }
+                let user = need(typed(&f.dav_user), tr!("the user"))?;
+                let password = secret(tr!("Fill in the password."))?;
+                Ok((SyncPlaceText::WebDav(WebDavSync { url, user }), password))
             }
             Kind::S3 => {
-                need(text_of(&f.s3_endpoint, cx), tr!("the endpoint")).and_then(|endpoint| {
-                    let bucket = need(text_of(&f.s3_bucket, cx), tr!("the bucket"))?;
-                    let access_key = need(text_of(&f.s3_access, cx), tr!("the access key"))?;
-                    Ok(Some(SyncPlaceText::S3(S3Sync {
+                let endpoint = need(typed(&f.s3_endpoint), tr!("the endpoint"))?;
+                if !endpoint.starts_with("https://") && !endpoint.starts_with("http://") {
+                    return Err(tr!("The endpoint starts with https://."));
+                }
+                let bucket = need(typed(&f.s3_bucket), tr!("the bucket"))?;
+                let access_key = need(typed(&f.s3_access), tr!("the access key"))?;
+                let key = secret(tr!("Fill in the secret key."))?;
+                Ok((
+                    SyncPlaceText::S3(S3Sync {
                         endpoint,
-                        region: text_of(&f.s3_region, cx),
+                        region: typed(&f.s3_region),
                         bucket,
-                        prefix: text_of(&f.s3_prefix, cx),
+                        prefix: typed(&f.s3_prefix),
                         access_key,
-                    })))
-                })
+                    }),
+                    key,
+                ))
+            }
+        }
+    }
+
+    /// Starts syncing with the place the form has. Git: the system's, or
+    /// how to get it, first; and a repository anyone can read is asked
+    /// about before anything goes there.
+    fn connect(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let (place, secret) = match self.place_typed(cx) {
+            Ok(p) => p,
+            Err(e) => {
+                self.place.problem = Some(e);
+                return cx.notify();
             }
         };
-        let place = match place {
-            Ok(p) => p,
-            Err(e) => return self.fail(e, cx),
+        self.place.problem = None;
+        self.place.no_git = None;
+        if matches!(place, SyncPlaceText::Git(_))
+            && let Err(e) = authwing_remote::Git::find()
+        {
+            self.place.no_git = Some(e);
+            return cx.notify();
+        }
+        let Some(vault) = self.vault.ready() else {
+            self.place.problem = Some(tr!("Open the vault first."));
+            return cx.notify();
         };
-        let secret_needed = matches!(self.place.kind, Kind::WebDav | Kind::S3);
-        if secret_needed {
-            let Some(vault) = self.vault.ready() else {
-                return self.fail(tr!("Open the vault first."), cx);
-            };
-            let saved = vault.device_secret(PLACE_SECRET).ok().flatten().is_some();
-            if secret.is_empty() && !saved {
-                return self.fail(
-                    if self.place.kind == Kind::WebDav {
-                        tr!("Fill in the password.")
-                    } else {
-                        tr!("Fill in the secret key.")
-                    },
+        // The password, secret key or token, this device's own; for a
+        // folder, or Git with no token, none: not the last place's.
+        let keep = match (&place, &secret) {
+            (SyncPlaceText::WebDav(_) | SyncPlaceText::S3(_), None) => Ok(()),
+            (_, secret) => vault.set_device_secret(PLACE_SECRET, secret.as_deref()),
+        };
+        if let Err(e) = keep {
+            self.place.problem = Some(tr!("Cannot keep the password: {e}", e = e.to_string()));
+            return cx.notify();
+        }
+        for f in [&self.place.secret, &self.place.git_token] {
+            set_text(f, "", cx);
+        }
+        let SyncPlaceText::Git(git) = &place else {
+            return self.use_place(Some(place), cx);
+        };
+        let url = git.url.clone();
+        self.busy = true;
+        cx.notify();
+        let check = cx.background_spawn(async move {
+            authwing_remote::Git::find().is_ok_and(|git| git.readable_by_anyone(&url))
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let public = check.await;
+            let _ = this.update_in(cx, |view, window, cx| {
+                view.busy = false;
+                if !public {
+                    return view.use_place(Some(place), cx);
+                }
+                // Anyone can read it: used only if the user says so.
+                let detail = tr!(
+                    "What the vault keeps there is encrypted, but anyone can see how many codes it holds and when your devices sync. A private repository is safer."
+                );
+                let (another, anyway) = (tr!("Use another repository"), tr!("Use it anyway"));
+                let answer = window.prompt(
+                    PromptLevel::Warning,
+                    &tr!("Anyone can read this repository"),
+                    Some(&detail),
+                    &[another.as_str(), anyway.as_str()],
                     cx,
                 );
-            }
-            if !secret.is_empty()
-                && let Err(e) = vault.set_device_secret(PLACE_SECRET, Some(&secret))
-            {
-                return self.fail(e.to_string(), cx);
-            }
-        } else if let Some(vault) = self.vault.ready() {
-            // A password left from another place is no use any more.
-            let _ = vault.set_device_secret(PLACE_SECRET, None);
-        }
+                cx.spawn(async move |this, cx| {
+                    if matches!(answer.await, Ok(1)) {
+                        let _ = this.update(cx, |view, cx| view.use_place(Some(place), cx));
+                    }
+                })
+                .detach();
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+
+    /// Writes where the vault syncs (None: nowhere), and syncs.
+    fn use_place(&mut self, place: Option<SyncPlaceText>, cx: &mut Context<Self>) {
+        let Some(store) = self.store.clone() else {
+            return;
+        };
         match store.set_sync_place(place.as_ref()) {
             Ok(()) => {
                 if let Ok(s) = store.settings() {
                     self.settings = s;
                 }
-                set_text(&self.place.secret, "", cx);
-                self.problem = None;
+                self.place.problem = None;
                 cx.emit(SettingsEvent::Changed);
                 cx.emit(SettingsEvent::Say(Notice::good(match place {
                     Some(_) => tr!("Saved. Syncing now."),
@@ -381,9 +470,57 @@ impl SettingsView {
                 })));
                 self.sync.now();
             }
-            Err(e) => self.problem = Some(e.to_string()),
+            Err(e) => self.place.problem = Some(e.to_string()),
         }
         cx.notify();
+    }
+
+    /// Stops syncing: the place is forgotten, and its password on this
+    /// device; what is there stays.
+    fn stop_sync(&mut self, cx: &mut Context<Self>) {
+        if let Some(vault) = self.vault.ready() {
+            let _ = vault.set_device_secret(PLACE_SECRET, None);
+        }
+        self.use_place(None, cx);
+        self.fill_place(cx);
+    }
+
+    /// Installs git where the system asks for the rights itself, then looks
+    /// for it again.
+    fn install_git(&mut self, how: authwing_remote::Install, cx: &mut Context<Self>) {
+        self.place.installing = true;
+        cx.notify();
+        let job = cx.background_spawn(async move {
+            authwing_remote::git::install(&how)?;
+            Ok::<_, std::io::Error>(authwing_remote::Git::find())
+        });
+        cx.spawn(async move |this, cx| {
+            let done = job.await;
+            let _ = this.update(cx, |view, cx| {
+                let form = &mut view.place;
+                form.installing = false;
+                match done {
+                    Ok(Ok(git)) => {
+                        form.no_git = None;
+                        form.problem = None;
+                        cx.emit(SettingsEvent::Say(Notice::good(tr!(
+                            "git {version} is installed: Connect again.",
+                            version = git.version().to_string()
+                        ))));
+                    }
+                    // Apple's dialog goes on by itself after this returns.
+                    Ok(Err(_)) if cfg!(target_os = "macos") => {
+                        form.problem = Some(tr!("When Apple's installer is done, Connect again."));
+                    }
+                    Ok(Err(e)) => form.no_git = Some(e),
+                    Err(e) => {
+                        form.problem = Some(tr!("git was not installed: {e}", e = e.to_string()))
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
     }
 
     fn choose_folder(&mut self, cx: &mut Context<Self>) {
@@ -1207,22 +1344,24 @@ impl SettingsView {
             )
     }
 
-    fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
+    /// Where to sync, while not syncing: a folder, or a server's address
+    /// and sign-in, as shellwing has it.
+    fn sync_choice(&self, cx: &mut Context<Self>) -> gpui::Div {
         let f = &self.place;
         let kinds = [
-            (Kind::Off, "off", tr!("Off")),
-            (Kind::Folder, "folder", tr!("Folder")),
-            (Kind::Git, "git", tr!("Git")),
-            (Kind::WebDav, "webdav", tr!("WebDAV")),
-            (Kind::S3, "s3", tr!("S3")),
+            (Kind::Folder, "folder", tr!("A folder")),
+            (Kind::WebDav, "webdav", "WebDAV".to_string()),
+            (Kind::S3, "s3", tr!("S3-compatible")),
+            (Kind::Git, "git", "Git".to_string()),
         ];
-        let mut kind_row = div().flex().gap(px(6.));
+        let mut pick = div().flex().flex_wrap().gap(px(6.));
         for (k, name, label) in kinds {
-            kind_row = kind_row.child(
+            pick = pick.child(
                 choice(&format!("place-{name}"), &label, f.kind == k).on_click(cx.listener(
                     move |view, _, _, cx| {
                         view.place.kind = k;
-                        view.problem = None;
+                        view.place.problem = None;
+                        view.place.no_git = None;
                         cx.notify();
                     },
                 )),
@@ -1233,28 +1372,23 @@ impl SettingsView {
             .ready()
             .and_then(|v| v.device_secret(PLACE_SECRET).ok().flatten())
             .is_some();
-        let secret_hint = if saved_secret {
-            tr!("Saved on this device; type a new one to change it.")
-        } else {
-            tr!("Kept sealed in the vault, on this device only: it never syncs.")
-        };
-        let form = match f.kind {
-            Kind::Off => div().child(hint(tr!(
-                "The codes stay on this device. Keep its recovery key (Security) and a backup."
-            ))),
+        let body = match f.kind {
             Kind::Folder => {
                 let icloud = icloud_drive();
                 div()
                     .flex()
                     .flex_col()
                     .gap(px(10.))
+                    .child(hint(tr!(
+                        "iCloud Drive, Syncthing, a Dropbox or OneDrive folder, a network share."
+                    )))
                     .child(
                         div()
                             .flex()
                             .gap(px(8.))
                             .child(div().flex_1().child(input_box(&f.folder)))
                             .child(
-                                outline_button("choose-folder", &tr!("Choose…"))
+                                outline_button("choose-folder", &tr!("Choose a folder…"))
                                     .on_click(cx.listener(|view, _, _, cx| view.choose_folder(cx))),
                             ),
                     )
@@ -1268,77 +1402,147 @@ impl SettingsView {
                                 })),
                         ))
                     })
-                    .child(hint(tr!(
-                        "Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share."
-                    )))
             }
-            Kind::Git => div()
-                .flex()
-                .flex_col()
-                .gap(px(10.))
-                .child(labeled(tr!("Repository"), &f.git_url))
-                .child(labeled(tr!("Branch"), &f.git_branch))
-                .child(hint(tr!(
-                    "A private repository. This computer's git signs in as it does for you."
-                ))),
             Kind::WebDav => div()
                 .flex()
                 .flex_col()
                 .gap(px(10.))
-                .child(labeled(tr!("Folder's address"), &f.dav_url))
-                .child(
-                    div()
-                        .flex()
-                        .gap(px(12.))
-                        .child(div().flex_1().child(labeled(tr!("User"), &f.dav_user)))
-                        .child(div().flex_1().child(labeled(tr!("Password"), &f.secret))),
-                )
-                .child(hint(secret_hint)),
+                .child(hint(tr!(
+                    "Nextcloud, ownCloud, Synology, Koofr, Fastmail: the address of a folder there."
+                )))
+                .child(labeled(tr!("Address"), &f.dav_url))
+                .child(labeled(tr!("User"), &f.dav_user))
+                .child(labeled(
+                    if saved_secret {
+                        tr!("Password (saved; type a new one to change it)")
+                    } else {
+                        tr!("Password")
+                    },
+                    &f.secret,
+                )),
             Kind::S3 => div()
                 .flex()
                 .flex_col()
                 .gap(px(10.))
+                .child(hint(tr!(
+                    "AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi: a bucket, and a key that can read and write it."
+                )))
                 .child(labeled(tr!("Endpoint"), &f.s3_endpoint))
-                .child(
-                    div()
-                        .flex()
-                        .gap(px(12.))
-                        .child(div().flex_1().child(labeled(tr!("Bucket"), &f.s3_bucket)))
-                        .child(
-                            div()
-                                .flex_1()
-                                .child(labeled(tr!("Folder in it"), &f.s3_prefix)),
-                        )
-                        .child(
-                            div()
-                                .w(px(110.))
-                                .child(labeled(tr!("Region"), &f.s3_region)),
-                        ),
-                )
-                .child(
-                    div()
-                        .flex()
-                        .gap(px(12.))
-                        .child(
-                            div()
-                                .flex_1()
-                                .child(labeled(tr!("Access key"), &f.s3_access)),
-                        )
-                        .child(div().flex_1().child(labeled(tr!("Secret key"), &f.secret))),
-                )
-                .child(hint(secret_hint)),
+                .child(labeled(tr!("Region (if it asks for one)"), &f.s3_region))
+                .child(labeled(tr!("Bucket"), &f.s3_bucket))
+                .child(labeled(tr!("Folder in the bucket"), &f.s3_prefix))
+                .child(labeled(tr!("Access key"), &f.s3_access))
+                .child(labeled(
+                    if saved_secret {
+                        tr!("Secret key (saved; type a new one to change it)")
+                    } else {
+                        tr!("Secret key")
+                    },
+                    &f.secret,
+                )),
+            Kind::Git => div()
+                .flex()
+                .flex_col()
+                .gap(px(10.))
+                .child(hint(tr!(
+                    "A private repository on GitHub, GitLab, Gitea or your own server, through this system's git: it signs in as it does for you (its credential manager, your SSH keys and agent). Each change is a commit."
+                )))
+                .child(labeled(tr!("Repository"), &f.git_url))
+                .child(labeled(tr!("Branch"), &f.git_branch))
+                .child(labeled(
+                    tr!("Token (if git cannot sign in by itself)"),
+                    &f.git_token,
+                ))
+                .child(labeled(tr!("The token's user"), &f.git_user))
+                .when_some(f.no_git.clone(), |d, no| d.child(self.no_git(no, cx))),
         };
-        let settings_too = self.settings.sync.settings;
-        let syncing = self.settings.sync.place().is_some();
+        let remote = f.kind != Kind::Folder;
         div()
             .flex()
             .flex_col()
             .gap(px(12.))
-            .child(heading(tr!("Where the vault syncs")))
+            .child(hint(tr!(
+                "Your codes travel through a folder another app syncs, a WebDAV server, S3-compatible storage or Git. Everything there is encrypted with your recovery key: the server never sees a code."
+            )))
+            .child(pick)
+            .child(body)
+            .when(remote, |d| {
+                d.child(hint(tr!(
+                    "The password, secret key or token stays on this device, in the vault; other devices sign in with their own."
+                )))
+            })
             .child(
-                card()
-                    .child(kind_row)
-                    .child(form)
+                div()
+                    .flex()
+                    .flex_wrap()
+                    .items_center()
+                    .gap(px(10.))
+                    .child(
+                        primary_button("sync-connect", &tr!("Connect"))
+                            .on_click(cx.listener(|view, _, window, cx| view.connect(window, cx))),
+                    )
+                    .when(self.busy, |d| {
+                        d.child(hint(tr!("Asking the repository…")))
+                    })
+                    .when(f.installing, |d| d.child(hint(tr!("Installing git…"))))
+                    .when_some(f.problem.clone(), |d, p| {
+                        d.child(
+                            div()
+                                .text_size(ui(12.))
+                                .text_color(rgb(colors().bad))
+                                .child(p),
+                        )
+                    }),
+            )
+    }
+
+    /// Why git cannot be used, and how to get it.
+    fn no_git(&self, no: authwing_remote::NoGit, cx: &mut Context<Self>) -> gpui::Div {
+        use authwing_remote::{Install, NoGit};
+        let c = colors();
+        let how = match &no {
+            NoGit::Missing(how) => Some(how.clone()),
+            _ => None,
+        };
+        let what = div()
+            .flex()
+            .flex_col()
+            .gap(px(8.))
+            .p(px(12.))
+            .rounded(px(8.))
+            .border_1()
+            .border_color(rgb(c.warn_edge))
+            .bg(rgb(c.warn_bg))
+            .text_size(ui(12.))
+            .child(div().text_color(rgb(c.warn_text)).child(format!("{no}.")));
+        match how {
+            Some(Install::CommandLineTools) => what
+                .child(hint(tr!(
+                    "macOS installs it with Apple's Command Line Tools, in a dialog of its own."
+                )))
+                .child(div().flex().child(
+                    outline_button("git-install", &tr!("Install git…")).on_click(cx.listener(
+                        |view, _, _, cx| view.install_git(Install::CommandLineTools, cx),
+                    )),
+                )),
+            Some(Install::Winget) => what
+                .child(hint(tr!(
+                    "Windows installs it with winget, and asks to allow it."
+                )))
+                .child(div().flex().child(
+                    outline_button("git-install", &tr!("Install git…")).on_click(
+                        cx.listener(|view, _, _, cx| view.install_git(Install::Winget, cx)),
+                    ),
+                )),
+            Some(Install::Download(url)) => what.child(
+                div().flex().child(
+                    outline_button("git-download", &tr!("Download git"))
+                        .on_click(cx.listener(move |_, _, _, cx| cx.open_url(url))),
+                ),
+            ),
+            Some(Install::Command(cmd)) => {
+                let copied = cmd.clone();
+                what.child(hint(tr!("Install it in a terminal, then Connect again:")))
                     .child(
                         div()
                             .flex()
@@ -1346,26 +1550,64 @@ impl SettingsView {
                             .gap(px(8.))
                             .child(
                                 div()
-                                    .flex_1()
-                                    .text_size(ui(12.))
-                                    .text_color(rgb(colors().muted))
-                                    .child(self.sync_status.clone()),
+                                    .px(px(8.))
+                                    .py(px(4.))
+                                    .rounded(px(5.))
+                                    .bg(rgb(c.field))
+                                    .font_family("monospace")
+                                    .child(cmd),
                             )
-                            .when(f.kind != Kind::Off, |d| {
-                                d.child(
-                                    primary_button("save-place", &tr!("Save and sync"))
-                                        .on_click(cx.listener(|view, _, _, cx| view.save_place(cx))),
-                                )
-                            })
-                            // Off, with a place set: stopping is what saving does.
-                            .when(f.kind == Kind::Off && syncing, |d| {
-                                d.child(
-                                    outline_button("stop-sync", &tr!("Stop syncing"))
-                                        .on_click(cx.listener(|view, _, _, cx| view.save_place(cx))),
-                                )
-                            }),
+                            .child(
+                                outline_button("git-copy", &tr!("Copy")).on_click(cx.listener(
+                                    move |_, _, _, cx| {
+                                        cx.write_to_clipboard(gpui::ClipboardItem::new_string(
+                                            copied.clone(),
+                                        ));
+                                    },
+                                )),
+                            ),
+                    )
+            }
+            // Too old, or failing: what it said is above.
+            None => what.child(hint(tr!(
+                "Install a newer git (git-scm.com), then Connect again."
+            ))),
+        }
+    }
+
+    fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
+        let settings_too = self.settings.sync.settings;
+        let page = div().flex().flex_col().gap(px(12.));
+        let page = match self.settings.sync.place() {
+            Some(place) => page.child(heading(tr!("Your place"))).child(
+                card()
+                    .child(row(
+                        tr!("With {place}", place = crate::syncing::describe(&place)),
+                        self.sync_status.clone(),
+                        div(),
+                    ))
+                    .child(
+                        div()
+                            .flex()
+                            .flex_wrap()
+                            .gap(px(8.))
+                            .child(
+                                outline_button("sync-key", &tr!("Show the recovery key")).on_click(
+                                    cx.listener(|view, _, _, cx| view.set_page(Page::Security, cx)),
+                                ),
+                            )
+                            .child(
+                                outline_button("sync-stop", &tr!("Stop syncing"))
+                                    .text_color(rgb(colors().bad))
+                                    .on_click(cx.listener(|view, _, _, cx| view.stop_sync(cx))),
+                            ),
                     ),
-            )
+            ),
+            None => page
+                .child(heading(tr!("A place of your own")))
+                .child(card().child(self.sync_choice(cx))),
+        };
+        page
             .child(heading(tr!("What syncs")))
             .child(card().child(row(
                 tr!("Settings too"),

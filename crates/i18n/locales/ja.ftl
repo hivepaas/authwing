@@ -274,6 +274,12 @@ t89a71bba = 同期
 # Kept in the vault, on this device only
 # t4893a866 =
 
+# none: git signs in as it does for you
+# ta76cffea =
+
+# any (Gitea: yours)
+# t97f35ca8 =
+
 # At least 10 characters, hard to guess
 # tea4f3495 =
 
@@ -298,11 +304,20 @@ t89a71bba = 同期
 # the folder's address
 # t3f263e4e =
 
+# The address starts with https://.
+# t2ed84724 =
+
 # the user
 # t9ba42c97 =
 
+# Fill in the password.
+# t396bf9b1 =
+
 # the endpoint
 # t025e0e85 =
+
+# The endpoint starts with https://.
+# t64b883b1 =
 
 # the bucket
 # ta347465a =
@@ -310,20 +325,41 @@ t89a71bba = 同期
 # the access key
 # t4e629821 =
 
+# Fill in the secret key.
+# tfddf418b =
+
 # Open the vault first.
 # t18fc18b2 =
 
-# Fill in the password.
-# t396bf9b1 =
+# Cannot keep the password: {e}
+# tcf7fa2ce =
 
-# Fill in the secret key.
-# tfddf418b =
+# What the vault keeps there is encrypted, but anyone can see how many codes it holds and when your devices sync. A private repository is safer.
+# t45771a0b =
+
+# Use another repository
+# tbbd1ade5 =
+
+# Use it anyway
+# t52386b1a =
+
+# Anyone can read this repository
+# t8df04abb =
 
 # Saved. Syncing now.
 # t3bd89f83 =
 
 # Sync is off. What is in the place stays there.
 # t9350814a =
+
+# git {version} is installed: Connect again.
+# t92082827 =
+
+# When Apple's installer is done, Connect again.
+# t2a710b03 =
+
+# git was not installed: {e}
+# t7a63a93e =
 
 # Sync here
 # te998c2e0 =
@@ -508,35 +544,59 @@ t89a71bba = 同期
 # Names said the English way are heard too. This device's own: it does not sync.
 # tb454f61c =
 
-# Folder
-# t06357afd =
+# A folder
+# te84ceb50 =
 
-# Git
-# tb6b5540b =
+# S3-compatible
+# tdfb04144 =
 
-# WebDAV
-# t8e2d2e34 =
+# iCloud Drive, Syncthing, a Dropbox or OneDrive folder, a network share.
+# tc7eed334 =
 
-# S3
-# t060203c3 =
-
-# Saved on this device; type a new one to change it.
-# t6f6ad6e7 =
-
-# Kept sealed in the vault, on this device only: it never syncs.
-# t5529829d =
-
-# The codes stay on this device. Keep its recovery key (Security) and a backup.
-# t29381d6c =
-
-# Choose…
-# t58daae9c =
+# Choose a folder…
+# t6268d49f =
 
 # Use iCloud Drive
 # t789420ac =
 
-# Any folder another app keeps in sync: iCloud Drive, Syncthing, Dropbox, OneDrive, a network share.
-# taadf45c8 =
+# Nextcloud, ownCloud, Synology, Koofr, Fastmail: the address of a folder there.
+# t5f763441 =
+
+# Address
+# t700560f3 =
+
+# User
+# te0a63e12 =
+
+# Password (saved; type a new one to change it)
+# t0b2e430e =
+
+# Password
+# t2cc30838 =
+
+# AWS S3, Cloudflare R2, Backblaze B2, MinIO, Wasabi: a bucket, and a key that can read and write it.
+# t179167f5 =
+
+# Endpoint
+# t27e7d69c =
+
+# Region (if it asks for one)
+# t23e4c7d3 =
+
+# Bucket
+# te34e3557 =
+
+# Folder in the bucket
+# t4c3f6707 =
+
+# Secret key (saved; type a new one to change it)
+# t6d3d5748 =
+
+# Secret key
+# t47252d7a =
+
+# A private repository on GitHub, GitLab, Gitea or your own server, through this system's git: it signs in as it does for you (its credential manager, your SSH keys and agent). Each change is a commit.
+# t33e11efe =
 
 # Repository
 # te763c8b5 =
@@ -544,41 +604,59 @@ t89a71bba = 同期
 # Branch
 # ta3e27665 =
 
-# A private repository. This computer's git signs in as it does for you.
-# tcf6c891b =
+# Token (if git cannot sign in by itself)
+# t7919b94b =
 
-# Folder's address
-# t1331c053 =
+# The token's user
+# tb1ad1226 =
 
-# User
-# te0a63e12 =
+# Your codes travel through a folder another app syncs, a WebDAV server, S3-compatible storage or Git. Everything there is encrypted with your recovery key: the server never sees a code.
+# t6d7c69f6 =
 
-# Password
-# t2cc30838 =
+# The password, secret key or token stays on this device, in the vault; other devices sign in with their own.
+# t2527393b =
 
-# Endpoint
-# t27e7d69c =
+# Connect
+# tdb89a899 =
 
-# Bucket
-# te34e3557 =
+# Asking the repository…
+# t2f6d38a9 =
 
-# Folder in it
-# tdfe63979 =
+# Installing git…
+# t77685894 =
 
-# Region
-# t492e789d =
+# macOS installs it with Apple's Command Line Tools, in a dialog of its own.
+# t4d2669ba =
 
-# Secret key
-# t47252d7a =
+# Install git…
+# te826846c =
 
-# Where the vault syncs
-# td7a153f7 =
+# Windows installs it with winget, and asks to allow it.
+# t1f4d87c1 =
 
-# Save and sync
-# te0b44954 =
+# Download git
+# te5143d09 =
+
+# Install it in a terminal, then Connect again:
+# t6e62c13a =
+
+# Install a newer git (git-scm.com), then Connect again.
+# t9a84a209 =
+
+# Your place
+# t63cb5f41 =
+
+# With {place}
+# t6c9fa51a =
+
+# Show the recovery key
+# t16f62979 =
 
 # Stop syncing
 # t59fdbd70 =
+
+# A place of your own
+# t8d5f140b =
 
 # What syncs
 # ta2fbb093 =
@@ -591,9 +669,6 @@ t89a71bba = 同期
 
 # Devices joining, and the recovery key, are in the cloud's panel in the title bar.
 # t674d2276 =
-
-# Show the recovery key
-# t16f62979 =
 
 # Hide
 # te10c7bcd =
