@@ -39,6 +39,9 @@ ui_font = { family = "Inter", size = 14 }   # no family: the system's; size 10 t
 [codes]
 clear_clipboard = 20         # seconds a copied code stays on the clipboard; 0: it stays
 
+[panel]
+key = "alt+space"            # opens the quick panel from any app; "": none; this device's own
+
 [sync]                       # see Syncing between devices; one place at a time
 folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"
 settings = true              # the settings that are not this device's own sync too
@@ -65,6 +68,26 @@ settings = true              # the settings that are not this device's own sync 
 - **Deleting:** the bin on a card, after a question. Turn two-factor
   sign-in off at the site first, or keep its recovery codes: without the
   code you cannot sign in there.
+
+## The quick panel
+
+A shortcut opens a small panel over the app you are in, with the codes for
+that app or page first: Option+Space on macOS, Ctrl+Alt+Space on Windows and
+Linux (*Settings › General*, or `key` under `[panel]`; `""` turns it off).
+
+- **Enter** types the code into the app you were in, as the keyboard would;
+  **Cmd/Ctrl+C** copies it; **Esc**, or a click elsewhere, closes the panel
+  and gives the keyboard back to that app. Typing in the panel narrows the
+  list, as the find field does.
+- **On macOS, typing needs the Accessibility permission**, the one that
+  reads window titles (*Allow…* in Settings asks for it); until then, Enter
+  copies. On a page that only looks like a code's site, nothing is typed.
+- **The key** is written as the window's shortcuts are (see Keyboard
+  shortcuts), with Ctrl, Alt or Cmd: a key alone or with Shift alone is
+  refused, and the window says so when another app holds the key already.
+  Windows keeps Win+Space and Win+Shift+Space for the keyboard's language.
+- **Under Wayland** an app gets no key over the others and cannot type into
+  them: the shortcut and typing reach only apps that run through XWayland.
 
 ## Backup, and moving from another app
 
@@ -227,8 +250,8 @@ Settings in `config.toml` sync too, unless `settings = false` under `[sync]`:
 
 - **What syncs:** `[appearance]` (`mode`, `ui_font`) and `[codes]
   clear_clipboard`.
-- **What each device keeps:** `[general] language`, `[sync]` and
-  `[shortcuts]`, which differ between computers.
+- **What each device keeps:** `[general] language`, `[sync]`, `[shortcuts]`
+  and `[panel]`, which differ between computers.
 - **Merging** is per setting; the file keeps its comments and layout. A
   device whose settings sync for the first time takes the others' where they
   set one, and keeps its own where they set none.

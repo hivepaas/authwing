@@ -1,7 +1,7 @@
 //! The settings that sync between devices, as vault fields: `appearance.mode`
 //! = `"dark"`, a key's dotted path and its value as JSON. The rest of
 //! `config.toml` is this device's own: the sync place, the language, the
-//! shortcuts, which differ between computers.
+//! shortcuts and the quick panel's, which differ between computers.
 
 use std::collections::BTreeMap;
 

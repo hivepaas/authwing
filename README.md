@@ -37,6 +37,9 @@ from there; the SSH client does not.
   in the sidebar.
 * **For the window used last:** the codes for the app you were in come first,
   by the sites saved with them or their name in the window's title.
+* **Quick panel:** Option+Space (Ctrl+Alt+Space on Windows and Linux) over any
+  app shows the codes for that app or page first; Enter types the code into
+  it, Cmd/Ctrl+C copies it.
 * **Browser extension** (Chrome, Edge, Brave, Arc, Vivaldi, Firefox; in
   `extension/`): it tells the app the page's exact address, so a code saved
   with that site comes first and is typed into the page when copied; a page
@@ -61,9 +64,8 @@ from there; the SSH client does not.
 * **Voice** (`authwing-voice`): "open Vietcombank", "Öffne PayPal": Whisper on
   the device, the name matched in any language.
 
-**Next:** a quick panel over any app (a global shortcut), voice in it,
-scanning a QR code on the screen, the extension in the stores, release
-signing.
+**Next:** voice in the quick panel, scanning a QR code on the screen, the
+extension in the stores, release signing.
 
 ---
 
@@ -99,7 +101,7 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 
 | Crate | Role |
 | --- | --- |
-| `crates/app` | The GPUI window: codes, adding them, Settings, the Sync panel |
+| `crates/app` | The GPUI window: codes, adding them, the quick panel, Settings, the Sync panel |
 | `crates/backup` | authwing's encrypted backup, the plain export, other apps' exports |
 | `crates/totp` | One-time codes, `otpauth://` links, Google Authenticator's export |
 | `crates/context` | The active app and window, sites against look-alikes, codes ranked for a context |

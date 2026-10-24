@@ -23,6 +23,7 @@ use crate::colors::colors;
 use crate::input::{Changed, TextInput, said};
 use crate::look::{self, Live, ui};
 use crate::notice::{self, Notice};
+use crate::quick_panel::{self, Over, PanelEvent as QuickEvent, QuickPanel};
 use crate::settings::{SettingsEvent, SettingsView};
 use crate::sync_panel::{PanelEvent, SyncPanel};
 use crate::syncing::{SyncEvent, SyncWorker};
@@ -71,6 +72,11 @@ pub struct Workspace {
     passphrase_joins: bool,
     /// The window of another app used last: its codes come first.
     elsewhere: Option<authwing_context::Window>,
+    /// The quick panel, while it is open, and the window it is over.
+    quick: Option<(
+        gpui::WindowHandle<QuickPanel>,
+        Option<authwing_context::window::Window>,
+    )>,
     /// The browser extension, and the tab in front as it last said.
     _bridge: Bridge,
     tab: Option<Tab>,
@@ -154,6 +160,7 @@ impl Workspace {
             requests: vec![],
             passphrase_joins: false,
             elsewhere: None,
+            quick: None,
             _bridge: bridge,
             tab: None,
             bounds_change: 0,
@@ -225,6 +232,7 @@ impl Workspace {
             return;
         };
         self.restyle();
+        self.apply_panel_key(cx);
         cx.set_global(crate::hotkeys::Bound(self.live.keymap()));
         if let Some(sync) = &self.sync {
             let place = self.live.sync_place();
@@ -237,6 +245,22 @@ impl Workspace {
             self.say(Notice::warn(p));
         }
         cx.notify();
+    }
+
+    /// Registers the quick panel's shortcut as config.toml has it.
+    pub fn apply_panel_key(&mut self, cx: &mut Context<Self>) {
+        if !cx.has_global::<crate::panel_key::PanelKey>() {
+            return;
+        }
+        let key = self.live.settings().panel.key.clone();
+        let set = cx.update_global(|keys: &mut crate::panel_key::PanelKey, _| keys.set(&key));
+        if let Err(e) = set {
+            self.say(Notice::warn(tr!(
+                "The quick panel's shortcut {key} cannot be used: {e}",
+                key = key,
+                e = e
+            )));
+        }
     }
 
     fn say(&mut self, notice: Notice) {
@@ -469,29 +493,39 @@ impl Workspace {
             .collect()
     }
 
+    /// The code `id` shows now, for use: an HOTP code moves on to its next,
+    /// as using one does.
+    fn take_code(&mut self, id: &str) -> Option<String> {
+        let entry = self.codes.iter().find(|c| c.id == id)?;
+        let code = entry.otp.code_at(codes::now());
+        if let Kind::Hotp { counter } = entry.otp.kind {
+            let mut next = entry.otp.clone();
+            next.kind = Kind::Hotp {
+                counter: counter.saturating_add(1),
+            };
+            let (group, sites) = (entry.group.clone(), entry.sites.clone());
+            if let Some(vault) = self.vault.ready() {
+                if let Err(e) = codes::save(&vault, Some(id), &next, &group, &sites) {
+                    self.say(Notice::bad(tr!("The counter was not saved: {e}", e = e)));
+                }
+                self.reload();
+                self.sync_now();
+            }
+        }
+        Some(code)
+    }
+
     /// Puts the code `id` shows now on the clipboard, and types it into the
     /// page in front when that is the code's site and has a field for it.
-    /// An HOTP code moves on to its next, as it is used.
     fn copy(&mut self, id: &str, cx: &mut Context<Self>) {
-        let Some(entry) = self.codes.iter().find(|c| c.id == id) else {
-            return;
-        };
-        let code = entry.otp.code_at(codes::now());
-        let next = match entry.otp.kind {
-            Kind::Hotp { counter } => {
-                let mut next = entry.otp.clone();
-                next.kind = Kind::Hotp {
-                    counter: counter.saturating_add(1),
-                };
-                Some((next, entry.group.clone(), entry.sites.clone()))
-            }
-            _ => None,
-        };
         let verified = self
             .for_window()
             .1
             .iter()
             .any(|(e, why)| e.id == id && why.verified());
+        let Some(code) = self.take_code(id) else {
+            return;
+        };
         let typed = verified
             .then(|| self.page().filter(|t| t.has_code_field))
             .flatten()
@@ -505,16 +539,142 @@ impl Workspace {
         cx.write_to_clipboard(ClipboardItem::new_string(code.clone()));
         self.clipboard = Some((code, Instant::now()));
         self.copied = Some((id.to_string(), Instant::now()));
-        if let Some((next, group, sites)) = next
-            && let Some(vault) = self.vault.ready()
-        {
-            if let Err(e) = codes::save(&vault, Some(id), &next, &group, &sites) {
-                self.say(Notice::bad(tr!("The counter was not saved: {e}", e = e)));
-            }
-            self.reload();
-            self.sync_now();
-        }
         cx.notify();
+    }
+
+    /// Opens the quick panel over the app in front, or closes it if open.
+    pub fn toggle_quick(&mut self, cx: &mut Context<Self>) {
+        if self.quick.is_some() {
+            return self.close_quick(false, cx);
+        }
+        if self.vault.ready().is_none() {
+            // Locked: the window asks for the passphrase.
+            cx.activate(true);
+            return;
+        }
+        // Before authwing comes to the front: the app the user is in.
+        let own = Some(std::process::id());
+        let target = authwing_context::window::active().filter(|w| w.pid != own);
+        let page = target
+            .as_ref()
+            .filter(|w| browser::is_browser(&w.app_id))
+            .and(self.tab.as_ref());
+        let (matched, warning) = match &target {
+            Some(w) => self.rank_for(w, page, 5),
+            None => (vec![], None),
+        };
+        let item = |e: &Entry, why: Option<Reason>| quick_panel::Item {
+            id: e.id.clone(),
+            title: e.title(),
+            detail: e.detail().to_string(),
+            initials: e.initials(),
+            otp: e.otp.clone(),
+            why: why.map(reason_label),
+            search: format!(
+                "{} {} {} {}",
+                e.otp.issuer,
+                e.otp.account,
+                e.group,
+                e.sites.join(" ")
+            )
+            .to_lowercase(),
+        };
+        let matched_items: Vec<quick_panel::Item> =
+            matched.iter().map(|(e, why)| item(e, Some(*why))).collect();
+        let others: Vec<quick_panel::Item> = self
+            .codes
+            .iter()
+            .filter(|e| !matched.iter().any(|(m, _)| m.id == e.id))
+            .map(|e| item(e, None))
+            .collect();
+        let over = Over {
+            place: target.as_ref().map(|w| match &w.title {
+                Some(t) if !t.is_empty() => format!("{} · {t}", w.app_name),
+                _ => w.app_name.clone(),
+            }),
+            app: target.as_ref().map(|w| w.app_name.clone()),
+            look_alike: warning
+                .as_ref()
+                .map(|w| (w.page.clone(), w.like.to_string())),
+            can_type: target.is_some() && warning.is_none() && crate::typing::allowed(),
+        };
+        let bounds = gpui::Bounds::centered(None, gpui::size(px(560.), px(440.)), cx);
+        let opened = cx.open_window(
+            gpui::WindowOptions {
+                window_bounds: Some(gpui::WindowBounds::Windowed(bounds)),
+                titlebar: None,
+                kind: gpui::WindowKind::PopUp,
+                focus: true,
+                show: true,
+                is_movable: false,
+                is_resizable: false,
+                is_minimizable: false,
+                ..Default::default()
+            },
+            |window, cx| cx.new(|cx| QuickPanel::new(over, matched_items, others, window, cx)),
+        );
+        let Ok(handle) = opened else {
+            return;
+        };
+        if let Ok(panel) = handle.update(cx, |_, window, cx| {
+            window.activate_window();
+            cx.entity()
+        }) {
+            cx.subscribe(&panel, |ws, _, event: &QuickEvent, cx| match event {
+                QuickEvent::Close => ws.close_quick(true, cx),
+                QuickEvent::Copy(id) => {
+                    ws.copy(id, cx);
+                    ws.close_quick(true, cx);
+                }
+                QuickEvent::Type(id) => {
+                    let id = id.clone();
+                    ws.type_code(&id, cx);
+                }
+            })
+            .detach();
+        }
+        cx.activate(true);
+        self.quick = Some((handle, target));
+    }
+
+    /// Closes the quick panel; `back` gives the keyboard back to the window
+    /// it was over, leaving authwing's own window where it was.
+    fn close_quick(&mut self, back: bool, cx: &mut Context<Self>) {
+        let Some((handle, over)) = self.quick.take() else {
+            return;
+        };
+        // While authwing still has the keyboard, which the system asks.
+        let returned = back && over.is_some_and(|w| authwing_context::window::bring_back(&w));
+        let _ = handle.update(cx, |_, window, _| window.remove_window());
+        if back && !returned && cfg!(target_os = "macos") {
+            // To whichever app was in front before, as menus do.
+            cx.hide();
+        }
+    }
+
+    /// Types the code `id` into the app the quick panel was over, once it
+    /// is in front again.
+    fn type_code(&mut self, id: &str, cx: &mut Context<Self>) {
+        let Some(code) = self.take_code(id) else {
+            return;
+        };
+        self.close_quick(true, cx);
+        cx.spawn(async move |this, cx| {
+            // The other app takes the keyboard back first.
+            cx.background_executor()
+                .timer(Duration::from_millis(250))
+                .await;
+            let typed = cx
+                .background_spawn(async move { crate::typing::type_text(&code) })
+                .await;
+            if let Err(e) = typed {
+                let _ = this.update(cx, |ws, cx| {
+                    ws.say(Notice::bad(tr!("Not typed in: {e}", e = e)));
+                    cx.notify();
+                });
+            }
+        })
+        .detach();
     }
 
     fn sync_now(&self) {
@@ -1136,21 +1296,18 @@ impl Workspace {
             .into_any_element()
     }
 
-    /// The codes for the window used last, surest first, with why each;
-    /// or, on a page that only looks like a code's site, why none is.
-    fn for_window(
+    /// The codes for `window` (and `page`, the browser's tab in it), surest
+    /// first, `most` of them, with why each; or, on a page that only looks
+    /// like a code's site, why none is.
+    fn rank_for(
         &self,
-    ) -> (
-        Option<&authwing_context::Window>,
-        Vec<(&Entry, Reason)>,
-        Option<Warning>,
-    ) {
-        let Some(window) = &self.elsewhere else {
-            return (None, vec![], None);
-        };
+        window: &authwing_context::Window,
+        page: Option<&Tab>,
+        most: usize,
+    ) -> (Vec<(&Entry, Reason)>, Option<Warning>) {
         let place = Where {
             window: Some(window.clone()),
-            page: self.page().map(|t| Page::parse(&t.url)),
+            page: page.map(|t| Page::parse(&t.url)),
         };
         let list: Vec<Code> = self
             .codes
@@ -1163,16 +1320,31 @@ impl Workspace {
             })
             .collect();
         match authwing_context::rank(&place, &list) {
-            Ranking::Candidates(found) => {
-                let found = found
+            Ranking::Candidates(found) => (
+                found
                     .into_iter()
-                    .take(FOR_WINDOW)
+                    .take(most)
                     .filter_map(|c| Some((self.codes.get(c.code)?, c.why)))
-                    .collect();
-                (Some(window), found, None)
-            }
-            Ranking::LookAlike(w) => (Some(window), vec![], Some(w)),
+                    .collect(),
+                None,
+            ),
+            Ranking::LookAlike(w) => (vec![], Some(w)),
         }
+    }
+
+    /// The codes for the window used last; see [`Workspace::rank_for`].
+    fn for_window(
+        &self,
+    ) -> (
+        Option<&authwing_context::Window>,
+        Vec<(&Entry, Reason)>,
+        Option<Warning>,
+    ) {
+        let Some(window) = &self.elsewhere else {
+            return (None, vec![], None);
+        };
+        let (found, warning) = self.rank_for(window, self.page(), FOR_WINDOW);
+        (Some(window), found, warning)
     }
 
     fn for_window_view(&self, now: u64, cx: &mut Context<Self>) -> Option<gpui::Div> {
@@ -1209,12 +1381,7 @@ impl Workspace {
         let cards: Vec<AnyElement> = found
             .iter()
             .map(|(e, why)| {
-                let reason = match why {
-                    Reason::Site => tr!("its site"),
-                    Reason::Rule => tr!("a rule"),
-                    Reason::Learned { .. } => tr!("chosen here before"),
-                    Reason::IssuerInTitle => tr!("its name in the title"),
-                };
+                let reason = reason_label(*why);
                 div()
                     .flex()
                     .flex_col()
@@ -1555,4 +1722,14 @@ impl Render for Workspace {
 /// The drawn title bar's close button: as the system's.
 pub fn close_window(window: &mut Window, _: &mut App) {
     window.remove_window();
+}
+
+/// Why a code is offered for a window or page, in a few words.
+fn reason_label(why: Reason) -> String {
+    match why {
+        Reason::Site => tr!("its site"),
+        Reason::Rule => tr!("a rule"),
+        Reason::Learned { .. } => tr!("chosen here before"),
+        Reason::IssuerInTitle => tr!("its name in the title"),
+    }
 }

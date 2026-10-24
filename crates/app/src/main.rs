@@ -19,11 +19,14 @@ mod hotkeys;
 mod input;
 mod look;
 mod notice;
+mod panel_key;
 mod placement;
 mod prompt;
+mod quick_panel;
 mod settings;
 mod sync_panel;
 mod syncing;
+mod typing;
 mod vault_slot;
 mod widgets;
 mod workspace;
@@ -205,6 +208,11 @@ fn main() -> anyhow::Result<()> {
         .run(move |cx: &mut App| {
             // Questions are drawn in the app's look on every system.
             cx.set_prompt_builder(prompt::render);
+            // The quick panel's shortcut, over any app.
+            match panel_key::PanelKey::new() {
+                Ok(keys) => cx.set_global(keys),
+                Err(e) => eprintln!("authwing: no shortcut over other apps: {e}"),
+            }
             let window_bounds = placement::initial(live.store().and_then(|s| s.window_state()), cx);
             // GNOME's Wayland compositor draws no window frame, so Linux gets
             // client-side decorations. macOS and Windows keep the system's
@@ -243,9 +251,32 @@ fn main() -> anyhow::Result<()> {
                 cx.activate(true);
                 ws.track_appearance(window, cx);
                 ws.track_bounds(window, cx);
+                ws.apply_panel_key(cx);
             });
-            // One window: closing it quits, on macOS too.
-            cx.on_window_closed(|cx, _| cx.quit()).detach();
+            // The shortcut opens the quick panel, from the system's thread.
+            let (pressed, presses) = async_channel::unbounded::<()>();
+            panel_key::listen(move || {
+                let _ = pressed.send_blocking(());
+            });
+            let quick = ws.clone();
+            cx.spawn(async move |cx| {
+                while presses.recv().await.is_ok() {
+                    quick.update(cx, |ws, cx| ws.toggle_quick(cx));
+                }
+            })
+            .detach();
+            // Closing the main window quits, on macOS too; the quick panel's
+            // closing does not.
+            cx.on_window_closed(|cx, _| {
+                let main = cx
+                    .windows()
+                    .iter()
+                    .any(|w| w.downcast::<workspace::Workspace>().is_some());
+                if !main {
+                    cx.quit();
+                }
+            })
+            .detach();
             // Edits to config.toml apply while running.
             cx.spawn(async move |cx| {
                 loop {

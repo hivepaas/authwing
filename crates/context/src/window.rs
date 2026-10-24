@@ -45,6 +45,10 @@ pub struct Window {
     /// The window's title, if it has one and it can be read.
     pub title: Option<String>,
     pub pid: Option<u32>,
+    /// The window itself, to give it the keyboard back ([`bring_back`]):
+    /// its `HWND` on Windows, its X11 id. None on macOS, where it is the
+    /// app that comes back, by its pid.
+    pub handle: Option<u64>,
 }
 
 /// Whether other apps' window titles can be read.
@@ -70,6 +74,30 @@ pub fn active() -> Option<Window> {
     }
     #[allow(unreachable_code)]
     None
+}
+
+/// Gives the window the keyboard back, for one of authwing's windows that
+/// took it (the quick panel): authwing must be in front for the system to
+/// let it. Says whether the system took the request; an app that has quit
+/// since cannot come back. Under Wayland nothing is known to bring back.
+pub fn bring_back(window: &Window) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        return window.pid.is_some_and(macos::bring_back);
+    }
+    #[cfg(windows)]
+    {
+        return window.handle.is_some_and(win32::bring_back);
+    }
+    #[cfg(target_os = "linux")]
+    {
+        return window.handle.is_some_and(x11::bring_back);
+    }
+    #[allow(unreachable_code)]
+    {
+        let _ = window;
+        false
+    }
 }
 
 /// Whether authwing may read other apps' window titles. Only macOS asks
