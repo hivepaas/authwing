@@ -53,6 +53,13 @@ settings = true              # the settings that are not this device's own sync 
 
 ## Codes
 
+The first time authwing opens on a device with no codes, a few steps
+welcome it: bringing codes in (from a phone through the camera, a QR code on
+the screen, another app's export, by hand), the quick panel and typing codes
+in, voice, and the recovery key. Each can be skipped; *Show the welcome
+again* in *Settings › About* shows it again. Seen, it is noted in
+`state/welcome.json`, on this device.
+
 - **Adding:** the **+** in the title bar (or Cmd/Ctrl+N).
   - *Scan the screen* reads the QR code a site shows, wherever it is on the
     screen; on macOS authwing steps aside while it does. macOS asks once

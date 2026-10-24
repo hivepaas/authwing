@@ -422,6 +422,11 @@ impl AddCode {
             .update(cx, |f, cx| f.set_text(text, text.len()..text.len(), cx));
     }
 
+    /// Turns the camera on, the one used last: the welcome's way in.
+    pub fn use_camera(&mut self, cx: &mut Context<Self>) {
+        self.start_camera(self.camera_index, cx);
+    }
+
     /// Turns the camera on (camera `index` of those there are), its frames
     /// read until a two-factor code is found, or it is stopped.
     fn start_camera(&mut self, index: usize, cx: &mut Context<Self>) {

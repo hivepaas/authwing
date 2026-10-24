@@ -856,6 +856,9 @@ t538b10e9 = Открыть
 # Not looked for: this build has no release keys to check them with.
 # t208f65bc =
 
+# Show the welcome again
+# t80b070db =
+
 # Settings
 # t4b058728 =
 
@@ -948,6 +951,141 @@ tf8592ea2 = настройки не синхронизированы: { $e }
 
 # settings not written: {e}
 t60f438b7 = настройки не записаны: { $e }
+
+# The code for the window you are in
+# teaa20509 =
+
+# The codes for the app or site in front come first: by its sites, its window's title, or the browser extension.
+# tc9769cd3 =
+
+# From any app
+# t01695c14 =
+
+# From any app, with {key}
+# tf17862df =
+
+# A small panel over the app you are in, and Enter types the code into it.
+# tdc1e0fe0 =
+
+# Say its name
+# t4602e0ed =
+
+# “GitHub”, “mở Vietcombank”: Whisper hears it on this device, in your language.
+# t6c84198c =
+
+# Yours alone
+# t032b8418 =
+
+# The codes are encrypted on this device, and synced, if you choose to, only as ciphertext.
+# t3e60b7b0 =
+
+# From your phone
+# tbf9a6fd0 =
+
+# Google Authenticator: Transfer accounts › Export accounts, then hold each QR code it shows up to the camera.
+# tac46df50 =
+
+# From a site's QR code
+# t789c56e3 =
+
+# Turning on two-factor sign-in, a site shows one: authwing reads it on the screen.
+# t49c60415 =
+
+# From another app
+# t3ac48a69 =
+
+# An export from Aegis, 2FAS, Ente Auth or Bitwarden, or an authwing backup.
+# t54b5fe53 =
+
+# Import a file…
+# t0eb7677d =
+
+# By hand
+# td748cd1d =
+
+# The link or the key a site shows beside its QR code.
+# ta1285d09 =
+
+# {n} code here so far. | {n} codes here so far.
+# t6dc115ee =
+
+# The quick panel's shortcut is off
+# td256725c =
+
+# Press {key} in any app
+# t9e729c1b =
+
+# A panel opens over it with its codes first; Enter types the code where you were. Its key is in Settings › General.
+# ta5e01546 =
+
+# Typing codes into other apps is allowed.
+# t99adf5e2 =
+
+# To type codes into other apps, and to see their windows' titles, macOS asks first (Accessibility).
+# t5697eba0 =
+
+# In a browser, the extension tells authwing the page exactly, and fills the code in.
+# tff15f0a2 =
+
+# Link the browsers…
+# t7f6fe971 =
+
+# Ready: hold the quick panel's key and say a name.
+# tff1730f2 =
+
+# Whisper, the model that hears you, is downloaded once ({mb} MB) and runs on this device: nothing you say leaves it. You can do it later in Settings › Voice.
+# t25a77ecc =
+
+# The recovery key opens the vault when nothing else can: a lost keychain, a new computer. Write it down, or keep it in a password manager, away from this computer.
+# ta576d2c1 =
+
+# On your other computers too: the vault syncs through a folder, WebDAV, S3 or Git, encrypted.
+# t64f9348a =
+
+# Set up sync…
+# t712df601 =
+
+# Welcome to authwing
+# t1c4b12d5 =
+
+# Two-factor codes that know the window you are in.
+# t76a57f34 =
+
+# Bring your codes
+# t852a71f4 =
+
+# However many you have: they can all come at once.
+# te372c4fe =
+
+# Codes where you sign in
+# tb45ac069 =
+
+# Without opening this window.
+# t4bfebcf3 =
+
+# If you like: it can wait.
+# t8b154ee4 =
+
+# Keep the recovery key
+# t72fa11c5 =
+
+# The one thing to keep safe.
+# te23e90eb =
+
+# Skip
+# tc197c7e2 =
+
+# Back
+# tc2954bc2 =
+
+# Done
+# t8dd31791 =
+
+# Get started
+# te83ca5ee =
+
+# Next
+# tdce2da08 =
 
 # Voice's model is still downloading (Settings › Voice).
 # t294c50cc =
@@ -1098,6 +1236,9 @@ t12e9b880 = Не удалено: { $e }
 
 # Add your first code
 # t4a8c2b9a =
+
+# Show the welcome
+# teb7693b3 =
 
 # Nothing matches
 # tda76133f =

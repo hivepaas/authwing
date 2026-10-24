@@ -868,6 +868,9 @@ t483075a5 = Cập nhật
 # Not looked for: this build has no release keys to check them with.
 t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
 
+# Show the welcome again
+t80b070db = Xem lại màn hình chào
+
 # Settings
 t4b058728 = Cài đặt
 
@@ -960,6 +963,144 @@ tf8592ea2 = chưa đồng bộ được cài đặt: { $e }
 
 # settings not written: {e}
 t60f438b7 = chưa ghi được cài đặt: { $e }
+
+# The code for the window you are in
+teaa20509 = Mã cho cửa sổ bạn đang dùng
+
+# The codes for the app or site in front come first: by its sites, its window's title, or the browser extension.
+tc9769cd3 = Mã của ứng dụng hay trang web đang ở trước được đưa lên đầu: theo site đã lưu, tiêu đề cửa sổ, hoặc extension trình duyệt.
+
+# From any app
+t01695c14 = Từ bất kỳ ứng dụng nào
+
+# From any app, with {key}
+tf17862df = Từ bất kỳ ứng dụng nào, với { $key }
+
+# A small panel over the app you are in, and Enter types the code into it.
+tdc1e0fe0 = Một bảng nhỏ trên ứng dụng bạn đang dùng, và Enter gõ mã vào đó.
+
+# Say its name
+t4602e0ed = Nói tên của nó
+
+# “GitHub”, “mở Vietcombank”: Whisper hears it on this device, in your language.
+t6c84198c = “GitHub”, “mở Vietcombank”: Whisper nghe ngay trên thiết bị này, bằng ngôn ngữ của bạn.
+
+# Yours alone
+t032b8418 = Chỉ của riêng bạn
+
+# The codes are encrypted on this device, and synced, if you choose to, only as ciphertext.
+t3e60b7b0 = Các mã được mã hoá trên thiết bị này, và nếu bạn muốn đồng bộ, chỉ bản mã hoá được gửi đi.
+
+# From your phone
+tbf9a6fd0 = Từ điện thoại
+
+# Google Authenticator: Transfer accounts › Export accounts, then hold each QR code it shows up to the camera.
+tac46df50 = Google Authenticator: Chuyển tài khoản › Xuất tài khoản, rồi đưa từng mã QR nó hiện ra trước camera.
+
+# From a site's QR code
+t789c56e3 = Từ mã QR của một site
+
+# Turning on two-factor sign-in, a site shows one: authwing reads it on the screen.
+t49c60415 = Khi bật đăng nhập hai yếu tố, site hiện một mã QR: authwing đọc nó ngay trên màn hình.
+
+# From another app
+t3ac48a69 = Từ ứng dụng khác
+
+# An export from Aegis, 2FAS, Ente Auth or Bitwarden, or an authwing backup.
+t54b5fe53 = File xuất từ Aegis, 2FAS, Ente Auth hay Bitwarden, hoặc một bản sao lưu authwing.
+
+# Import a file…
+t0eb7677d = Nhập một file…
+
+# By hand
+td748cd1d = Nhập tay
+
+# The link or the key a site shows beside its QR code.
+ta1285d09 = Link hoặc khoá mà site hiện cạnh mã QR.
+
+# {n} code here so far. | {n} codes here so far.
+t6dc115ee =
+    { $n ->
+       *[other] Đã có { $n } mã.
+    }
+
+# The quick panel's shortcut is off
+td256725c = Phím tắt bảng tra nhanh đang tắt
+
+# Press {key} in any app
+t9e729c1b = Nhấn { $key } trong bất kỳ ứng dụng nào
+
+# A panel opens over it with its codes first; Enter types the code where you were. Its key is in Settings › General.
+ta5e01546 = Một bảng mở ra trên đó với mã của ứng dụng ấy ở đầu; Enter gõ mã vào chỗ bạn vừa ở. Phím tắt ở Cài đặt › Chung.
+
+# Typing codes into other apps is allowed.
+t99adf5e2 = Đã cho phép gõ mã vào ứng dụng khác.
+
+# To type codes into other apps, and to see their windows' titles, macOS asks first (Accessibility).
+t5697eba0 = Để gõ mã vào ứng dụng khác và đọc tiêu đề cửa sổ của chúng, macOS hỏi trước (Trợ năng).
+
+# In a browser, the extension tells authwing the page exactly, and fills the code in.
+tff15f0a2 = Trong trình duyệt, extension cho authwing biết chính xác trang đang mở, và điền mã vào.
+
+# Link the browsers…
+t7f6fe971 = Liên kết trình duyệt…
+
+# Ready: hold the quick panel's key and say a name.
+tff1730f2 = Sẵn sàng: giữ phím của bảng tra nhanh và nói tên mã.
+
+# Whisper, the model that hears you, is downloaded once ({mb} MB) and runs on this device: nothing you say leaves it. You can do it later in Settings › Voice.
+t25a77ecc = Whisper, model nghe bạn nói, được tải một lần ({ $mb } MB) và chạy trên thiết bị này: không gì bạn nói rời khỏi máy. Có thể để sau, trong Cài đặt › Giọng nói.
+
+# The recovery key opens the vault when nothing else can: a lost keychain, a new computer. Write it down, or keep it in a password manager, away from this computer.
+ta576d2c1 = Khoá khôi phục mở được vault khi không còn cách nào khác: mất keychain, máy tính mới. Hãy chép lại, hoặc giữ trong trình quản lý mật khẩu, ở ngoài máy tính này.
+
+# On your other computers too: the vault syncs through a folder, WebDAV, S3 or Git, encrypted.
+t64f9348a = Cả trên các máy khác của bạn: vault đồng bộ qua một thư mục, WebDAV, S3 hay Git, đã mã hoá.
+
+# Set up sync…
+t712df601 = Thiết lập đồng bộ…
+
+# Welcome to authwing
+t1c4b12d5 = Chào mừng đến với authwing
+
+# Two-factor codes that know the window you are in.
+t76a57f34 = Mã hai yếu tố biết bạn đang ở cửa sổ nào.
+
+# Bring your codes
+t852a71f4 = Mang mã của bạn vào
+
+# However many you have: they can all come at once.
+te372c4fe = Bao nhiêu mã cũng được: tất cả có thể vào cùng lúc.
+
+# Codes where you sign in
+tb45ac069 = Mã ngay nơi bạn đăng nhập
+
+# Without opening this window.
+t4bfebcf3 = Không cần mở cửa sổ này.
+
+# If you like: it can wait.
+t8b154ee4 = Nếu bạn thích: có thể để sau.
+
+# Keep the recovery key
+t72fa11c5 = Giữ khoá khôi phục
+
+# The one thing to keep safe.
+te23e90eb = Thứ duy nhất cần giữ cẩn thận.
+
+# Skip
+tc197c7e2 = Bỏ qua
+
+# Back
+tc2954bc2 = Quay lại
+
+# Done
+t8dd31791 = Xong
+
+# Get started
+te83ca5ee = Bắt đầu
+
+# Next
+tdce2da08 = Tiếp
 
 # Voice's model is still downloading (Settings › Voice).
 t294c50cc = Model giọng nói vẫn đang tải (Cài đặt › Giọng nói).
@@ -1107,6 +1248,9 @@ t34aa395e = Bật đăng nhập hai yếu tố ở một site, rồi đọc mã 
 
 # Add your first code
 t4a8c2b9a = Thêm mã đầu tiên
+
+# Show the welcome
+teb7693b3 = Xem màn hình chào
 
 # Nothing matches
 tda76133f = Không có kết quả
