@@ -18,8 +18,10 @@ image = { version = "0.25.10", default-features = false, features = ["png", "jpe
 # QR codes found and read, in pure Rust.
 rqrr = { version = "0.11", default-features = false }
 thiserror.workspace = true
-# Frames from the camera: AVFoundation, Media Foundation, V4L2.
-nokhwa = { version = "0.10.11", features = ["input-native"], optional = true }
+# Frames from the camera: AVFoundation, Media Foundation, V4L2. Without its
+# MJPEG decoding, which is mozjpeg's C (and NASM on x86): `image` decodes
+# those frames, in Rust.
+nokhwa = { version = "0.10.11", default-features = false, features = ["input-native"], optional = true }
 
 # Each display captured: CoreGraphics on macOS, GDI on Windows. Not on Linux,
 # where it would link PipeWire and libgbm for its screen recording.

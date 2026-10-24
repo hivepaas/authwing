@@ -14,7 +14,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use image::RgbaImage;
 use image::imageops::{self, FilterType};
 use nokhwa::pixel_format::RgbAFormat;
-use nokhwa::utils::{ApiBackend, CameraIndex, RequestedFormat, RequestedFormatType};
+use nokhwa::utils::{ApiBackend, CameraIndex, FrameFormat, RequestedFormat, RequestedFormatType};
 
 use crate::{Error, decode};
 
@@ -90,7 +90,7 @@ fn run(index: usize, stop: &AtomicBool, seen: &mut impl FnMut(Seen)) -> Result<(
     while !stop.load(Ordering::Relaxed) {
         let frame = camera.frame().map_err(failed)?;
         // A frame that does not decode (a dropped one) is passed over.
-        let Ok(rgba) = frame.decode_image::<RgbAFormat>() else {
+        let Some(rgba) = rgba_of(&frame) else {
             continue;
         };
         let read = fit(&rgba, READ_WIDTH);
@@ -104,6 +104,17 @@ fn run(index: usize, stop: &AtomicBool, seen: &mut impl FnMut(Seen)) -> Result<(
     }
     let _ = camera.stop_stream();
     Ok(())
+}
+
+/// A frame as RGBA: JPEG ones (MJPEG, as many webcams give) by `image`,
+/// the others (YUYV, NV12, RGB) by `nokhwa`.
+fn rgba_of(frame: &nokhwa::Buffer) -> Option<RgbaImage> {
+    if frame.source_frame_format() == FrameFormat::MJPEG {
+        return image::load_from_memory_with_format(frame.buffer(), image::ImageFormat::Jpeg)
+            .ok()
+            .map(|i| i.into_rgba8());
+    }
+    frame.decode_image::<RgbAFormat>().ok()
 }
 
 /// Whether the system lets authwing use the camera: on macOS, asking the
