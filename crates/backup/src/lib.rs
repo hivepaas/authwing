@@ -10,26 +10,35 @@
 //!   beside its group and sites, so once decrypted any app can read them.
 //! - The plain export ([`plain`]) is one URI per line: what nearly every app
 //!   imports, and what anyone who sees the file can use.
-//! - [`import`] reads authwing's backup, the exports of Aegis, 2FAS,
-//!   andOTP, Stratum (Authenticator Pro), TOTP Authenticator, Bitwarden
-//!   (password-protected too), FreeOTP+ and Proton Authenticator, Ente
-//!   Auth's plain-text export, Steam Desktop Authenticator's maFiles and
-//!   lists of URIs (with Google Authenticator's `otpauth-migration://` among
-//!   them); [`detect`] says which a file is. A code authwing cannot use
-//!   (MD5, mOTP, no secret) is listed in [`Imported::skipped`] with the
-//!   reason, and the rest come in: one bad entry does not cost the user the
-//!   others.
+//! - [`import`] reads authwing's backup; the exports of Aegis, 2FAS,
+//!   andOTP, FreeOTP+, Proton Authenticator, Raivo OTP, Stratum
+//!   (Authenticator Pro) and TOTP Authenticator, Ente Auth's plain-text one
+//!   and Steam Desktop Authenticator's maFiles; those of the password
+//!   managers that keep codes beside logins: Bitwarden's JSON (protected by
+//!   a password too), 1Password's `.1pux`, Proton Pass's ZIP, and the CSV
+//!   of Apple Passwords, 1Password, Bitwarden, KeePassXC, Proton Pass or
+//!   Dashlane; and lists of URIs (with Google Authenticator's
+//!   `otpauth-migration://` among them). [`detect`] says which a file is. A
+//!   code authwing cannot use (MD5, mOTP, no secret) is listed in
+//!   [`Imported::skipped`] with the reason, and the rest come in: one bad
+//!   entry does not cost the user the others.
 //! - Encrypted backups that do not say what they are, andOTP's and TOTP
 //!   Authenticator's, are [`Format::EncryptedFile`]: the password that opens
 //!   one tells which app wrote it.
 
 mod aegis;
 mod andotp;
+mod archive;
 mod authwing;
 mod bitwarden;
 mod crypto;
+mod csv;
 mod freeotp_plus;
+mod login;
+mod onepassword;
 mod proton;
+mod protonpass;
+mod raivo;
 mod steam;
 mod stratum;
 mod totp_authenticator;
@@ -42,6 +51,7 @@ use authwing_totp::Otp;
 use serde_json::Value;
 
 pub use authwing::{EXTENSION, MIN_PASSPHRASE, open, seal};
+pub use csv::PasswordManager;
 pub use uris::plain;
 
 /// A code as the app keeps it: the code itself, what it is filed under and
@@ -97,6 +107,16 @@ pub enum Format {
     /// A Steam Guard maFile, from Steam Desktop Authenticator, or the Steam
     /// app's own file of its accounts.
     Steam,
+    /// A password manager's CSV export with a column of one-time passwords:
+    /// which app's, when its header says.
+    Csv(Option<PasswordManager>),
+    /// 1Password's export (`.1pux`).
+    OnePassword,
+    /// Proton Pass's export, a ZIP; the one encrypted with a passphrase is
+    /// known, but not read.
+    ProtonPass,
+    /// Raivo OTP's export: a ZIP encrypted with its password.
+    Raivo,
 }
 
 impl Format {
@@ -115,6 +135,11 @@ impl Format {
             Format::FreeOtpPlus => "FreeOTP+",
             Format::Proton => "Proton Authenticator",
             Format::Steam => "Steam (maFile)",
+            Format::Csv(Some(app)) => app.name(),
+            Format::Csv(None) => "a CSV export",
+            Format::OnePassword => "1Password",
+            Format::ProtonPass => "Proton Pass",
+            Format::Raivo => "Raivo OTP",
         }
     }
 }
@@ -208,6 +233,9 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
     if stratum::is_sealed(bytes) {
         return Some(Format::Stratum);
     }
+    if archive::is_zip(bytes) {
+        return detect_archive(bytes);
+    }
     let Ok(text) = std::str::from_utf8(without_bom(bytes)) else {
         return looks_sealed(bytes).then_some(Format::EncryptedFile);
     };
@@ -249,6 +277,9 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
             None
         };
     }
+    if let Some(format) = csv::detect(text) {
+        return Some(format);
+    }
     if text.lines().any(uris::is_uri) {
         return Some(if text.contains("codeDisplay=") {
             Format::Ente
@@ -258,6 +289,23 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
     }
     // TOTP Authenticator writes its sealed backup in base64.
     totp_authenticator::sealed(text.as_bytes()).map(|_| Format::EncryptedFile)
+}
+
+/// Which export a ZIP archive is, from the entries it holds.
+fn detect_archive(bytes: &[u8]) -> Option<Format> {
+    let mut archive = archive::Archive::open(bytes).ok()?;
+    if archive.has(onepassword::DATA) {
+        Some(Format::OnePassword)
+    } else if archive.has(protonpass::DATA) || archive.has(protonpass::SEALED) {
+        Some(Format::ProtonPass)
+    } else if archive.has(raivo::DATA) {
+        Some(Format::Raivo)
+    } else if archive.has(csv::DASHLANE) {
+        let csv = archive.read(csv::DASHLANE, None).ok()?;
+        csv::detect(std::str::from_utf8(without_bom(&csv)).ok()?)
+    } else {
+        None
+    }
 }
 
 /// Reads the codes in a file of any format [`detect`] knows. An encrypted
@@ -278,6 +326,10 @@ pub fn import(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
         Format::FreeOtpPlus => freeotp_plus::import(bytes),
         Format::Proton => proton::import(bytes, password),
         Format::Steam => steam::import(bytes),
+        Format::Csv(_) => csv::import(bytes),
+        Format::OnePassword => onepassword::import(bytes),
+        Format::ProtonPass => protonpass::import(bytes),
+        Format::Raivo => raivo::import(bytes, password),
     }
 }
 
@@ -304,7 +356,7 @@ fn import_encrypted(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
 }
 
 /// `bytes` without the byte order mark some editors put first.
-fn without_bom(bytes: &[u8]) -> &[u8] {
+pub(crate) fn without_bom(bytes: &[u8]) -> &[u8] {
     bytes.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(bytes)
 }
 
@@ -355,6 +407,27 @@ pub(crate) mod testing {
         Otp::from_uri(uri).expect(uri)
     }
 
+    /// A ZIP archive of `entries`, deflated and, with a password, sealed
+    /// with AES-256 as WinZip seals them.
+    pub(crate) fn zipped(entries: &[(&str, &[u8])], password: Option<&str>) -> Vec<u8> {
+        use std::io::Write;
+
+        use zip::write::SimpleFileOptions;
+        use zip::{AesMode, CompressionMethod, ZipWriter};
+
+        let mut zip = ZipWriter::new(std::io::Cursor::new(Vec::new()));
+        let mut options =
+            SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
+        if let Some(password) = password {
+            options = options.with_aes_encryption(AesMode::Aes256, password);
+        }
+        for (name, content) in entries {
+            zip.start_file(*name, options).expect("entry");
+            zip.write_all(content).expect("write");
+        }
+        zip.finish().expect("zip").into_inner()
+    }
+
     /// Checks `items` are the codes `uris` give, in any order.
     pub(crate) fn assert_codes(items: &[Item], uris: &[&str]) {
         let mut got: Vec<String> = items.iter().map(|item| item.otp.to_uri()).collect();
@@ -367,17 +440,22 @@ pub(crate) mod testing {
 
 #[cfg(test)]
 mod tests {
-    //! The sample exports in `testdata/` come unchanged from Aegis's
-    //! importer tests (https://github.com/beemdevelopment/Aegis, under
+    //! The sample exports in `testdata/` of Aegis, 2FAS, Bitwarden (its
+    //! JSON and its CSV) and Ente Auth come unchanged from Aegis's importer
+    //! tests (https://github.com/beemdevelopment/Aegis, under
     //! `app/src/test/resources/com/beemdevelopment/aegis/importers/`;
     //! GPL-3.0, which authwing's GPL-3.0-or-later can carry): files the
-    //! real apps wrote, the encrypted ones with the password `test`.
+    //! real apps wrote, the encrypted ones with the password `test`. Those
+    //! of the other password managers and of Raivo OTP are authwing's own,
+    //! written from each app's format with some of the same codes, as their
+    //! importers' tests say.
 
     use super::*;
 
     #[test]
     fn detects_each_format() {
-        let cases: [(&[u8], Format); 19] = [
+        let csv = |app| Format::Csv(Some(app));
+        let cases: [(&[u8], Format); 28] = [
             (
                 include_bytes!("../testdata/aegis_plain.json"),
                 Format::Aegis,
@@ -445,6 +523,39 @@ mod tests {
                 include_bytes!("../testdata/totp_authenticator.bin"),
                 Format::EncryptedFile,
             ),
+            (
+                include_bytes!("../testdata/bitwarden.csv"),
+                csv(PasswordManager::Bitwarden),
+            ),
+            (
+                include_bytes!("../testdata/apple_passwords.csv"),
+                csv(PasswordManager::ApplePasswords),
+            ),
+            (
+                include_bytes!("../testdata/1password.csv"),
+                csv(PasswordManager::OnePassword),
+            ),
+            (
+                include_bytes!("../testdata/keepassxc.csv"),
+                csv(PasswordManager::KeePassXc),
+            ),
+            (
+                include_bytes!("../testdata/proton_pass.csv"),
+                csv(PasswordManager::ProtonPass),
+            ),
+            (
+                include_bytes!("../testdata/dashlane_credentials.csv"),
+                csv(PasswordManager::Dashlane),
+            ),
+            (
+                include_bytes!("../testdata/1password.1pux"),
+                Format::OnePassword,
+            ),
+            (
+                include_bytes!("../testdata/proton_pass.zip"),
+                Format::ProtonPass,
+            ),
+            (include_bytes!("../testdata/raivo_otp.zip"), Format::Raivo),
         ];
         for (bytes, format) in cases {
             assert_eq!(detect(bytes), Some(format));
@@ -459,6 +570,8 @@ mod tests {
         // A list, but not of andOTP's entries; base64, but not of AES blocks.
         let list = b"[{\"name\": \"x\"}]";
         let short = b"JBSWY3DPEHPK3PXP\n";
+        // A ZIP, but of no export; a CSV, but with no one-time passwords.
+        let other_zip = testing::zipped(&[("readme.txt", b"hello")], None);
         for other in [
             &b"{\"version\": 1}"[..],
             b"{\"tokens\": 1}",
@@ -471,6 +584,9 @@ mod tests {
             list,
             short,
             b"[]",
+            b"name,url,password\nGitHub,github.com,pw\n",
+            &other_zip,
+            b"PK\x03\x04 cut short",
         ] {
             assert_eq!(detect(other), None);
             assert!(matches!(import(other, None), Err(Error::Unknown)));
@@ -496,6 +612,38 @@ mod tests {
         assert_eq!(
             Error::PasswordNeeded(Format::Stratum).to_string(),
             "this Stratum (Authenticator Pro) file is encrypted: enter its password"
+        );
+    }
+
+    #[test]
+    fn names_say_which_app() {
+        let names = [
+            Format::Csv(Some(PasswordManager::ApplePasswords)),
+            Format::Csv(Some(PasswordManager::OnePassword)),
+            Format::Csv(Some(PasswordManager::Bitwarden)),
+            Format::Csv(Some(PasswordManager::KeePassXc)),
+            Format::Csv(Some(PasswordManager::ProtonPass)),
+            Format::Csv(Some(PasswordManager::Dashlane)),
+            Format::Csv(None),
+            Format::OnePassword,
+            Format::ProtonPass,
+            Format::Raivo,
+        ]
+        .map(Format::name);
+        assert_eq!(
+            names,
+            [
+                "Apple Passwords",
+                "1Password",
+                "Bitwarden",
+                "KeePassXC",
+                "Proton Pass",
+                "Dashlane",
+                "a CSV export",
+                "1Password",
+                "Proton Pass",
+                "Raivo OTP",
+            ]
         );
     }
 

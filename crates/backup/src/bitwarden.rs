@@ -36,18 +36,16 @@
 use std::ops::RangeInclusive;
 
 use argon2::{Algorithm, Argon2, Params, Version};
-use authwing_totp::{DEFAULT_PERIOD, Kind, Otp, Secret};
 use base64::Engine;
 use hkdf::Hkdf;
 use hmac::{Hmac, Mac};
 use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use url::Url;
 use zeroize::Zeroizing;
 
 use crate::crypto::{self, BASE64};
-use crate::uris::has_prefix;
+use crate::login::{code, sites};
 use crate::{Error, Format, Imported, Item, Result, damaged, label};
 
 /// Bitwarden's URI match types that are no address: a regular expression,
@@ -152,10 +150,16 @@ pub(crate) fn import(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
                     .folder_id
                     .and_then(|id| folders.iter().find(|folder| folder.id == id))
                     .map(|folder| folder.name.clone());
+                let addresses = login
+                    .uris
+                    .iter()
+                    .flatten()
+                    .filter(|uri| !matches!(uri.matching, Some(REGEX_MATCH | NEVER_MATCH)))
+                    .filter_map(|uri| uri.uri.as_deref());
                 imported.items.push(Item {
                     otp,
                     group: group.unwrap_or_default(),
-                    sites: hosts(login.uris.unwrap_or_default()),
+                    sites: sites(addresses),
                 });
             }
             Err(e) => imported
@@ -164,63 +168,6 @@ pub(crate) fn import(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
         }
     }
     Ok(imported)
-}
-
-/// The code `key` gives, named by the login where it does not say.
-fn code(key: &str, name: &str, username: &str) -> authwing_totp::Result<Otp> {
-    let steam = "steam://";
-    let mut otp = if has_prefix(key, "otpauth://") {
-        Otp::from_uri(key)?
-    } else if has_prefix(key, steam) {
-        Otp::new(
-            "",
-            "",
-            Secret::from_base32(&key[steam.len()..])?,
-            Kind::Steam,
-        )
-    } else {
-        let period = DEFAULT_PERIOD;
-        Otp::new("", "", Secret::from_base32(key)?, Kind::Totp { period })
-    };
-    if otp.issuer.trim().is_empty() {
-        otp.issuer = name.trim().to_string();
-    }
-    if otp.account.trim().is_empty() {
-        otp.account = username.trim().to_string();
-    }
-    Ok(otp)
-}
-
-/// The hosts of the web addresses among `uris`, each once, as the browser
-/// has them. An address without a scheme is taken as https, as Bitwarden
-/// does.
-fn hosts(uris: Vec<LoginUri>) -> Vec<String> {
-    let mut hosts: Vec<String> = Vec::new();
-    for login_uri in uris {
-        if matches!(login_uri.matching, Some(REGEX_MATCH | NEVER_MATCH)) {
-            continue;
-        }
-        let Some(uri) = login_uri.uri else {
-            continue;
-        };
-        let uri = uri.trim();
-        let url = if uri.contains("://") {
-            Url::parse(uri)
-        } else {
-            Url::parse(&format!("https://{uri}"))
-        };
-        let Ok(url) = url else {
-            continue;
-        };
-        if !matches!(url.scheme(), "http" | "https") {
-            continue;
-        }
-        let host = url.host_str().unwrap_or_default().trim_end_matches('.');
-        if !host.is_empty() && !hosts.iter().any(|known| known == host) {
-            hosts.push(host.to_string());
-        }
-    }
-    hosts
 }
 
 /// A password-protected export, as sealed (see the module docs).
@@ -357,6 +304,7 @@ impl EncString {
 mod tests {
     use super::*;
     use crate::testing::{URIS, assert_codes, code as uri_code};
+    use authwing_totp::Kind;
     use serde_json::json;
 
     const PLAIN: &[u8] = include_bytes!("../testdata/bitwarden.json");

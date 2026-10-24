@@ -36,8 +36,16 @@ percent-encoding = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror.workspace = true
-# Bitwarden's login addresses, read as the browser reads them.
+# The addresses of password managers' logins, read as the browser reads them.
 url = "2.5"
+# Password managers' CSV exports: quoted fields, line breaks in them and all.
+csv = "1.4"
+# The exports that come zipped (1Password's, Proton Pass's, Dashlane's, and
+# Raivo OTP's, sealed with WinZip's AES), read in memory. Of the ways to
+# compress, only deflate, which they use: flate2 with its pure Rust backend
+# (miniz_oxide), which the app builds already.
+zip = { version = "9.1", default-features = false, features = ["aes-crypto", "deflate-flate2"] }
+flate2 = { version = "1.1", default-features = false, features = ["rust_backend"] }
 zeroize = "1"
 
 [lints]

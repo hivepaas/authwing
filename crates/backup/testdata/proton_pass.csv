@@ -1,0 +1,6 @@
+type,name,url,autofillUrls,email,username,password,note,totp,createTime,modifyTime,vault
+login,Airbnb,"https://www.airbnb.com, https://airbnb.co.uk","[{""url"":""https://www.airbnb.com"",""mode"":0},{""url"":""https://airbnb.co.uk"",""mode"":0}]",elijah@example.com,Elijah,correct-horse,,otpauth://totp/Airbnb:Elijah?secret=7ELGJSGXNCCTV3O6LKJWYFV2RA&issuer=Airbnb&algorithm=SHA512&digits=8&period=50,1789426882,1789426882,Travel
+login,Deno,https://deno.land,"[{""url"":""https://deno.land"",""mode"":0}]",mason@example.com,,battery-staple,"A note, quoted",otpauth://totp/Deno:Mason?secret=4SJHB4GSD43FZBAI7C2HLRJGPQ&issuer=Deno&algorithm=SHA1&digits=6&period=30,1789426900,1789426900,Personal
+note,A note,,,,,,"Some text
+over two lines",,1789426920,1789426920,Personal
+alias,Newsletters,,,shop.x7k2@passmail.net,,,,,1789426950,1789426950,Personal
