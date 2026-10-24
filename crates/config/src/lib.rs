@@ -26,7 +26,7 @@ pub use settings::{
     SyncPlace, UI_FONT_SIZE, UiFont, Updates, Voice, WebDavSync,
 };
 pub use shortcuts::{Chord, Hotkey, Keymap, Mods, Os, ShortcutSettings};
-pub use state::{UpdateState, VoiceMemory, Voiced, WindowMode, WindowState};
+pub use state::{UpdateState, Usage, Used, WindowMode, WindowState};
 pub use store::{EditFile, LoadError, SettingValue, Stamp, Store, SyncPlaceText, WriteError};
 
 /// A vault record's fields, by name: what the synced settings travel as.

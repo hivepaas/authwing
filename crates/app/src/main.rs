@@ -15,6 +15,8 @@ mod browser;
 mod chrome;
 mod codes;
 mod colors;
+mod group_editor;
+mod groups;
 mod hotkeys;
 mod input;
 mod look;
@@ -60,6 +62,21 @@ const ICONS: &[(&str, &[u8])] = &[
     ("icons/info.svg", include_bytes!("../assets/icons/info.svg")),
     ("icons/lock.svg", include_bytes!("../assets/icons/lock.svg")),
     ("icons/mic.svg", include_bytes!("../assets/icons/mic.svg")),
+    ("icons/grid.svg", include_bytes!("../assets/icons/grid.svg")),
+    (
+        "icons/clock.svg",
+        include_bytes!("../assets/icons/clock.svg"),
+    ),
+    ("icons/star.svg", include_bytes!("../assets/icons/star.svg")),
+    (
+        "icons/star-fill.svg",
+        include_bytes!("../assets/icons/star-fill.svg"),
+    ),
+    (
+        "icons/pencil.svg",
+        include_bytes!("../assets/icons/pencil.svg"),
+    ),
+    ("icons/scan.svg", include_bytes!("../assets/icons/scan.svg")),
     ("icons/plus.svg", include_bytes!("../assets/icons/plus.svg")),
     (
         "icons/refresh.svg",

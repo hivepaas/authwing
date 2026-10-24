@@ -55,6 +55,9 @@ t9133669c = Không đọc được: { $why }
 # This is not an image authwing can read.
 t5d87f9dd = Đây không phải ảnh authwing đọc được.
 
+# Edit the code
+tb79e0e3f = Sửa mã
+
 # Add a code
 t82066414 = Thêm mã
 
@@ -91,6 +94,9 @@ te673b518 = Hiện trước tiên trên
 # Cancel
 t35afca3b = Huỷ
 
+# Save
+t4d2d5d68 = Lưu
+
 # Add
 t9dc3aa14 = Thêm
 
@@ -99,6 +105,39 @@ t4caf769c = Không đọc được các mã: { $e }
 
 # A code cannot be read: {e}
 t855061c0 = Một mã không đọc được: { $e }
+
+# Work, Money, Family…
+tcd93bf98 = Công việc, Tiền, Gia đình…
+
+# Give the group a name.
+teca853c0 = Hãy đặt tên cho nhóm.
+
+# There is a group of that name already.
+t58da30a2 = Đã có nhóm tên này.
+
+# Edit the group
+t8c84cd65 = Sửa nhóm
+
+# New group
+tb7b3f75a = Nhóm mới
+
+# Delete the group? Its code stays, under no group. | Delete the group? Its {n} codes stay, under no group.
+t5c1597d9 =
+    { $n ->
+       *[other] Xoá nhóm? { $n } mã của nhóm vẫn còn, không thuộc nhóm nào.
+    }
+
+# Delete
+t5797ea6a = Xoá
+
+# Name
+t0fe07306 = Tên
+
+# Color
+te5b43cf8 = Màu
+
+# Renamed, its codes go along.
+t7accd6f0 = Đổi tên thì các mã của nhóm đi theo.
 
 # Copy
 t658f3664 = Sao chép
@@ -466,6 +505,9 @@ tfd37967d = Theo ứng dụng
 # Find a code by voice
 t027c8145 = Tìm mã bằng giọng nói
 
+# The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
+t79692228 = Phím tắt bảng tra nhanh đang tắt (Chung › Bảng tra nhanh): có phím tắt thì giữ nó và nói tên mã. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy.
+
 # In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
 t1342bee3 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “GitHub”, “mở Vietcombank”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
 
@@ -712,11 +754,8 @@ t483075a5 = Cập nhật
 # Not looked for: this build has no release keys to check them with.
 t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
 
-# Open config.toml
-t07a52335 = Mở config.toml
-
-# Done
-t8dd31791 = Xong
+# Settings
+t4b058728 = Cài đặt
 
 # That password does not open this file.
 t90cd5647 = Mật khẩu đó không mở được file này.
@@ -868,6 +907,12 @@ tcc341778 = Đồng bộ thất bại: { $e }
 # Joined: this device syncs the vault now.
 t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 
+# Not saved: {e}
+ta9354472 = Chưa lưu được: { $e }
+
+# Saved.
+tae0ab8fe = Đã lưu.
+
 # The counter was not saved: {e}
 tb28eb5cc = Bộ đếm chưa được lưu: { $e }
 
@@ -886,9 +931,6 @@ t1690127f = Xoá mã của { $name }?
 # Turn two-factor sign-in off at {name} first, or sign in there with a recovery code: without this code you cannot sign in. Your other devices lose it too.
 t28110a8b = Hãy tắt đăng nhập hai lớp ở { $name } trước, hoặc đăng nhập ở đó bằng mã khôi phục: thiếu mã này bạn sẽ không đăng nhập được. Các thiết bị khác của bạn cũng mất mã này.
 
-# Delete
-t5797ea6a = Xoá
-
 # Not deleted: {e}
 t12e9b880 = Chưa xoá: { $e }
 
@@ -898,17 +940,29 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 # Not opened: {e}
 t2e0269c8 = Chưa mở được: { $e }
 
-# Settings
-t4b058728 = Cài đặt
-
 # All codes
 t113331ee = Tất cả mã
+
+# Favorites
+t7c2c53ba = Yêu thích
+
+# Recently used
+t14f472fe = Dùng gần đây
 
 # Groups
 tf57f458d = Nhóm
 
-# Not syncing: set [sync] in config.toml
-t3e02a97b = Chưa đồng bộ: khai báo [sync] trong config.toml
+# Groups file codes: Work, Money, Family…
+t0965a624 = Nhóm để xếp mã: Công việc, Tiền, Gia đình…
+
+# No group
+t2721e1c1 = Không thuộc nhóm
+
+# Manage
+td7aff116 = Quản lý
+
+# Add code
+t081cfe79 = Thêm mã
 
 # next {code}
 tb1be48b7 = tiếp { $code }
@@ -945,6 +999,24 @@ tda76133f = Không có kết quả
 
 # Try fewer words, or another group.
 t289325a3 = Thử ít từ hơn, hoặc nhóm khác.
+
+# No favorites yet
+tfcb8d481 = Chưa có mã yêu thích
+
+# The star on a code makes it one.
+t3d4132c9 = Bấm ngôi sao trên một mã để thêm vào đây.
+
+# Nothing used yet
+t1f483275 = Chưa dùng mã nào
+
+# The codes you copy or type show up here, the last first.
+t74b6d292 = Mã bạn sao chép hoặc gõ sẽ hiện ở đây, mới nhất trước.
+
+# {group} is empty
+t00783849 = { $group } chưa có mã nào
+
+# Edit a code (the pencil on its card) to file it here, or add one while this group is shown.
+t8be20f72 = Sửa một mã (cây bút trên thẻ) để xếp vào đây, hoặc thêm mã khi đang xem nhóm này.
 
 # This computer has no keychain to keep the vault's key in.
 t911809a4 = Máy này không có keychain để giữ khoá của vault.

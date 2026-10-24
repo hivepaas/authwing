@@ -55,6 +55,9 @@ ta13f22fd =
 # This is not an image authwing can read.
 # t5d87f9dd =
 
+# Edit the code
+# tb79e0e3f =
+
 # Add a code
 # t82066414 =
 
@@ -91,6 +94,9 @@ t0574902c = Группа
 # Cancel
 t35afca3b = Отмена
 
+# Save
+# t4d2d5d68 =
+
 # Add
 # t9dc3aa14 =
 
@@ -99,6 +105,36 @@ t35afca3b = Отмена
 
 # A code cannot be read: {e}
 # t855061c0 =
+
+# Work, Money, Family…
+# tcd93bf98 =
+
+# Give the group a name.
+# teca853c0 =
+
+# There is a group of that name already.
+# t58da30a2 =
+
+# Edit the group
+# t8c84cd65 =
+
+# New group
+# tb7b3f75a =
+
+# Delete the group? Its code stays, under no group. | Delete the group? Its {n} codes stay, under no group.
+# t5c1597d9 =
+
+# Delete
+t5797ea6a = Удалить
+
+# Name
+# t0fe07306 =
+
+# Color
+# te5b43cf8 =
+
+# Renamed, its codes go along.
+# t7accd6f0 =
 
 # Copy
 t658f3664 = Копировать
@@ -463,6 +499,9 @@ tcb4c07d0 =
 # Find a code by voice
 # t027c8145 =
 
+# The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
+# t79692228 =
+
 # In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
 # t1342bee3 =
 
@@ -709,11 +748,8 @@ t538b10e9 = Открыть
 # Not looked for: this build has no release keys to check them with.
 # t208f65bc =
 
-# Open config.toml
-# t07a52335 =
-
-# Done
-# t8dd31791 =
+# Settings
+# t4b058728 =
 
 # That password does not open this file.
 # t90cd5647 =
@@ -868,6 +904,12 @@ tc7922c74 =
 # Joined: this device syncs the vault now.
 # t6b25e007 =
 
+# Not saved: {e}
+# ta9354472 =
+
+# Saved.
+# tae0ab8fe =
+
 # The counter was not saved: {e}
 # tb28eb5cc =
 
@@ -886,9 +928,6 @@ tc7922c74 =
 # Turn two-factor sign-in off at {name} first, or sign in there with a recovery code: without this code you cannot sign in. Your other devices lose it too.
 # t28110a8b =
 
-# Delete
-t5797ea6a = Удалить
-
 # Not deleted: {e}
 t12e9b880 = Не удалено: { $e }
 
@@ -898,17 +937,29 @@ t12e9b880 = Не удалено: { $e }
 # Not opened: {e}
 # t2e0269c8 =
 
-# Settings
-# t4b058728 =
-
 # All codes
 # t113331ee =
+
+# Favorites
+# t7c2c53ba =
+
+# Recently used
+# t14f472fe =
 
 # Groups
 # tf57f458d =
 
-# Not syncing: set [sync] in config.toml
-# t3e02a97b =
+# Groups file codes: Work, Money, Family…
+# t0965a624 =
+
+# No group
+# t2721e1c1 =
+
+# Manage
+# td7aff116 =
+
+# Add code
+# t081cfe79 =
 
 # next {code}
 # tb1be48b7 =
@@ -945,6 +996,24 @@ t12e9b880 = Не удалено: { $e }
 
 # Try fewer words, or another group.
 # t289325a3 =
+
+# No favorites yet
+# tfcb8d481 =
+
+# The star on a code makes it one.
+# t3d4132c9 =
+
+# Nothing used yet
+# t1f483275 =
+
+# The codes you copy or type show up here, the last first.
+# t74b6d292 =
+
+# {group} is empty
+# t00783849 =
+
+# Edit a code (the pencil on its card) to file it here, or add one while this group is shown.
+# t8be20f72 =
 
 # This computer has no keychain to keep the vault's key in.
 # t911809a4 =

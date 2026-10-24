@@ -8,7 +8,7 @@
 //! system shows when it is on, and it should be on only when asked.
 //!
 //! What the user then chooses by hand, when voice was not sure, is taught
-//! what was heard (`state/voice.json`): heard again, it is found outright.
+//! what was heard (`state/usage.json`): heard again, it is found outright.
 
 use std::time::Duration;
 
@@ -214,7 +214,7 @@ impl Workspace {
                     e.id.clone(),
                     voice::names(&e.otp.issuer, &e.otp.account, &e.parsed),
                 );
-                if let Some(known) = self.voice_memory.codes.get(&e.id) {
+                if let Some(known) = self.usage.codes.get(&e.id) {
                     c.taught = known.taught.clone();
                     c.uses = known.uses;
                 }
@@ -223,11 +223,12 @@ impl Workspace {
             .collect()
     }
 
-    /// The code `id` was used: counted, and taught what voice heard last if
-    /// the user chose it over what voice picked.
+    /// The code `id` was used: counted and timed, and taught what voice
+    /// heard last if the user chose it over what voice picked.
     pub(super) fn used(&mut self, id: &str) {
-        let known = self.voice_memory.codes.entry(id.to_string()).or_default();
+        let known = self.usage.codes.entry(id.to_string()).or_default();
         known.uses = known.uses.saturating_add(1);
+        known.last = crate::codes::now();
         if let Some(heard) = self.last_heard.take()
             && heard.picked.as_deref() != Some(id)
             && !heard.said.trim().is_empty()
@@ -238,13 +239,13 @@ impl Workspace {
             known.taught.drain(..over);
         }
         // Codes deleted since are forgotten.
-        self.voice_memory
+        self.usage
             .codes
             .retain(|id, _| self.codes.iter().any(|e| e.id == *id));
         if let Some(store) = self.live.store()
-            && let Err(e) = store.save_voice_memory(&self.voice_memory)
+            && let Err(e) = store.save_usage(&self.usage)
         {
-            eprintln!("authwing: voice memory not saved: {e}");
+            eprintln!("authwing: usage not saved: {e}");
         }
     }
 }

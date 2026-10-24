@@ -14,7 +14,7 @@ use authwing_backup::{Format, Imported, Item};
 
 use authwing_bridge::install::{self, Dirs, Found, Os};
 use authwing_config::{
-    ColorMode, EditFile, GitSync, S3Sync, SettingValue, Settings, Store, SyncPlaceText, WebDavSync,
+    ColorMode, GitSync, S3Sync, SettingValue, Settings, Store, SyncPlaceText, WebDavSync,
 };
 use authwing_i18n::{tr, tr_n};
 use authwing_vault::Presence as _;
@@ -712,7 +712,12 @@ impl SettingsView {
                 there += 1;
                 continue;
             }
-            match crate::codes::save(&vault, None, &item.otp, &item.group, &item.sites) {
+            let filing = crate::codes::Filing {
+                group: item.group.clone(),
+                sites: item.sites.clone(),
+                favorite: false,
+            };
+            match crate::codes::save(&vault, None, &item.otp, &filing) {
                 Ok(_) => added += 1,
                 Err(e) => self.problem = Some(e),
             }
@@ -769,16 +774,6 @@ impl SettingsView {
         }
         self.look_at_browsers();
         cx.notify();
-    }
-
-    fn open_file(&mut self, cx: &mut Context<Self>) {
-        let Some(store) = &self.store else {
-            return;
-        };
-        match store.file_for_editing(EditFile::Settings) {
-            Ok(path) => cx.open_with_system(&path),
-            Err(e) => self.problem = Some(e.to_string()),
-        }
     }
 
     fn on_key(&mut self, ev: &KeyDownEvent, _: &mut Window, cx: &mut Context<Self>) {
@@ -1178,10 +1173,16 @@ impl SettingsView {
             .child(heading(tr!("Find a code by voice")))
             .child(
                 card()
-                    .child(hint(tr!(
-                        "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
-                        key = crate::panel_key::label(&s.panel.key)
-                    )))
+                    .child(hint(if s.panel.key.trim().is_empty() {
+                        tr!(
+                            "The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it."
+                        )
+                    } else {
+                        tr!(
+                            "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
+                            key = crate::panel_key::label(&s.panel.key)
+                        )
+                    }))
                     .child(row(
                         tr!("Model"),
                         tr!("The larger ones are slower, and named no more codes right in our tests."),
@@ -1700,6 +1701,48 @@ impl SettingsView {
 impl Render for SettingsView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
+        let header = div()
+            .h(px(40.))
+            .flex_shrink_0()
+            .flex()
+            .items_center()
+            .gap(px(10.))
+            .pl(px(14.))
+            .pr(px(6.))
+            .bg(rgb(c.surface))
+            .border_b_1()
+            .border_color(rgb(c.line))
+            .child(
+                gpui::svg()
+                    .path("icons/logo.svg")
+                    .size(px(16.))
+                    .text_color(rgb(c.accent)),
+            )
+            .child(
+                div()
+                    .font_weight(FontWeight::SEMIBOLD)
+                    .child(tr!("Settings")),
+            )
+            .child(div().flex_1())
+            .child(
+                div()
+                    .id("settings-close")
+                    .w(px(34.))
+                    .h(px(28.))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .rounded(px(6.))
+                    .cursor_pointer()
+                    .hover(|s| s.bg(rgb(c.hover)))
+                    .on_click(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::Close)))
+                    .child(
+                        gpui::svg()
+                            .path("icons/close.svg")
+                            .size(px(14.))
+                            .text_color(rgb(c.soft)),
+                    ),
+            );
         let mut nav = div()
             .w(px(200.))
             .flex_shrink_0()
@@ -1722,7 +1765,12 @@ impl Render for SettingsView {
                     .items_center()
                     .rounded(px(6.))
                     .cursor_pointer()
-                    .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
+                    .when(on, |d| {
+                        d.bg(rgb(c.selected))
+                            .text_color(rgb(c.text))
+                            .border_l_2()
+                            .border_color(rgb(c.accent))
+                    })
                     .when(!on, |d| {
                         d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
                     })
@@ -1739,69 +1787,49 @@ impl Render for SettingsView {
             Page::Browsers => self.browsers_page(cx),
             Page::About => self.about(),
         };
+        let page = div().flex_1().min_h_0().flex().child(nav).child(
+            div()
+                .id("settings-page")
+                .flex_1()
+                .h_full()
+                .overflow_y_scroll()
+                .child(
+                    div()
+                        .max_w(px(720.))
+                        .flex()
+                        .flex_col()
+                        .gap(px(4.))
+                        .p(px(24.))
+                        .child(
+                            div()
+                                .text_size(ui(18.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(self.page.title()),
+                        )
+                        .when_some(self.problem.clone(), |d, p| {
+                            d.child(
+                                crate::notice::colored(div(), crate::notice::Tone::Bad)
+                                    .mt(px(8.))
+                                    .px(px(12.))
+                                    .py(px(8.))
+                                    .rounded(px(6.))
+                                    .text_size(ui(12.))
+                                    .child(p),
+                            )
+                        })
+                        .child(body),
+                ),
+        );
         div()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
             .size_full()
             .flex()
+            .flex_col()
             .bg(rgb(c.page))
             .text_color(rgb(c.text))
-            .child(nav)
-            .child(
-                div()
-                    .id("settings-page")
-                    .flex_1()
-                    .h_full()
-                    .overflow_y_scroll()
-                    .child(
-                        div()
-                            .max_w(px(720.))
-                            .flex()
-                            .flex_col()
-                            .gap(px(4.))
-                            .p(px(24.))
-                            .child(
-                                div()
-                                    .flex()
-                                    .items_center()
-                                    .gap(px(8.))
-                                    .child(
-                                        div()
-                                            .flex_1()
-                                            .text_size(ui(18.))
-                                            .font_weight(FontWeight::SEMIBOLD)
-                                            .child(self.page.title()),
-                                    )
-                                    .child(
-                                        text_button(
-                                            "open-config",
-                                            &tr!("Open config.toml"),
-                                            c.soft,
-                                        )
-                                        .on_click(cx.listener(|view, _, _, cx| view.open_file(cx))),
-                                    )
-                                    .child(
-                                        outline_button("close-settings", &tr!("Done")).on_click(
-                                            cx.listener(|_, _, _, cx| {
-                                                cx.emit(SettingsEvent::Close)
-                                            }),
-                                        ),
-                                    ),
-                            )
-                            .when_some(self.problem.clone(), |d, p| {
-                                d.child(
-                                    crate::notice::colored(div(), crate::notice::Tone::Bad)
-                                        .mt(px(8.))
-                                        .px(px(12.))
-                                        .py(px(8.))
-                                        .rounded(px(6.))
-                                        .text_size(ui(12.))
-                                        .child(p),
-                                )
-                            })
-                            .child(body),
-                    ),
-            )
+            .child(header)
+            .child(page)
     }
 }
 

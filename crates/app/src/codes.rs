@@ -1,6 +1,7 @@
 //! The codes in the vault, as the window shows them: each a record of kind
-//! `code`, its fields those of [`authwing_totp::fields`] plus the group it is
-//! filed under and the sites it is shown first on.
+//! `code`, its fields those of [`authwing_totp::fields`] plus how it is filed
+//! ([`Filing`]): the group it is under, the sites it is shown first on, and
+//! whether it is a favorite.
 
 use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -16,6 +17,18 @@ pub const KIND: &str = "code";
 const GROUP: &str = "group";
 /// The sites a code is shown first on, one per line (`github.com`).
 const SITES: &str = "sites";
+/// `1` for a favorite; absent otherwise.
+const FAVORITE: &str = "favorite";
+
+/// How a code is filed, beside the code itself.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Filing {
+    /// The group's name; empty: none.
+    pub group: String,
+    /// The sites it is shown first on.
+    pub sites: Vec<String>,
+    pub favorite: bool,
+}
 
 pub struct Entry {
     pub id: String,
@@ -25,9 +38,19 @@ pub struct Entry {
     pub sites: Vec<String>,
     /// Those of them that read as sites, to match pages against.
     pub parsed: Vec<Site>,
+    pub favorite: bool,
 }
 
 impl Entry {
+    /// How it is filed, to save it again as it is.
+    pub fn filing(&self) -> Filing {
+        Filing {
+            group: self.group.clone(),
+            sites: self.sites.clone(),
+            favorite: self.favorite,
+        }
+    }
+
     /// What the code is called: its service, else its account.
     pub fn title(&self) -> String {
         if self.otp.issuer.is_empty() {
@@ -121,6 +144,7 @@ pub fn load(vault: &Vault) -> (Vec<Entry>, Vec<String>) {
                     group: fields.get(GROUP).cloned().unwrap_or_default(),
                     sites,
                     parsed,
+                    favorite: fields.get(FAVORITE).is_some_and(|f| f == "1"),
                 })
             }
             Err(e) => {
@@ -133,14 +157,10 @@ pub fn load(vault: &Vault) -> (Vec<Entry>, Vec<String>) {
     (codes, problems)
 }
 
-/// Saves `otp` as a new code, or over the code `id`; its id.
-pub fn save(
-    vault: &Vault,
-    id: Option<&str>,
-    otp: &Otp,
-    group: &str,
-    sites: &[String],
-) -> Result<String, String> {
+/// Saves `otp` as a new code, or over the code `id`, filed as `filing`; its
+/// id.
+pub fn save(vault: &Vault, id: Option<&str>, otp: &Otp, filing: &Filing) -> Result<String, String> {
+    let (group, sites) = (&filing.group, &filing.sites);
     otp.check().map_err(|e| e.to_string())?;
     let id = match id {
         Some(id) => id.to_string(),
@@ -153,6 +173,9 @@ pub fn save(
     if !sites.is_empty() {
         fields.insert(SITES.into(), sites.join("\n"));
     }
+    if filing.favorite {
+        fields.insert(FAVORITE.into(), "1".into());
+    }
     let name = if otp.issuer.is_empty() {
         &otp.account
     } else {
@@ -162,15 +185,6 @@ pub fn save(
         .update(&id, KIND, name, &fields)
         .map_err(|e| e.to_string())?;
     Ok(id)
-}
-
-/// The groups the codes are filed under, each with how many it has, in order.
-pub fn groups(codes: &[Entry]) -> Vec<(String, usize)> {
-    let mut groups: BTreeMap<String, usize> = BTreeMap::new();
-    for c in codes.iter().filter(|c| !c.group.is_empty()) {
-        *groups.entry(c.group.clone()).or_default() += 1;
-    }
-    groups.into_iter().collect()
 }
 
 #[cfg(test)]
@@ -190,24 +204,36 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let keys = MemoryKeys::default();
         let vault = Vault::open(&dir.join("vault.db"), &keys).expect("vault");
+        let work = |sites: &[&str], favorite| Filing {
+            group: "Work".into(),
+            sites: sites.iter().map(|s| s.to_string()).collect(),
+            favorite,
+        };
         let gh = save(
             &vault,
             None,
             &otp("GitHub", "me@work"),
-            "Work",
-            &["github.com".into()],
+            &work(&["github.com"], true),
         )
         .expect("save");
-        save(&vault, None, &otp("aws", "prod"), "Work", &[]).expect("save");
-        save(&vault, None, &otp("", "me@home"), "", &[]).expect("save");
+        save(&vault, None, &otp("aws", "prod"), &work(&[], false)).expect("save");
+        save(&vault, None, &otp("", "me@home"), &Filing::default()).expect("save");
         let (codes, problems) = load(&vault);
         assert!(problems.is_empty(), "{problems:?}");
         let titles: Vec<String> = codes.iter().map(Entry::title).collect();
         assert_eq!(titles, ["aws", "GitHub", "me@home"]);
         let github = codes.iter().find(|c| c.id == gh).expect("github");
-        assert_eq!(github.sites, ["github.com"]);
-        assert_eq!(github.group, "Work");
-        assert_eq!(groups(&codes), [("Work".to_string(), 2)]);
+        assert_eq!(github.filing(), work(&["github.com"], true));
+        // Saved again unstarred, it is no longer a favorite.
+        save(
+            &vault,
+            Some(&gh),
+            &github.otp,
+            &work(&["github.com"], false),
+        )
+        .expect("save");
+        let (codes, _) = load(&vault);
+        assert!(!codes.iter().any(|c| c.favorite));
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -219,6 +245,7 @@ mod tests {
             group: "Work".into(),
             sites: vec!["console.aws.amazon.com".into()],
             parsed: vec![],
+            favorite: false,
         };
         let words = |s: &str| -> Vec<String> { s.split_whitespace().map(str::to_string).collect() };
         assert!(entry.matches(&words("amazon prod")));
@@ -237,6 +264,7 @@ mod tests {
             group: String::new(),
             sites: vec![],
             parsed: vec![],
+            favorite: false,
         }
     }
 }
