@@ -51,13 +51,12 @@ run: ## Build (debug) and start the app
 dev: ## Debug build: quicker to make, slower to run
 	$(CARGO) build -p authwing
 
-build-mac: ## macOS release build -> dist/authwing-macos-<arch>
+build-mac: ## macOS release build -> dist/authwing.app
 ifneq ($(HOST),Darwin)
 	@echo "build-mac runs on a Mac (this is $(HOST)); CI: Run workflow > macos"; exit 1
 endif
 	$(CARGO) build --release -p authwing
-	@mkdir -p $(DIST) && cp target/release/authwing $(DIST)/authwing-macos-$(ARCH)
-	@echo "built $(DIST)/authwing-macos-$(ARCH)"
+	@APP_ONLY=1 scripts/package_macos.sh
 
 build-linux: ## Linux release build -> dist/authwing-linux-<arch>
 ifneq ($(HOST),Linux)

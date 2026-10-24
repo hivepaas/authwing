@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use gpui::{
     AnyElement, App, ClipboardItem, Context, Entity, FocusHandle, Focusable, FontWeight,
     KeyDownEvent, MouseButton, PromptLevel, Render, SharedString, Window, WindowControlArea,
-    anchored, deferred, div, prelude::*, px, relative, rgb, svg,
+    anchored, deferred, div, img, prelude::*, px, relative, rgb, svg,
 };
 
 use authwing_config::Hotkey;
@@ -1183,18 +1183,8 @@ impl Workspace {
                     .items_center()
                     .gap(px(8.))
                     .window_control_area(WindowControlArea::Drag)
-                    .child(
-                        svg()
-                            .path("icons/logo.svg")
-                            .size(px(18.))
-                            .text_color(rgb(c.accent)),
-                    )
-                    .child(
-                        div()
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .text_color(rgb(c.text))
-                            .child("authwing"),
-                    ),
+                    // The app icon's mark, in its colors; no name beside it.
+                    .child(img("icons/app-mark.svg").size(px(20.)).flex_shrink_0()),
             )
             .child(
                 div()

@@ -79,10 +79,15 @@ jobs:
       - name: Build
         run: cargo build --release -p authwing
 
+      # On macOS, the app as it opens: the bare binary runs in Terminal.
+      - name: App bundle
+        if: runner.os == 'macOS'
+        run: APP_ONLY=1 scripts/package_macos.sh
+
       - uses: actions/upload-artifact@v4
         with:
           name: authwing-${{ matrix.name }}
-          path: target/release/authwing${{ startsWith(matrix.name, 'windows') && '.exe' || '' }}
+          path: ${{ startsWith(matrix.name, 'macos') && 'dist/authwing.app' || format('target/release/authwing{0}', startsWith(matrix.name, 'windows') && '.exe' || '') }}
           if-no-files-found: error
           retention-days: 14
 

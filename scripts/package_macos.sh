@@ -15,7 +15,9 @@
 # signature verifies, as it does for any app not signed by a team.
 #
 # Environment: BIN (default target/release/authwing), ARCH (default the
-# machine's: aarch64 or x86_64), DIST (default dist).
+# machine's: aarch64 or x86_64), DIST (default dist). APP_ONLY=1 makes only
+# authwing.app, into DIST: what `make build` gives, to open as any app (the
+# bare binary, opened from the Finder, runs in Terminal).
 
 set -euo pipefail
 
@@ -51,6 +53,13 @@ sed "s/@VERSION@/$VERSION/g" packaging/macos/Info.plist >"$APP/Contents/Info.pli
 plutil -lint "$APP/Contents/Info.plist"
 codesign --force --sign - --timestamp=none "$APP"
 codesign --verify --deep --strict "$APP"
+
+if [ "${APP_ONLY:-}" = 1 ]; then
+	rm -rf "$DIST/authwing.app"
+	ditto "$APP" "$DIST/authwing.app"
+	echo "built $DIST/authwing.app"
+	exit 0
+fi
 
 ## For the updater: the .app, tarred
 tar -C "$WORK" -czf "$DIST/authwing_${VERSION}_macos_${ARCH}.app.tar.gz" authwing.app

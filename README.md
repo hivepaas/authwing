@@ -76,7 +76,7 @@ Build it from source. It needs Rust 1.95+, CMake and each platform's tools
 
 ```sh
 make run                      # build (debug) and start
-make build                    # a release build for this computer, into dist/
+make build                    # a release build for this computer, into dist/ (authwing.app on macOS)
 cargo run -p authwing         # or by hand
 ```
 
