@@ -45,6 +45,11 @@ struct Assets;
 
 const ICONS: &[(&str, &[u8])] = &[
     ("icons/logo.svg", include_bytes!("../assets/icons/logo.svg")),
+    // The app icon's mark, without its tile: the title bar's.
+    (
+        "icons/app-mark.svg",
+        include_bytes!("../assets/icons/app-mark.svg"),
+    ),
     (
         "icons/check.svg",
         include_bytes!("../assets/icons/check.svg"),
