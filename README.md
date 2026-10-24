@@ -38,6 +38,8 @@ from there; the SSH client does not.
 * **Find and file:** type to find by service, account, group or site; groups
   of their own color, favorites and the codes used lately in the sidebar;
   each code's names, group and sites edited after it is added.
+* **Icons:** each code has its service's icon and color (some 3,250 brands);
+  a service with none has its initials on a color of its own.
 * **For the window used last:** the codes for the app you were in come first,
   by the sites saved with them or their name in the window's title.
 * **Quick panel:** Option+Space (Ctrl+Alt+Space on Windows and Linux) over any
@@ -125,5 +127,7 @@ The app is a [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 authwing is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). Copyright (C) 2026 HivePaaS.
 
 The name and logo are not covered by the GPL: see [TRADEMARKS.md](TRADEMARKS.md). Contributions are welcome under the terms in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+The brands' icons on the codes come from [Simple Icons](https://simpleicons.org), under CC0 (`scripts/brands.py` takes only those); the brands' names and marks are their owners' trademarks, shown only beside the user's own code for that service.
 
 Code adapted from other projects keeps its license and notice: `crates/app/src/input.rs` is adapted from GPUI's `examples/input.rs` (Apache-2.0, Zed Industries). The libraries authwing builds on are all under licenses that allow this (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0 and similar).
