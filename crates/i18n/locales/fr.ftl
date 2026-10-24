@@ -271,17 +271,89 @@ te833da37 = config.toml, [shortcuts] : `{ $key }` est attribué à la fois à { 
 # Allow Accessibility to type codes in
 # t5e806dae =
 
+# From the same author
+# te0bcddcb =
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+# t974bcb65 =
+
 # Updates
 # t483075a5 =
 
 # This build has no release keys, so it cannot tell of updates.
 # t378182cb =
 
-# From the same author
-# te0bcddcb =
+# authwing {version} is ready
+# t2b9b301d =
 
-# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
-# t974bcb65 =
+# It is installed when you quit, or now with Restart.
+# t6fecac86 =
+
+# Restart now
+# t54001a7c =
+
+# authwing {version}
+# t07bd65c2 =
+
+# Looking for a newer version…
+# tf1905fe9 =
+
+# How to update
+# t3603428f =
+
+# Try again
+# t213e90fa =
+
+# Download and install
+# t1a99173f =
+
+# Download
+# t6964bb19 =
+
+# {by} updates it: {command}
+# tdf2cab9c =
+
+# {by} updates it.
+# t84b27295 =
+
+# It is downloaded and checked, then installed when you quit.
+# tb46c0678 =
+
+# Download it, and install it in place of this one.
+# t39312eae =
+
+# authwing {version} is out
+# t44ae3b62 =
+
+# The download failed: {why}
+# t5e96c075 =
+
+# Skip this version
+# t2c33d756 =
+
+# The last look failed: {why}
+# td122a092 =
+
+# Up to date (looked {when}).
+# t4665ef60 =
+
+# Not looked yet.
+# t5a3ba058 =
+
+# This is a beta: you are told of newer betas, and of the release that follows them.
+# t1d6a96bc =
+
+# This is a release: you are told of newer releases, not of betas.
+# t9d2d8250 =
+
+# Check now
+# t4f0e0677 =
+
+# Look for updates once a day
+# tcc27ace1 =
+
+# It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+# t258cdfd9 =
 
 # Two-factor codes that know the window you are in.
 # t76a57f34 =
@@ -1048,6 +1120,45 @@ t60f438b7 = réglages non écrits : { $e }
 # Nothing was heard: is the microphone on?
 # t5de1c09c =
 
+# the system's package manager
+# t11465c20 =
+
+# the App Store
+# ta8cbd72e =
+
+# the Microsoft Store
+# t1df799a1 =
+
+# just now
+# ta715ef0f =
+
+# {n} minute ago | {n} minutes ago
+# t6c7302d6 =
+
+# {n} hour ago | {n} hours ago
+# t137b052e =
+
+# {n} day ago | {n} days ago
+# tb9fa7744 =
+
+# Downloading… {got} of {total}
+# taee668c2 =
+
+# Downloading… {got}
+# t4873b921 =
+
+# authwing {version} is out: {by} updates it ({command}).
+# taf85c804 =
+
+# authwing {version} is out: {by} updates it.
+# ta087df4c =
+
+# No folder to download to.
+# t2bfc1370 =
+
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+# td9ae9d7c =
+
 # Find a code
 # t8b2733e6 =
 
@@ -1119,6 +1230,9 @@ t12e9b880 = Non supprimée : { $e }
 
 # Not opened: {e}
 # t2e0269c8 =
+
+# Settings: an update is out
+# t5742fd7e =
 
 # All codes
 # t113331ee =

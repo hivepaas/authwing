@@ -111,10 +111,34 @@ tc5f5d5a6 = type into { $app }
 te562ea44 = copy
 t27cb3b23 = close
 t5e806dae = Allow Accessibility to type codes in
-t483075a5 = Updates
-t378182cb = This build has no release keys, so it cannot tell of updates.
 te0bcddcb = From the same author
 t974bcb65 = © { $year } HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+t483075a5 = Updates
+t378182cb = This build has no release keys, so it cannot tell of updates.
+t2b9b301d = authwing { $version } is ready
+t6fecac86 = It is installed when you quit, or now with Restart.
+t54001a7c = Restart now
+t07bd65c2 = authwing { $version }
+tf1905fe9 = Looking for a newer version…
+t3603428f = How to update
+t213e90fa = Try again
+t1a99173f = Download and install
+t6964bb19 = Download
+tdf2cab9c = { $by } updates it: { $command }
+t84b27295 = { $by } updates it.
+tb46c0678 = It is downloaded and checked, then installed when you quit.
+t39312eae = Download it, and install it in place of this one.
+t44ae3b62 = authwing { $version } is out
+t5e96c075 = The download failed: { $why }
+t2c33d756 = Skip this version
+td122a092 = The last look failed: { $why }
+t4665ef60 = Up to date (looked { $when }).
+t5a3ba058 = Not looked yet.
+t1d6a96bc = This is a beta: you are told of newer betas, and of the release that follows them.
+t9d2d8250 = This is a release: you are told of newer releases, not of betas.
+t4f0e0677 = Check now
+tcc27ace1 = Look for updates once a day
+t258cdfd9 = It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
 t76a57f34 = Two-factor codes that know the window you are in.
 t6bead5ae = Version { $version } · { $os } { $arch }
 t3d37483c = Copy version info
@@ -382,6 +406,31 @@ t70732a3f = The microphone could not be used: { $e }
 tb2751b66 = Voice: { $e }
 tc421facd = Nothing was heard. Is the microphone allowed? System Settings › Privacy & Security › Microphone.
 t5de1c09c = Nothing was heard: is the microphone on?
+t11465c20 = the system's package manager
+ta8cbd72e = the App Store
+t1df799a1 = the Microsoft Store
+ta715ef0f = just now
+t6c7302d6 =
+    { $n ->
+        [one] { $n } minute ago
+       *[other] { $n } minutes ago
+    }
+t137b052e =
+    { $n ->
+        [one] { $n } hour ago
+       *[other] { $n } hours ago
+    }
+tb9fa7744 =
+    { $n ->
+        [one] { $n } day ago
+       *[other] { $n } days ago
+    }
+taee668c2 = Downloading… { $got } of { $total }
+t4873b921 = Downloading… { $got }
+taf85c804 = authwing { $version } is out: { $by } updates it ({ $command }).
+ta087df4c = authwing { $version } is out: { $by } updates it.
+t2bfc1370 = No folder to download to.
+td9ae9d7c = authwing { $version } is ready: it is installed when you quit, or now with Restart.
 t8b2733e6 = Find a code
 t4774284e = Passphrase or recovery key
 td4cbf886 = The quick panel's shortcut { $key } cannot be used: { $e }
@@ -410,6 +459,7 @@ t28110a8b = Turn two-factor sign-in off at { $name } first, or sign in there wit
 t12e9b880 = Not deleted: { $e }
 ta55f9fc6 = The vault's key is in this computer's keychain, so it cannot lock. Set a passphrase and take the key out of the keychain to lock it.
 t2e0269c8 = Not opened: { $e }
+t5742fd7e = Settings: an update is out
 t113331ee = All codes
 t7c2c53ba = Favorites
 t14f472fe = Recently used
