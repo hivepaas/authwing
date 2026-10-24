@@ -642,10 +642,12 @@ dependencies = [
 name = "authwing-backup"
 version = "0.1.0"
 dependencies = [
+ "aes 0.8.4",
  "aes-gcm",
  "argon2",
  "authwing-totp",
  "base64 0.22.1",
+ "cbc 0.1.2",
  "chacha20poly1305",
  "getrandom 0.3.4",
  "pbkdf2",
@@ -653,6 +655,7 @@ dependencies = [
  "scrypt",
  "serde",
  "serde_json",
+ "sha1 0.10.7",
  "sha2 0.10.9",
  "thiserror 2.0.21",
  "url",

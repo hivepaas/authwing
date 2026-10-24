@@ -1,10 +1,14 @@
-//! What the formats share: random bytes, AES-256-GCM as Aegis and 2FAS use
-//! it, and the text forms of bytes in their files.
+//! What the formats share: random bytes, AES-256-GCM as Aegis, 2FAS,
+//! andOTP and Stratum use it, AES-256-CBC as older Stratum and TOTP
+//! Authenticator do, and the text forms of bytes in their files.
 
+use aes::cipher::block_padding::Pkcs7;
+use aes::cipher::{BlockDecryptMut, KeyIvInit};
 use aes_gcm::Aes256Gcm;
 use aes_gcm::aead::{Aead, KeyInit};
 use base64::alphabet::STANDARD;
 use base64::engine::{DecodePaddingMode, GeneralPurpose, GeneralPurposeConfig};
+use sha2::{Digest, Sha256};
 use zeroize::Zeroizing;
 
 use crate::{Error, Result};
@@ -36,6 +40,42 @@ pub(crate) fn aes_gcm_open(key: &[u8], nonce: &[u8], sealed: &[u8]) -> Option<Ze
         .decrypt(nonce.into(), sealed)
         .ok()
         .map(Zeroizing::new)
+}
+
+/// What AES-256-CBC sealed under `key` and `iv`, its PKCS #7 padding taken
+/// off. `None` if the key or the IV has the wrong length, or the padding
+/// is not whole. A wrong key fails the padding most of the time, not
+/// always: what comes out still needs reading to tell.
+pub(crate) fn aes_cbc_open(key: &[u8], iv: &[u8], sealed: &[u8]) -> Option<Zeroizing<Vec<u8>>> {
+    let cipher = cbc::Decryptor::<aes::Aes256>::new_from_slices(key, iv).ok()?;
+    let mut plain = Zeroizing::new(sealed.to_vec());
+    let len = cipher.decrypt_padded_mut::<Pkcs7>(&mut plain).ok()?.len();
+    plain.truncate(len);
+    Some(plain)
+}
+
+/// The SHA-256 of `password`: the key andOTP's older backups and TOTP
+/// Authenticator's are sealed under, with no salt and no cost.
+pub(crate) fn sha256_key(password: &str) -> Zeroizing<[u8; 32]> {
+    let mut key = Zeroizing::new([0u8; 32]);
+    key.copy_from_slice(&Sha256::digest(password.as_bytes()));
+    key
+}
+
+/// `plain` sealed with AES-256-CBC and PKCS #7 padding, as
+/// [`aes_cbc_open`] opens it: to make the files tests read.
+#[cfg(test)]
+pub(crate) fn aes_cbc_seal(key: &[u8], iv: &[u8], plain: &[u8]) -> Vec<u8> {
+    use aes::cipher::BlockEncryptMut;
+    let cipher = cbc::Encryptor::<aes::Aes256>::new_from_slices(key, iv).expect("key and IV");
+    let mut sealed = plain.to_vec();
+    sealed.resize(plain.len() + 16 - plain.len() % 16, 0);
+    let len = cipher
+        .encrypt_padded_mut::<Pkcs7>(&mut sealed, plain.len())
+        .expect("room for the padding")
+        .len();
+    sealed.truncate(len);
+    sealed
 }
 
 /// The bytes a hexadecimal string spells, in either case.
@@ -77,6 +117,25 @@ mod tests {
         assert_eq!(aes_gcm_open(&[8u8; 32], &nonce, &sealed), None);
         assert_eq!(aes_gcm_open(&key, &nonce[..8], &sealed), None);
         assert_eq!(aes_gcm_open(&key[..16], &nonce, &sealed), None);
+    }
+
+    #[test]
+    fn opens_what_aes_cbc_sealed() {
+        let (key, iv) = ([7u8; 32], [9u8; 16]);
+        for plain in [&b""[..], b"codes", b"sixteen bytes!!!"] {
+            let sealed = aes_cbc_seal(&key, &iv, plain);
+            assert_eq!(sealed.len() % 16, 0);
+            assert_eq!(
+                aes_cbc_open(&key, &iv, &sealed)
+                    .as_deref()
+                    .map(Vec::as_slice),
+                Some(plain)
+            );
+        }
+        let sealed = aes_cbc_seal(&key, &iv, b"codes");
+        assert_eq!(aes_cbc_open(&key, &iv, &sealed[..15]), None);
+        assert_eq!(aes_cbc_open(&key, &iv[..8], &sealed), None);
+        assert_eq!(aes_cbc_open(&key[..16], &iv, &sealed), None);
     }
 
     #[test]

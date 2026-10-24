@@ -10,17 +10,24 @@
 //!   beside its group and sites, so once decrypted any app can read them.
 //! - The plain export ([`plain`]) is one URI per line: what nearly every app
 //!   imports, and what anyone who sees the file can use.
-//! - [`import`] reads authwing's backup, Aegis, 2FAS and Bitwarden exports,
+//! - [`import`] reads authwing's backup, the exports of Aegis, 2FAS,
+//!   andOTP, Stratum (Authenticator Pro), TOTP Authenticator and Bitwarden,
 //!   Ente Auth's plain-text export and lists of URIs (with Google
 //!   Authenticator's `otpauth-migration://` among them); [`detect`] says
 //!   which a file is. A code authwing cannot use (MD5, mOTP, no secret) is
 //!   listed in [`Imported::skipped`] with the reason, and the rest come in:
 //!   one bad entry does not cost the user the others.
+//! - Encrypted backups that do not say what they are, andOTP's and TOTP
+//!   Authenticator's, are [`Format::EncryptedFile`]: the password that opens
+//!   one tells which app wrote it.
 
 mod aegis;
+mod andotp;
 mod authwing;
 mod bitwarden;
 mod crypto;
+mod stratum;
+mod totp_authenticator;
 mod twofas;
 mod uris;
 
@@ -70,6 +77,14 @@ pub enum Format {
     Bitwarden,
     /// Ente Auth's export.
     Ente,
+    /// andOTP's backup in the clear. A sealed one is an
+    /// [`EncryptedFile`](Format::EncryptedFile).
+    AndOtp,
+    /// The backup of Stratum (once Authenticator Pro), plain or encrypted.
+    Stratum,
+    /// An encrypted file that does not say what it is: andOTP's backup, or
+    /// TOTP Authenticator's. Whichever opens with the password is read.
+    EncryptedFile,
 }
 
 impl Format {
@@ -82,6 +97,9 @@ impl Format {
             Format::TwoFas => "2FAS",
             Format::Bitwarden => "Bitwarden",
             Format::Ente => "Ente Auth",
+            Format::AndOtp => "andOTP",
+            Format::Stratum => "Stratum (Authenticator Pro)",
+            Format::EncryptedFile => "an encrypted export",
         }
     }
 }
@@ -107,7 +125,7 @@ pub enum Error {
     #[error("the passphrase is too short: at least {0} characters")]
     WeakPassphrase(usize),
     /// The file is encrypted: ask for its password and import it again.
-    #[error("this {0} file is encrypted: enter its password")]
+    #[error("{}", password_needed(*.0))]
     PasswordNeeded(Format),
     #[error("that password does not open this file")]
     WrongPassword,
@@ -130,11 +148,61 @@ pub(crate) fn damaged(why: impl fmt::Display) -> Error {
     Error::Damaged(why.to_string())
 }
 
+/// What [`Error::PasswordNeeded`] says: the app whose file it is, when
+/// that is known.
+fn password_needed(format: Format) -> String {
+    match format {
+        Format::EncryptedFile => "this file is encrypted: enter its password".into(),
+        format => format!("this {format} file is encrypted: enter its password"),
+    }
+}
+
+/// The fewest bytes an [`Format::EncryptedFile`] has: an AES-GCM nonce and
+/// tag, around nothing.
+const MIN_SEALED: usize = 12 + 16;
+
+/// How files that hold no codes start (pictures, PDFs, ZIP archives, SQLite
+/// databases): not text either, but not to be asked a password for.
+const NOT_EXPORTS: [&[u8]; 6] = [
+    b"\x89PNG",
+    b"\xFF\xD8\xFF",
+    b"GIF8",
+    b"%PDF",
+    b"PK\x03\x04",
+    b"SQLite format 3\0",
+];
+
+/// Whether bytes that are not UTF-8 look encrypted: long enough, not a file
+/// of another kind, and not text in another encoding either, where most
+/// bytes are printable ASCII. In random bytes fewer than half are.
+fn looks_sealed(bytes: &[u8]) -> bool {
+    let printable = bytes
+        .iter()
+        .filter(|b| b.is_ascii_graphic() || b.is_ascii_whitespace())
+        .count();
+    bytes.len() >= MIN_SEALED
+        && printable * 4 < bytes.len() * 3
+        && !NOT_EXPORTS.iter().any(|magic| bytes.starts_with(magic))
+}
+
 /// Says which format `bytes` are in, from how they look: `None` when no
-/// format authwing reads.
+/// format authwing reads. Bytes that are not text, and base64 text of whole
+/// AES blocks, are taken as an [`Format::EncryptedFile`] unless they say
+/// what they are.
 pub fn detect(bytes: &[u8]) -> Option<Format> {
-    let text = std::str::from_utf8(without_bom(bytes)).ok()?;
-    if text.trim_start().starts_with('{') {
+    if stratum::is_sealed(bytes) {
+        return Some(Format::Stratum);
+    }
+    let Ok(text) = std::str::from_utf8(without_bom(bytes)) else {
+        return looks_sealed(bytes).then_some(Format::EncryptedFile);
+    };
+    let start = text.trim_start();
+    if start.starts_with('[')
+        && serde_json::from_str::<Value>(text).is_ok_and(|json| andotp::is_backup(&json))
+    {
+        return Some(Format::AndOtp);
+    }
+    if start.starts_with('{') {
         let Ok(json) = serde_json::from_str::<Value>(text) else {
             // A backup cut short still says what it is: damaged, not unknown.
             return text.contains(authwing::FORMAT).then_some(Format::Authwing);
@@ -150,18 +218,21 @@ pub fn detect(bytes: &[u8]) -> Option<Format> {
             Some(Format::Bitwarden)
         } else if has("kdfParams") && has("encryptedData") {
             Some(Format::Ente)
+        } else if has("Authenticators") {
+            Some(Format::Stratum)
         } else {
             None
         };
     }
-    if !text.lines().any(uris::is_uri) {
-        return None;
+    if text.lines().any(uris::is_uri) {
+        return Some(if text.contains("codeDisplay=") {
+            Format::Ente
+        } else {
+            Format::Uris
+        });
     }
-    Some(if text.contains("codeDisplay=") {
-        Format::Ente
-    } else {
-        Format::Uris
-    })
+    // TOTP Authenticator writes its sealed backup in base64.
+    totp_authenticator::sealed(text.as_bytes()).map(|_| Format::EncryptedFile)
 }
 
 /// Reads the codes in a file of any format [`detect`] knows. An encrypted
@@ -176,7 +247,32 @@ pub fn import(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
         Format::Aegis => aegis::import(bytes, password),
         Format::TwoFas => twofas::import(bytes, password),
         Format::Bitwarden => bitwarden::import(bytes),
+        Format::AndOtp => andotp::import(bytes),
+        Format::Stratum => stratum::import(bytes, password),
+        Format::EncryptedFile => import_encrypted(bytes, password),
     }
+}
+
+/// Opens an app's encrypted backup with a password: `None` if it does not
+/// open, or the bytes are no backup of that app's; once it opens, what it
+/// holds, or why that does not read.
+type Opener = fn(&[u8], &str) -> Option<Result<Imported>>;
+
+/// The apps whose encrypted backups do not say what they are.
+const OPENERS: [Opener; 3] = [andotp::open, andotp::open_old, totp_authenticator::open];
+
+/// Reads an [`Format::EncryptedFile`] as the first app's backup `password`
+/// opens. Without one, it may be TOTP Authenticator's sealed with the
+/// app's own password; if not, the user is asked.
+fn import_encrypted(bytes: &[u8], password: Option<&str>) -> Result<Imported> {
+    let Some(password) = password else {
+        return totp_authenticator::open(bytes, totp_authenticator::APP_PASSWORD)
+            .unwrap_or(Err(Error::PasswordNeeded(Format::EncryptedFile)));
+    };
+    OPENERS
+        .iter()
+        .find_map(|open| open(bytes, password))
+        .unwrap_or(Err(Error::WrongPassword))
 }
 
 /// `bytes` without the byte order mark some editors put first.
@@ -253,7 +349,7 @@ mod tests {
 
     #[test]
     fn detects_each_format() {
-        let cases: [(&[u8], Format); 7] = [
+        let cases: [(&[u8], Format); 14] = [
             (
                 include_bytes!("../testdata/aegis_plain.json"),
                 Format::Aegis,
@@ -279,6 +375,34 @@ mod tests {
                 b"\xEF\xBB\xBF\n otpauth://totp/x?secret=JBSWY3DPEHPK3PXP\n",
                 Format::Uris,
             ),
+            (
+                include_bytes!("../testdata/andotp_plain.json"),
+                Format::AndOtp,
+            ),
+            (
+                include_bytes!("../testdata/stratum_plain.json"),
+                Format::Stratum,
+            ),
+            (
+                include_bytes!("../testdata/stratum_encrypted.bin"),
+                Format::Stratum,
+            ),
+            (
+                include_bytes!("../testdata/stratum_encrypted_legacy.bin"),
+                Format::Stratum,
+            ),
+            (
+                include_bytes!("../testdata/andotp_encrypted.bin"),
+                Format::EncryptedFile,
+            ),
+            (
+                include_bytes!("../testdata/andotp_encrypted_old.bin"),
+                Format::EncryptedFile,
+            ),
+            (
+                include_bytes!("../testdata/totp_authenticator.bin"),
+                Format::EncryptedFile,
+            ),
         ];
         for (bytes, format) in cases {
             assert_eq!(detect(bytes), Some(format));
@@ -287,10 +411,48 @@ mod tests {
         assert_eq!(detect(&sealed), Some(Format::Authwing));
         let migration = b"otpauth-migration://offline?data=CgA";
         assert_eq!(detect(migration), Some(Format::Uris));
-        for other in [&b"{\"version\": 1}"[..], b"hello", b"\xFF\xFE", b""] {
+        // Not UTF-8, but no encrypted file: a picture, and text in Latin-1.
+        let png = [&b"\x89PNG\r\n\x1A\n"[..], &[0xC8; 40]].concat();
+        let latin1 = b"name;secret\nCaf\xE9 Ren\xE9;JBSWY3DPEHPK3PXP\n";
+        // A list, but not of andOTP's entries; base64, but not of AES blocks.
+        let list = b"[{\"name\": \"x\"}]";
+        let short = b"JBSWY3DPEHPK3PXP\n";
+        for other in [
+            &b"{\"version\": 1}"[..],
+            b"hello",
+            b"\xFF\xFE",
+            b"",
+            &png,
+            latin1,
+            list,
+            short,
+            b"[]",
+        ] {
             assert_eq!(detect(other), None);
             assert!(matches!(import(other, None), Err(Error::Unknown)));
         }
+    }
+
+    #[test]
+    fn an_encrypted_file_no_password_opens_is_the_wrong_password() {
+        let noise: Vec<u8> = (0..200u8).map(|n| n.wrapping_mul(151) ^ 0xA5).collect();
+        assert_eq!(detect(&noise), Some(Format::EncryptedFile));
+        assert!(matches!(
+            import(&noise, None),
+            Err(Error::PasswordNeeded(Format::EncryptedFile))
+        ));
+        assert!(matches!(
+            import(&noise, Some("test")),
+            Err(Error::WrongPassword)
+        ));
+        assert_eq!(
+            Error::PasswordNeeded(Format::EncryptedFile).to_string(),
+            "this file is encrypted: enter its password"
+        );
+        assert_eq!(
+            Error::PasswordNeeded(Format::Stratum).to_string(),
+            "this Stratum (Authenticator Pro) file is encrypted: enter its password"
+        );
     }
 
     #[test]
