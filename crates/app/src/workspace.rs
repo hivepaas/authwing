@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use gpui::{
     AnyElement, App, ClipboardItem, Context, Entity, FocusHandle, Focusable, FontWeight,
     KeyDownEvent, MouseButton, PromptLevel, Render, SharedString, Window, WindowControlArea,
-    anchored, deferred, div, img, prelude::*, px, relative, rgb, svg,
+    anchored, deferred, div, prelude::*, px, relative, rgb, svg,
 };
 
 use authwing_config::Hotkey;
@@ -1160,7 +1160,8 @@ impl Workspace {
         cx.stop_propagation();
     }
 
-    fn title_bar(&self, cx: &mut Context<Self>) -> gpui::Div {
+    /// `scale`: the window's device pixels a point.
+    fn title_bar(&self, scale: f32, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
         let cloud = match &self.sync_state {
             SyncState::Off => c.sync_off,
@@ -1185,7 +1186,7 @@ impl Workspace {
                     .gap(px(8.))
                     .window_control_area(WindowControlArea::Drag)
                     // The app icon's mark, in its colors; no name beside it.
-                    .child(img("icons/app-mark.svg").size(px(20.)).flex_shrink_0()),
+                    .child(crate::mark::mark(px(20.), scale, cx)),
             )
             .child(
                 div()
@@ -2122,7 +2123,7 @@ impl Render for Workspace {
                         ),
                 )
             });
-        let title = self.title_bar(cx);
+        let title = self.title_bar(window.scale_factor(), cx);
         let root = if chrome::draws_title_bar(window) {
             chrome::window_chrome(title, body, rgb(c.page).into(), window)
         } else {

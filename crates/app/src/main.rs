@@ -21,6 +21,7 @@ mod groups;
 mod hotkeys;
 mod input;
 mod look;
+mod mark;
 mod menu;
 mod notice;
 mod panel_key;
@@ -46,7 +47,7 @@ struct Assets;
 
 const ICONS: &[(&str, &[u8])] = &[
     ("icons/logo.svg", include_bytes!("../assets/icons/logo.svg")),
-    // The app icon's mark, without its tile: the title bar's.
+    // The app icon's mark, without its tile: the title bar's (see mark.rs).
     (
         "icons/app-mark.svg",
         include_bytes!("../assets/icons/app-mark.svg"),
