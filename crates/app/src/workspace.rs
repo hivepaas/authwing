@@ -34,6 +34,9 @@ use crate::widgets::{icon_button, outline_button, primary_button};
 
 /// How long a notice stays.
 mod listening;
+pub(crate) mod updates;
+
+pub use updates::{Stage as UpdateStage, UpdateSnap};
 
 /// Which codes the window shows, as chosen in the sidebar.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -124,6 +127,8 @@ pub struct Workspace {
     clipboard: Option<(String, Instant)>,
     focus: FocusHandle,
     system_light: bool,
+    /// Newer releases: looked for, downloaded, installed as the app quits.
+    updates: updates::Updates,
 }
 
 impl Workspace {
@@ -212,11 +217,13 @@ impl Workspace {
             clipboard: None,
             focus: cx.focus_handle(),
             system_light: false,
+            updates: Default::default(),
         };
         if let Some(p) = problems.into_iter().next() {
             ws.say(Notice::warn(p));
         }
         cx.set_global(crate::hotkeys::Bound(ws.live.keymap()));
+        ws.start_update_checks(cx);
         ws
     }
 
@@ -1073,7 +1080,11 @@ impl Workspace {
         let store = self.live.store().cloned();
         let view = cx.new(|cx| SettingsView::new(store, self.vault.clone(), sync, cx));
         let status = self.sync_status();
-        view.update(cx, |v, cx| v.set_sync_status(status, cx));
+        let update = self.update_snap();
+        view.update(cx, |v, cx| {
+            v.set_sync_status(status, cx);
+            v.set_update(update, cx);
+        });
         cx.subscribe_in(&view, window, |ws, _, event: &SettingsEvent, window, cx| {
             match event {
                 SettingsEvent::Close => {
@@ -1092,6 +1103,10 @@ impl Workspace {
                         ws.settings = None;
                     }
                 }
+                SettingsEvent::CheckUpdates => ws.check_updates(cx),
+                SettingsEvent::GetUpdate => ws.get_update(cx),
+                SettingsEvent::SkipUpdate => ws.skip_update(cx),
+                SettingsEvent::RestartToUpdate => ws.restart_to_update(cx),
             }
             cx.notify();
         })
@@ -1169,6 +1184,7 @@ impl Workspace {
         };
         let cloud_tip = self.sync_status();
         let open = self.vault.ready().is_some();
+        let update = self.update_waiting();
         // A dialog covers the bar: a tooltip left from the click that opened
         // it would show over the dialog's shade.
         let tips = self.adding.is_none() && self.panel.is_none();
@@ -1247,9 +1263,38 @@ impl Workspace {
                 )
             })
             .child(
-                icon_button("settings", "icons/settings.svg", c.soft)
-                    .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Settings"), cx)))
-                    .on_click(cx.listener(|ws, _, window, cx| ws.toggle_settings(window, cx))),
+                div()
+                    .relative()
+                    .child(
+                        icon_button("settings", "icons/settings.svg", c.soft)
+                            .when(tips, |b| {
+                                b.tooltip(move |_, cx| {
+                                    tip(
+                                        if update {
+                                            tr!("Settings: an update is out")
+                                        } else {
+                                            tr!("Settings")
+                                        },
+                                        cx,
+                                    )
+                                })
+                            })
+                            .on_click(
+                                cx.listener(|ws, _, window, cx| ws.toggle_settings(window, cx)),
+                            ),
+                    )
+                    // A newer release, offered or ready: told, never pressed on.
+                    .when(update, |d| {
+                        d.child(
+                            div()
+                                .absolute()
+                                .top(px(4.))
+                                .right(px(4.))
+                                .size(px(7.))
+                                .rounded_full()
+                                .bg(rgb(c.accent)),
+                        )
+                    }),
             )
     }
 
