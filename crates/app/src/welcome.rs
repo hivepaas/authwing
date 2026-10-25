@@ -150,7 +150,7 @@ impl Welcome {
             .child(point(
                 "icons/mic.svg",
                 tr!("Say its name"),
-                tr!("“GitHub”, “mở Vietcombank”: Whisper hears it on this device, in your language."),
+                tr!("“Open GitHub”, “PayPal”: Whisper hears it on this device, in your language."),
             ))
             .child(point(
                 "icons/lock.svg",

@@ -796,8 +796,8 @@ tcb4c07d0 =
 # The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
 # t79692228 =
 
-# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
-# t1342bee3 =
+# In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+# t198626e9 =
 
 # Model
 # t8285e8fa =
@@ -1237,8 +1237,8 @@ t60f438b7 = настройки не записаны: { $e }
 # Say its name
 # t4602e0ed =
 
-# “GitHub”, “mở Vietcombank”: Whisper hears it on this device, in your language.
-# t6c84198c =
+# “Open GitHub”, “PayPal”: Whisper hears it on this device, in your language.
+# t4a9de42e =
 
 # Yours alone
 # t032b8418 =

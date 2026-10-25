@@ -1385,7 +1385,7 @@ impl SettingsView {
                         )
                     } else {
                         tr!(
-                            "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
+                            "In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
                             key = crate::panel_key::label(&s.panel.key)
                         )
                     }))

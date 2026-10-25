@@ -808,8 +808,8 @@ t027c8145 = Tìm mã bằng giọng nói
 # The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
 t79692228 = Phím tắt bảng tra nhanh đang tắt (Chung › Bảng tra nhanh): có phím tắt thì giữ nó và nói tên mã. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy.
 
-# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
-t1342bee3 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “GitHub”, “mở Vietcombank”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
+# In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+t198626e9 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “Mở GitHub”, “PayPal”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
 
 # Model
 t8285e8fa = Model
@@ -1264,8 +1264,8 @@ tdc1e0fe0 = Một bảng nhỏ trên ứng dụng bạn đang dùng, và Enter g
 # Say its name
 t4602e0ed = Nói tên của nó
 
-# “GitHub”, “mở Vietcombank”: Whisper hears it on this device, in your language.
-t6c84198c = “GitHub”, “mở Vietcombank”: Whisper nghe ngay trên thiết bị này, bằng ngôn ngữ của bạn.
+# “Open GitHub”, “PayPal”: Whisper hears it on this device, in your language.
+t4a9de42e = “Mở GitHub”, “PayPal”: Whisper nghe ngay trên thiết bị này, bằng ngôn ngữ của bạn.
 
 # Yours alone
 t032b8418 = Chỉ của riêng bạn
