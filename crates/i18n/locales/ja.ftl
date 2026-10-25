@@ -901,17 +901,8 @@ t89a71bba = 同期
 # Install a newer git (git-scm.com), then Connect again.
 # t9a84a209 =
 
-# Settings too
-# ta8aa81ba =
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
-
 # Or a place of your own
 # t7b88a644 =
-
-# When it syncs
-# t4849994e =
 
 # Your place
 # t63cb5f41 =
@@ -924,9 +915,6 @@ t89a71bba = 同期
 
 # Stop syncing
 # t59fdbd70 =
-
-# Options
-# t353e0d45 =
 
 # Hide
 # te10c7bcd =
@@ -1200,12 +1188,6 @@ ta34dd8fe = 今すぐ同期
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = このデバイスにはパスワードが保存されていません。設定 › 同期 で再接続してください
-
-# settings not synced: {e}
-tf8592ea2 = 設定を同期できませんでした：{ $e }
-
-# settings not written: {e}
-t60f438b7 = 設定を書き込めませんでした：{ $e }
 
 # The code for the window you are in
 # teaa20509 =

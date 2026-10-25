@@ -48,7 +48,6 @@ use gpui::{App, AppContext as _, Focusable as _, WindowDecorations, WindowOption
 struct Assets;
 
 const ICONS: &[(&str, &[u8])] = &[
-    ("icons/logo.svg", include_bytes!("../assets/icons/logo.svg")),
     // The app icon's mark, without its tile: the title bar's (see mark.rs).
     (
         "icons/app-mark.svg",

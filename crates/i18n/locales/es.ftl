@@ -901,17 +901,8 @@ t89a71bba = Sincronización
 # Install a newer git (git-scm.com), then Connect again.
 # t9a84a209 =
 
-# Settings too
-# ta8aa81ba =
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
-
 # Or a place of your own
 # t7b88a644 =
-
-# When it syncs
-# t4849994e =
 
 # Your place
 # t63cb5f41 =
@@ -924,9 +915,6 @@ t89a71bba = Sincronización
 
 # Stop syncing
 # t59fdbd70 =
-
-# Options
-# t353e0d45 =
 
 # Hide
 # te10c7bcd =
@@ -1200,12 +1188,6 @@ ta34dd8fe = Sincronizar ahora
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = su contraseña no está guardada en este dispositivo: vuelve a conectar en Ajustes › Sincronización
-
-# settings not synced: {e}
-tf8592ea2 = ajustes sin sincronizar: { $e }
-
-# settings not written: {e}
-t60f438b7 = no se escribieron los ajustes: { $e }
 
 # The code for the window you are in
 # teaa20509 =

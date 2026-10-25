@@ -15,7 +15,6 @@ use std::collections::BTreeMap;
 
 mod color;
 mod settings;
-pub mod settings_sync;
 pub mod shortcuts;
 mod state;
 mod store;

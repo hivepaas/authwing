@@ -48,7 +48,6 @@ language = "auto"            # the language you name codes in ("vi", "de"…); "
 
 [sync]                       # see Syncing between devices; one place at a time
 folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"
-settings = true              # the settings that are not this device's own sync too
 ```
 
 ## Codes
@@ -339,12 +338,5 @@ codes, Pro unlimited at $15 a year), and a place of your own.
   edits to go out. Edits merge field by field, so two devices offline never
   lose each other's changes; a deleted code is deleted everywhere.
 
-Settings in `config.toml` sync too, unless `settings = false` under `[sync]`:
-
-- **What syncs:** `[appearance]` (`mode`, `ui_font`) and `[codes]
-  clear_clipboard`.
-- **What each device keeps:** `[general] language`, `[sync]`, `[shortcuts]`,
-  `[panel]` and `[voice]`, which differ between computers.
-- **Merging** is per setting; the file keeps its comments and layout. A
-  device whose settings sync for the first time takes the others' where they
-  set one, and keeps its own where they set none.
+Only the vault syncs (the codes, their groups and sites): `config.toml` and
+what is under `state/` are each device's own.

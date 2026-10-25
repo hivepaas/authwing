@@ -901,17 +901,8 @@ t89a71bba = 동기화
 # Install a newer git (git-scm.com), then Connect again.
 # t9a84a209 =
 
-# Settings too
-# ta8aa81ba =
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
-
 # Or a place of your own
 # t7b88a644 =
-
-# When it syncs
-# t4849994e =
 
 # Your place
 # t63cb5f41 =
@@ -924,9 +915,6 @@ t89a71bba = 동기화
 
 # Stop syncing
 # t59fdbd70 =
-
-# Options
-# t353e0d45 =
 
 # Hide
 # te10c7bcd =
@@ -1200,12 +1188,6 @@ ta34dd8fe = 지금 동기화
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = 이 기기에 비밀번호가 저장되어 있지 않음: 설정 › 동기화에서 다시 연결하세요
-
-# settings not synced: {e}
-tf8592ea2 = 설정이 동기화되지 않음: { $e }
-
-# settings not written: {e}
-t60f438b7 = 설정이 저장되지 않음: { $e }
 
 # The code for the window you are in
 # teaa20509 =

@@ -288,29 +288,6 @@ impl Store {
         self.edit_if(SETTINGS, |doc| set_in(doc, path, value))
     }
 
-    /// The settings of config.toml that sync, as vault fields (see
-    /// [`crate::settings_sync`]).
-    pub fn synced_settings(&self) -> Result<crate::Fields, LoadError> {
-        let path = self.dir.join(SETTINGS);
-        let text = match fs::read_to_string(&path) {
-            Ok(t) => t,
-            Err(e) if e.kind() == io::ErrorKind::NotFound => String::new(),
-            Err(e) => {
-                return Err(LoadError {
-                    file: SETTINGS.into(),
-                    line: None,
-                    message: e.to_string(),
-                });
-            }
-        };
-        crate::settings_sync::fields_of(&text).map_err(|e| LoadError::toml(SETTINGS, &text, &e))
-    }
-
-    /// Writes synced settings into config.toml, keeping everything else.
-    pub fn apply_synced_settings(&self, fields: &crate::Fields) -> Result<(), WriteError> {
-        self.edit_if(SETTINGS, |doc| Ok(crate::settings_sync::apply(doc, fields)))
-    }
-
     fn edit(
         &self,
         file: &str,

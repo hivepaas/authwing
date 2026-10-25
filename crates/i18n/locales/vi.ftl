@@ -925,17 +925,8 @@ t6e62c13a = Cài nó trong terminal, rồi Kết nối lại:
 # Install a newer git (git-scm.com), then Connect again.
 t9a84a209 = Cài git mới hơn (git-scm.com), rồi Kết nối lại.
 
-# Settings too
-ta8aa81ba = Cả cài đặt
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
-
 # Or a place of your own
 t7b88a644 = Hoặc một chỗ của riêng bạn
-
-# When it syncs
-t4849994e = Khi đồng bộ
 
 # Your place
 t63cb5f41 = Nơi đồng bộ của bạn
@@ -948,9 +939,6 @@ t16f62979 = Hiện khoá khôi phục
 
 # Stop syncing
 t59fdbd70 = Dừng đồng bộ
-
-# Options
-t353e0d45 = Tuỳ chọn
 
 # Hide
 te10c7bcd = Ẩn
@@ -1239,12 +1227,6 @@ tb9fa7744 =
 
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = mật khẩu của nó chưa được lưu trên thiết bị này: hãy kết nối lại trong Cài đặt › Đồng bộ
-
-# settings not synced: {e}
-tf8592ea2 = chưa đồng bộ được cài đặt: { $e }
-
-# settings not written: {e}
-t60f438b7 = chưa ghi được cài đặt: { $e }
 
 # The code for the window you are in
 teaa20509 = Mã cho cửa sổ bạn đang dùng

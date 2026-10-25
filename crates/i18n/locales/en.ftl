@@ -333,15 +333,11 @@ t1f4d87c1 = Windows installs it with winget, and asks to allow it.
 te5143d09 = Download git
 t6e62c13a = Install it in a terminal, then Connect again:
 t9a84a209 = Install a newer git (git-scm.com), then Connect again.
-ta8aa81ba = Settings too
-te0e876b2 = Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
 t7b88a644 = Or a place of your own
-t4849994e = When it syncs
 t63cb5f41 = Your place
 t6c9fa51a = With { $place }
 t16f62979 = Show the recovery key
 t59fdbd70 = Stop syncing
-t353e0d45 = Options
 te10c7bcd = Hide
 t02c0bf0a = Change the passphrase
 t69755c3c = Set a passphrase
@@ -453,8 +449,6 @@ tb9fa7744 =
        *[other] { $n } days ago
     }
 td2fdfc60 = its password is not saved on this device: connect again in Settings › Sync
-tf8592ea2 = settings not synced: { $e }
-t60f438b7 = settings not written: { $e }
 teaa20509 = The code for the window you are in
 tc9769cd3 = The codes for the app or site in front come first: by its sites, its window's title, or the browser extension.
 t01695c14 = From any app

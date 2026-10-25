@@ -168,7 +168,7 @@ impl Workspace {
         let unlock =
             cx.new(|cx| TextInput::said(|| tr!("Passphrase or recovery key"), cx).masked());
         let (events, received) = async_channel::unbounded();
-        let sync = SyncWorker::start(vault.clone(), live.store().cloned(), events);
+        let sync = SyncWorker::start(vault.clone(), events);
         sync.set_place(live.sync_place());
         let sync_state = if live.sync_place().is_some() {
             SyncState::Syncing
@@ -1415,13 +1415,9 @@ impl Workspace {
                     .h_full()
                     .window_control_area(WindowControlArea::Drag),
             )
+            // Adding a code is the sidebar's (and its shortcut's).
             .when(open, |d| {
                 d.child(
-                    icon_button("add", "icons/plus.svg", c.soft)
-                        .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Add a code"), cx)))
-                        .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
-                )
-                .child(
                     icon_button("lock", "icons/lock.svg", c.soft)
                         .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Lock"), cx)))
                         .on_click(cx.listener(|ws, _, _, cx| ws.lock(cx))),

@@ -1646,21 +1646,10 @@ impl SettingsView {
 
     /// Settings › Sync, as shellwing's. Not syncing: authwing cloud, then a
     /// place of one's own to set up. Syncing: how it goes, the place (and
-    /// joining the vault it holds), the options, and authwing cloud beside it.
+    /// joining the vault it holds), and authwing cloud beside it. Only the
+    /// vault syncs: the settings are each device's own.
     fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
-        let settings_too = self.settings.sync.settings;
-        let options = card().child(row(
-            tr!("Settings too"),
-            tr!("Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own."),
-            switch("sync-settings", settings_too).on_click(cx.listener(move |view, _, _, cx| {
-                view.set(
-                    &["sync", "settings"],
-                    Some(SettingValue::Bool(!settings_too)),
-                    cx,
-                )
-            })),
-        ));
         let page = div().flex().flex_col().gap(px(12.));
         let Some(place) = self.settings.sync.place() else {
             return page
@@ -1674,9 +1663,7 @@ impl SettingsView {
                         .child(crate::sync_panel::invitation()),
                 )
                 .child(heading(tr!("Or a place of your own")))
-                .child(card().child(self.sync_choice(cx)))
-                .child(heading(tr!("When it syncs")))
-                .child(options);
+                .child(card().child(self.sync_choice(cx)));
         };
         let snap = &self.sync_snap;
         let shown = crate::syncing::describe(&place);
@@ -1731,8 +1718,6 @@ impl SettingsView {
                             .child(self.join.clone())
                     }),
             )
-            .child(heading(tr!("Options")))
-            .child(options)
             .child(div().pt(px(8.)).child(crate::sync_panel::aside()))
     }
 
@@ -2054,12 +2039,8 @@ impl Render for SettingsView {
             .bg(rgb(c.surface))
             .border_b_1()
             .border_color(rgb(c.line))
-            .child(
-                gpui::svg()
-                    .path("icons/logo.svg")
-                    .size(px(16.))
-                    .text_color(rgb(c.accent)),
-            )
+            // The app icon's mark, as the title bar has it.
+            .child(crate::mark::mark(px(16.), window.scale_factor(), cx))
             .child(
                 div()
                     .font_weight(FontWeight::SEMIBOLD)
