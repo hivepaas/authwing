@@ -1450,6 +1450,24 @@ t12e9b880 = 삭제되지 않음: { $e }
 # Settings: an update is out
 # t5742fd7e =
 
+# Stop, and find what you said
+# t748d5a27 =
+
+# Find a code by its name, said
+# tc6b6d315 =
+
+# Listening… say a code's name, then click the microphone.
+# t828235c2 =
+
+# You said “{said}”: no code is called that.
+# t29ba88f1 =
+
+# Show every code
+# tb7bd67b4 =
+
+# Dismiss
+# t265915f3 =
+
 # All codes
 # t113331ee =
 

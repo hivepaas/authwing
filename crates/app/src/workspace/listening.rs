@@ -1,5 +1,5 @@
 //! The quick panel's shortcut held down, or its microphone button, to name
-//! a code aloud.
+//! a code aloud; or the microphone at the end of the window's find field.
 //!
 //! A tap opens the panel, or closes it when it was open. Held past
 //! [`HOLD`], the microphone records until the key comes up; then Whisper
@@ -12,7 +12,7 @@
 
 use std::time::Duration;
 
-use gpui::Context;
+use gpui::{Context, Focusable as _};
 
 use authwing_i18n::tr;
 use authwing_voice::{Candidate, Decision};
@@ -35,8 +35,16 @@ pub(super) struct Held {
     long: bool,
 }
 
-/// What voice heard last in the quick panel: what Whisper wrote, and the
-/// code it picked, if it was sure.
+/// Where what is said goes: the quick panel's list, or the window's.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) enum Ear {
+    #[default]
+    Panel,
+    Window,
+}
+
+/// What voice heard last: what Whisper wrote, and the code it picked, if
+/// it was sure.
 pub(super) struct LastHeard {
     said: String,
     picked: Option<String>,
@@ -78,6 +86,9 @@ impl Workspace {
                 }
                 if let Some(held) = &mut ws.held {
                     held.long = true;
+                    if !ws.listening {
+                        ws.ear = Ear::Panel;
+                    }
                     ws.start_listening(cx);
                 }
             });
@@ -101,12 +112,41 @@ impl Workspace {
         if self.listening {
             self.stop_listening(cx);
         } else {
+            self.ear = Ear::Panel;
             self.start_listening(cx);
         }
     }
 
+    /// The microphone in the window's find field: listen, or stop and show
+    /// the codes what was said names.
+    pub(super) fn toggle_window_listening(&mut self, cx: &mut Context<Self>) {
+        if self.listening {
+            if self.ear == Ear::Window {
+                self.stop_listening(cx);
+            }
+            return;
+        }
+        self.ear = Ear::Window;
+        self.start_listening(cx);
+    }
+
+    /// The window's list as it was before voice: listening stopped, what
+    /// was heard dropped.
+    pub(super) fn clear_window_voice(&mut self, cx: &mut Context<Self>) {
+        if self.ear == Ear::Window && self.listening {
+            self.listening = false;
+            if cx.has_global::<Voice>() {
+                cx.global::<Voice>().cancel();
+            }
+        }
+        if self.window_voice.take().is_some() {
+            cx.notify();
+        }
+    }
+
     fn start_listening(&mut self, cx: &mut Context<Self>) {
-        if self.listening || self.quick.is_none() || !cx.has_global::<Voice>() {
+        let nowhere = self.ear == Ear::Panel && self.quick.is_none();
+        if self.listening || nowhere || !cx.has_global::<Voice>() {
             return;
         }
         let Some(model) = voice::ready_model(self.live.settings()) else {
@@ -115,7 +155,7 @@ impl Workspace {
             } else {
                 tr!("Voice is off: download its model in Settings › Voice.")
             };
-            self.tell_panel(VoiceLine::Note(note), cx);
+            self.tell(VoiceLine::Note(note), cx);
             return;
         };
         let voice = cx.global::<Voice>();
@@ -123,12 +163,12 @@ impl Workspace {
         voice.warm(&model);
         let started = voice.listen();
         self.listening = true;
-        self.tell_panel(VoiceLine::Listening, cx);
+        self.tell(VoiceLine::Listening, cx);
         cx.spawn(async move |this, cx| {
             if let Ok(Err(e)) = started.recv().await {
                 let _ = this.update(cx, |ws, cx| {
                     ws.listening = false;
-                    ws.tell_panel(
+                    ws.tell(
                         VoiceLine::Note(tr!("The microphone could not be used: {e}", e = e)),
                         cx,
                     );
@@ -150,13 +190,13 @@ impl Workspace {
         };
         let language = voice::language(settings);
         let candidates = self.voice_candidates();
-        self.tell_panel(VoiceLine::Finding, cx);
+        self.tell(VoiceLine::Finding, cx);
         let recorded = cx.global::<Voice>().stop();
         cx.spawn(async move |this, cx| {
             let pcm = recorded.recv().await.unwrap_or_default();
             if authwing_voice::is_silent(&pcm) {
                 let _ = this.update(cx, |ws, cx| {
-                    ws.tell_panel(VoiceLine::Note(nothing_heard()), cx);
+                    ws.tell(VoiceLine::Note(nothing_heard()), cx);
                 });
                 return;
             }
@@ -182,14 +222,18 @@ impl Workspace {
                     }
                     Err(e) => VoiceLine::Note(tr!("Voice: {e}", e = e)),
                 };
-                ws.tell_panel(line, cx);
+                ws.tell(line, cx);
             });
         })
         .detach();
     }
 
-    /// Stops listening, keeping nothing: the panel closed.
+    /// Stops listening, keeping nothing: the panel closed. Listening for
+    /// the window goes on.
     pub(super) fn cancel_listening(&mut self, cx: &mut Context<Self>) {
+        if self.ear != Ear::Panel {
+            return;
+        }
         self.last_heard = None;
         if self.listening {
             self.listening = false;
@@ -199,9 +243,25 @@ impl Workspace {
         }
     }
 
-    fn tell_panel(&self, line: VoiceLine, cx: &mut Context<Self>) {
-        if let Some((panel, _)) = &self.quick {
-            let _ = panel.update(cx, |panel, _, cx| panel.set_voice(line, cx));
+    /// How listening goes, said where it was asked for.
+    fn tell(&mut self, line: VoiceLine, cx: &mut Context<Self>) {
+        match self.ear {
+            Ear::Panel => {
+                if let Some((panel, _)) = &self.quick {
+                    let _ = panel.update(cx, |panel, _, cx| panel.set_voice(line, cx));
+                }
+            }
+            Ear::Window => {
+                // Heard: the find field has the keys, so Enter copies the
+                // first code it named.
+                if matches!(&line, VoiceLine::Heard { codes, .. } if !codes.is_empty()) {
+                    self.in_window(cx, |ws, window, cx| {
+                        window.focus(&ws.filter.focus_handle(cx), cx)
+                    });
+                }
+                self.window_voice = Some(line);
+                cx.notify();
+            }
         }
     }
 

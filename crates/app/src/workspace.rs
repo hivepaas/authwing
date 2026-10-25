@@ -28,7 +28,7 @@ use crate::groups::{self, Group};
 use crate::input::{Changed, TextInput, said};
 use crate::look::{self, Live, ui};
 use crate::notice::{self, Notice};
-use crate::quick_panel::{self, Over, PanelEvent as QuickEvent, QuickPanel};
+use crate::quick_panel::{self, Over, PanelEvent as QuickEvent, QuickPanel, VoiceLine};
 use crate::settings::{SettingsEvent, SettingsView};
 use crate::sync_panel::{Standing, SyncPanel, SyncPanelEvent, SyncSnap};
 use crate::syncing::{SyncEvent, SyncWorker};
@@ -116,6 +116,11 @@ pub struct Workspace {
     presses: u64,
     /// The microphone records for the quick panel.
     listening: bool,
+    /// Who listens: the quick panel, or the window's find field.
+    ear: listening::Ear,
+    /// What voice says in the window: listening, what it heard and the
+    /// codes it names (shown in place of the list), or why nothing.
+    window_voice: Option<VoiceLine>,
     /// What voice heard last in the quick panel.
     last_heard: Option<listening::LastHeard>,
     /// How the codes are used on this device: what voice has learnt, what
@@ -152,8 +157,14 @@ impl Workspace {
             None => VaultSlot::none(),
         };
         let filter = said(cx, || tr!("Find a code"));
-        cx.subscribe(&filter, |_, _, _: &Changed, cx| cx.notify())
-            .detach();
+        cx.subscribe(&filter, |ws, filter, _: &Changed, cx| {
+            // Typed: the list is the words', not what was said.
+            if !filter.read(cx).text().is_empty() {
+                ws.clear_window_voice(cx);
+            }
+            cx.notify()
+        })
+        .detach();
         let unlock =
             cx.new(|cx| TextInput::said(|| tr!("Passphrase or recovery key"), cx).masked());
         let (events, received) = async_channel::unbounded();
@@ -221,6 +232,8 @@ impl Workspace {
             held: None,
             presses: 0,
             listening: false,
+            ear: listening::Ear::default(),
+            window_voice: None,
             last_heard: None,
             usage,
             _bridge: bridge,
@@ -464,7 +477,7 @@ impl Workspace {
     }
 
     /// Runs `f` with the window, once the current update is through.
-    fn in_window(
+    pub(super) fn in_window(
         &self,
         cx: &mut Context<Self>,
         f: impl FnOnce(&mut Self, &mut Window, &mut Context<Self>) + 'static,
@@ -604,6 +617,16 @@ impl Workspace {
             .split_whitespace()
             .map(str::to_string)
             .collect();
+        // Said, not typed: the codes it names, best first, whatever the
+        // sidebar shows.
+        if let Some(VoiceLine::Heard { codes, .. }) = &self.window_voice
+            && words.is_empty()
+        {
+            return codes
+                .iter()
+                .filter_map(|id| self.codes.iter().find(|e| &e.id == id))
+                .collect();
+        }
         let last = |c: &Entry| self.usage.codes.get(&c.id).map_or(0, |u| u.last);
         let mut shown: Vec<&Entry> = self
             .codes
@@ -1314,7 +1337,10 @@ impl Workspace {
                     self.copy(&id, cx);
                 }
             }
-            "escape" => self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx)),
+            "escape" => {
+                self.clear_window_voice(cx);
+                self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx));
+            }
             _ => return,
         }
         cx.stop_propagation();
@@ -1376,7 +1402,9 @@ impl Workspace {
                                 .text_size(ui(11.))
                                 .text_color(rgb(c.faint))
                                 .child(crate::hotkeys::hint(cx, Hotkey::Find)),
-                        ),
+                        )
+                        .child(div().w(px(1.)).h(px(16.)).bg(rgb(c.field_edge)))
+                        .child(self.find_mic(tips, cx)),
                 )
             })
             .child(
@@ -1432,6 +1460,99 @@ impl Workspace {
                     }),
             )
             .child(self.sync_button(tips, cx))
+    }
+
+    /// The microphone at the end of the find field: find a code by saying
+    /// its name; lit while it listens.
+    fn find_mic(&self, tips: bool, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let c = colors();
+        let on = self.listening && self.ear == listening::Ear::Window;
+        div()
+            .id("find-voice")
+            .flex_shrink_0()
+            .size(px(22.))
+            .mr(px(-4.))
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded_full()
+            .cursor_pointer()
+            .when(on, |d| d.bg(rgb(c.accent)))
+            .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
+            .when(tips, |b| {
+                b.tooltip(move |_, cx| {
+                    tip(
+                        if on {
+                            tr!("Stop, and find what you said")
+                        } else {
+                            tr!("Find a code by its name, said")
+                        },
+                        cx,
+                    )
+                })
+            })
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_click(cx.listener(|ws, _, _, cx| ws.toggle_window_listening(cx)))
+            .child(
+                svg()
+                    .path("icons/mic.svg")
+                    .size(px(14.))
+                    .text_color(rgb(if on { c.on_accent } else { c.accent })),
+            )
+    }
+
+    /// What voice says in the window, above the list it chose.
+    fn voice_strip(&self, cx: &mut Context<Self>) -> Option<gpui::Div> {
+        let c = colors();
+        let line = self.window_voice.as_ref()?;
+        let (text, tone) = match line {
+            VoiceLine::Listening => (
+                tr!("Listening… say a code's name, then click the microphone."),
+                c.accent,
+            ),
+            VoiceLine::Finding => (tr!("Finding what you said…"), c.soft),
+            VoiceLine::Heard { said, codes, .. } if codes.is_empty() => (
+                tr!(
+                    "You said “{said}”: no code is called that.",
+                    said = said.clone()
+                ),
+                c.warn,
+            ),
+            VoiceLine::Heard { said, .. } => {
+                (tr!("You said “{said}”", said = said.clone()), c.soft)
+            }
+            VoiceLine::Note(note) => (note.clone(), c.warn),
+        };
+        let done = match line {
+            VoiceLine::Listening | VoiceLine::Finding => tr!("Cancel"),
+            VoiceLine::Heard { .. } => tr!("Show every code"),
+            VoiceLine::Note(_) => tr!("Dismiss"),
+        };
+        Some(
+            div()
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .mb(px(14.))
+                .px(px(12.))
+                .py(px(8.))
+                .rounded(px(8.))
+                .border_1()
+                .border_color(rgb(c.line))
+                .bg(rgb(c.surface))
+                .child(
+                    svg()
+                        .path("icons/mic.svg")
+                        .size(px(14.))
+                        .text_color(rgb(tone)),
+                )
+                .child(div().flex_1().min_w_0().text_color(rgb(tone)).child(text))
+                .child(
+                    text_button("voice-clear", &done, c.muted)
+                        .h(px(24.))
+                        .on_click(cx.listener(|ws, _, _, cx| ws.clear_window_voice(cx))),
+                ),
+        )
     }
 
     /// The cloud, last in the bar as shellwing's: its color says how sync
@@ -2053,7 +2174,8 @@ impl Workspace {
         let c = colors();
         let now = codes::now();
         let filtering = !self.filter.read(cx).text().trim().is_empty();
-        let strip = (!filtering)
+        let voice = self.voice_strip(cx);
+        let strip = (!filtering && voice.is_none())
             .then(|| self.for_window_view(now, cx))
             .flatten();
         let shown: Vec<String> = self.shown(cx).iter().map(|e| e.id.clone()).collect();
@@ -2079,6 +2201,8 @@ impl Workspace {
                     .on_click(cx.listener(|ws, _, window, cx| ws.show_welcome(window, cx))),
             )
             .into_any_element()
+        } else if cards.is_empty() && voice.is_some() {
+            div().into_any_element()
         } else if cards.is_empty() {
             let typed = !self.filter.read(cx).text().trim().is_empty();
             let (title, detail) = match &self.shown {
@@ -2121,6 +2245,7 @@ impl Workspace {
             .overflow_y_scroll()
             .p(px(20.))
             .bg(rgb(c.page))
+            .children(voice)
             .children(strip)
             .child(body)
     }

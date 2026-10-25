@@ -1492,6 +1492,24 @@ t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 # Settings: an update is out
 t5742fd7e = Cài đặt: đã có bản cập nhật
 
+# Stop, and find what you said
+t748d5a27 = Dừng, rồi tìm điều bạn vừa nói
+
+# Find a code by its name, said
+tc6b6d315 = Tìm mã bằng cách nói tên
+
+# Listening… say a code's name, then click the microphone.
+t828235c2 = Đang nghe… hãy nói tên mã, rồi bấm vào micro.
+
+# You said “{said}”: no code is called that.
+t29ba88f1 = Bạn nói “{ $said }”: không có mã nào tên như vậy.
+
+# Show every code
+tb7bd67b4 = Hiện mọi mã
+
+# Dismiss
+t265915f3 = Đóng
+
 # All codes
 t113331ee = Tất cả mã
 

@@ -127,6 +127,11 @@ In the quick panel, hold its shortcut and say a code's name: "Open GitHub",
 "PayPal". Let go, and the codes it names come first, the one named clearly
 selected: Enter types it.
 
+In the window, the microphone at the end of the find field does the same:
+click it, say the name, click it again. The list shows the codes it names,
+best first, and Enter copies the first; *Show every code* (or typing, or
+Escape) brings the list back.
+
 - **The model** is Whisper's, downloaded once from *Settings › Voice*
   (from Hugging Face, where whisper.cpp publishes it, and checked against
   its SHA-256). `base` (148 MB) is the one to have; the larger ones were
