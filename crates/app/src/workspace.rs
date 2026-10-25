@@ -1614,7 +1614,8 @@ impl Workspace {
         // A row of the list: its mark (an icon, a group's color), its name,
         // how many codes it has.
         // The count, and a group's pencil in its place while the row is
-        // hovered: one slot, so every row's count lines up.
+        // hovered: one slot, centered as the Groups heading's +, so the
+        // counts, the pencils and the + make one column.
         let row = |id: SharedString,
                    mark: AnyElement,
                    label: String,
@@ -1647,7 +1648,7 @@ impl Workspace {
                             .h(px(20.))
                             .flex()
                             .items_center()
-                            .justify_end()
+                            .justify_center()
                             .when_some(count, |d, n| {
                                 d.child(
                                     div()
@@ -1671,14 +1672,19 @@ impl Workspace {
                 .text_color(rgb(c.muted))
                 .into_any_element()
         };
-        let dot = |color: u32| {
+        // A mark as wide as the icons above it, so every label starts at
+        // the same place.
+        let slot = |mark: gpui::Div| {
             div()
-                .size(px(8.))
+                .size(px(14.))
                 .flex_shrink_0()
-                .rounded(px(2.))
-                .bg(rgb(color))
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(mark)
                 .into_any_element()
         };
+        let dot = |color: u32| slot(div().size(px(8.)).rounded(px(2.)).bg(rgb(color)));
         let section = |title: String| {
             div()
                 .pt(px(14.))
@@ -1812,13 +1818,13 @@ impl Workspace {
             list = list.child(
                 row(
                     "show-no-group".into(),
-                    div()
-                        .size(px(8.))
-                        .flex_shrink_0()
-                        .rounded(px(2.))
-                        .border_1()
-                        .border_color(rgb(c.muted))
-                        .into_any_element(),
+                    slot(
+                        div()
+                            .size(px(8.))
+                            .rounded(px(2.))
+                            .border_1()
+                            .border_color(rgb(c.muted)),
+                    ),
                     tr!("No group"),
                     Some(ungrouped),
                     self.shown == Shown::NoGroup,
