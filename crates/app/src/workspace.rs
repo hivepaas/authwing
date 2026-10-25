@@ -647,8 +647,10 @@ impl Workspace {
         shown
     }
 
+    /// What the sidebar shows; what voice heard gives way to it.
     fn show(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.shown = shown;
+        self.clear_window_voice(cx);
         cx.notify();
     }
 
@@ -1611,34 +1613,56 @@ impl Workspace {
         let c = colors();
         // A row of the list: its mark (an icon, a group's color), its name,
         // how many codes it has.
-        let row =
-            |id: SharedString, mark: AnyElement, label: String, count: Option<usize>, on: bool| {
-                div()
-                    .id(id)
-                    .group("side-row")
-                    .h(px(30.))
-                    .px(px(10.))
-                    .flex()
-                    .items_center()
-                    .gap(px(9.))
-                    .rounded(px(6.))
-                    .cursor_pointer()
-                    .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
-                    .when(!on, |d| {
-                        d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
-                    })
-                    .child(mark)
-                    .child(div().flex_1().min_w_0().truncate().child(label))
-                    .when_some(count, |d, n| {
-                        d.child(
-                            div()
-                                .flex_shrink_0()
-                                .text_size(ui(11.))
-                                .text_color(rgb(c.muted))
-                                .child(n.to_string()),
-                        )
-                    })
-            };
+        // The count, and a group's pencil in its place while the row is
+        // hovered: one slot, so every row's count lines up.
+        let row = |id: SharedString,
+                   mark: AnyElement,
+                   label: String,
+                   count: Option<usize>,
+                   on: bool,
+                   edit: Option<gpui::Stateful<gpui::Div>>| {
+            let editable = edit.is_some();
+            div()
+                .id(id)
+                .group("side-row")
+                .h(px(30.))
+                .px(px(10.))
+                .flex()
+                .items_center()
+                .gap(px(9.))
+                .rounded(px(6.))
+                .cursor_pointer()
+                .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
+                .when(!on, |d| {
+                    d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
+                })
+                .child(mark)
+                .child(div().flex_1().min_w_0().truncate().child(label))
+                .when(count.is_some() || editable, |d| {
+                    d.child(
+                        div()
+                            .relative()
+                            .flex_shrink_0()
+                            .min_w(px(20.))
+                            .h(px(20.))
+                            .flex()
+                            .items_center()
+                            .justify_end()
+                            .when_some(count, |d, n| {
+                                d.child(
+                                    div()
+                                        .text_size(ui(11.))
+                                        .text_color(rgb(c.muted))
+                                        .when(editable, |d| {
+                                            d.group_hover("side-row", |s| s.invisible())
+                                        })
+                                        .child(n.to_string()),
+                                )
+                            })
+                            .children(edit.map(|e| e.absolute().top_0().right_0())),
+                    )
+                })
+        };
         let icon = |path: &'static str| {
             svg()
                 .path(path)
@@ -1684,6 +1708,7 @@ impl Workspace {
                     tr!("All codes"),
                     Some(self.codes.len()),
                     self.shown == Shown::All,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::All, cx))),
             )
@@ -1694,6 +1719,7 @@ impl Workspace {
                     tr!("Favorites"),
                     (favorites > 0).then_some(favorites),
                     self.shown == Shown::Favorites,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Favorites, cx))),
             )
@@ -1704,6 +1730,7 @@ impl Workspace {
                     tr!("Recently used"),
                     None,
                     self.shown == Shown::Recent,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Recent, cx))),
             )
@@ -1749,32 +1776,31 @@ impl Workspace {
                     group.name.clone(),
                     Some(group.count),
                     on,
+                    Some(
+                        div()
+                            .id(SharedString::from(format!("edit-group-{n}")))
+                            .invisible()
+                            .group_hover("side-row", |s| s.visible())
+                            .size(px(20.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .rounded(px(5.))
+                            .hover(|s| s.bg(rgb(c.hover)))
+                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                            .on_click(cx.listener(move |ws, _, window, cx| {
+                                cx.stop_propagation();
+                                ws.open_group_editor(Some(edit.clone()), window, cx);
+                            }))
+                            .child(
+                                svg()
+                                    .path("icons/pencil.svg")
+                                    .size(px(12.))
+                                    .text_color(rgb(c.muted)),
+                            ),
+                    ),
                 )
-                .on_click(cx.listener(move |ws, _, _, cx| ws.show(Shown::Group(pick.clone()), cx)))
-                .child(
-                    div()
-                        .id(SharedString::from(format!("edit-group-{n}")))
-                        .invisible()
-                        .group_hover("side-row", |s| s.visible())
-                        .size(px(20.))
-                        .flex_shrink_0()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .rounded(px(5.))
-                        .hover(|s| s.bg(rgb(c.hover)))
-                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                        .on_click(cx.listener(move |ws, _, window, cx| {
-                            cx.stop_propagation();
-                            ws.open_group_editor(Some(edit.clone()), window, cx);
-                        }))
-                        .child(
-                            svg()
-                                .path("icons/pencil.svg")
-                                .size(px(12.))
-                                .text_color(rgb(c.muted)),
-                        ),
-                ),
+                .on_click(cx.listener(move |ws, _, _, cx| ws.show(Shown::Group(pick.clone()), cx))),
             );
         }
         let ungrouped = self
@@ -1796,6 +1822,7 @@ impl Workspace {
                     tr!("No group"),
                     Some(ungrouped),
                     self.shown == Shown::NoGroup,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::NoGroup, cx))),
             );
