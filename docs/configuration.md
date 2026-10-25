@@ -123,9 +123,9 @@ Linux (*Settings › General*, or `key` under `[panel]`; `""` turns it off).
 
 ## Finding a code by voice
 
-In the quick panel, hold its shortcut and say a code's name: "GitHub",
-"mở Vietcombank", "Öffne PayPal". Let go, and the codes it names come first,
-the one named clearly selected: Enter types it.
+In the quick panel, hold its shortcut and say a code's name: "Open GitHub",
+"PayPal". Let go, and the codes it names come first, the one named clearly
+selected: Enter types it.
 
 - **The model** is Whisper's, downloaded once from *Settings › Voice*
   (from Hugging Face, where whisper.cpp publishes it, and checked against
