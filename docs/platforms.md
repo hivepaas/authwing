@@ -71,6 +71,6 @@ goes into the system keychain (item `authwing`).
    the Accessibility permission (System Settings › Privacy & Security).
 5. Sync: set `[sync] folder = "/tmp/aw-sync"` in config.toml, add a code,
    then start a second copy with another config directory and the same
-   folder; join from the cloud's panel with the first one's recovery key,
-   or by asking and approving the six digits on the first.
+   folder; join in Settings › Sync with the first one's recovery key, or by
+   asking and approving the six digits on the first.
 6. HiDPI: text is sharp at the display's scale (e.g. 125 % or 150 % on Windows).

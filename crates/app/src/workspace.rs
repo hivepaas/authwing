@@ -1,7 +1,10 @@
 //! The window: the codes in the vault, found by typing, filed by group, each
 //! copied with a click or a key; the vault opened, locked and synced.
 
-use std::time::{Duration, Instant};
+use std::cell::Cell;
+use std::collections::HashSet;
+use std::rc::Rc;
+use std::time::{Duration, Instant, SystemTime};
 
 use gpui::{
     AnyElement, App, ClipboardItem, Context, Entity, FocusHandle, Focusable, FontWeight,
@@ -25,15 +28,19 @@ use crate::groups::{self, Group};
 use crate::input::{Changed, TextInput, said};
 use crate::look::{self, Live, ui};
 use crate::notice::{self, Notice};
-use crate::quick_panel::{self, Over, PanelEvent as QuickEvent, QuickPanel};
+use crate::quick_panel::{self, Over, PanelEvent as QuickEvent, QuickPanel, VoiceLine};
 use crate::settings::{SettingsEvent, SettingsView};
-use crate::sync_panel::{PanelEvent, SyncPanel};
+use crate::sync_panel::{Standing, SyncPanel, SyncPanelEvent, SyncSnap};
 use crate::syncing::{SyncEvent, SyncWorker};
 use crate::vault_slot::VaultSlot;
-use crate::widgets::{icon_button, outline_button, primary_button};
+use crate::welcome::{Welcome, WelcomeEvent};
+use crate::widgets::{icon_button, outline_button, primary_button, text_button};
 
 /// How long a notice stays.
 mod listening;
+pub(crate) mod updates;
+
+pub use updates::{Stage as UpdateStage, UpdateSnap};
 
 /// Which codes the window shows, as chosen in the sidebar.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -86,6 +93,10 @@ pub struct Workspace {
     /// The groups there are, with their colors.
     groups: Vec<Group>,
     group_editor: Option<Entity<GroupEditor>>,
+    /// The welcome, the first time on a device with no codes.
+    welcome: Option<Entity<Welcome>>,
+    /// Whether it was looked at whether to show it, once the codes were read.
+    welcome_decided: bool,
     adding: Option<Entity<AddCode>>,
     panel: Option<Entity<SyncPanel>>,
     settings: Option<Entity<SettingsView>>,
@@ -105,6 +116,11 @@ pub struct Workspace {
     presses: u64,
     /// The microphone records for the quick panel.
     listening: bool,
+    /// Who listens: the quick panel, or the window's find field.
+    ear: listening::Ear,
+    /// What voice says in the window: listening, what it heard and the
+    /// codes it names (shown in place of the list), or why nothing.
+    window_voice: Option<VoiceLine>,
     /// What voice heard last in the quick panel.
     last_heard: Option<listening::LastHeard>,
     /// How the codes are used on this device: what voice has learnt, what
@@ -124,6 +140,14 @@ pub struct Workspace {
     clipboard: Option<(String, Instant)>,
     focus: FocusHandle,
     system_light: bool,
+    /// Newer releases: looked for, downloaded, installed as the app quits.
+    updates: updates::Updates,
+    /// Where the cloud is drawn: the sync panel hangs from it.
+    sync_button: Rc<Cell<gpui::Bounds<gpui::Pixels>>>,
+    /// Devices asking to join that the user was asked about.
+    prompted: HashSet<String>,
+    /// The window, for questions asked from outside a render.
+    window_handle: Option<gpui::AnyWindowHandle>,
 }
 
 impl Workspace {
@@ -133,12 +157,18 @@ impl Workspace {
             None => VaultSlot::none(),
         };
         let filter = said(cx, || tr!("Find a code"));
-        cx.subscribe(&filter, |_, _, _: &Changed, cx| cx.notify())
-            .detach();
+        cx.subscribe(&filter, |ws, filter, _: &Changed, cx| {
+            // Typed: the list is the words', not what was said.
+            if !filter.read(cx).text().is_empty() {
+                ws.clear_window_voice(cx);
+            }
+            cx.notify()
+        })
+        .detach();
         let unlock =
             cx.new(|cx| TextInput::said(|| tr!("Passphrase or recovery key"), cx).masked());
         let (events, received) = async_channel::unbounded();
-        let sync = SyncWorker::start(vault.clone(), live.store().cloned(), events);
+        let sync = SyncWorker::start(vault.clone(), events);
         sync.set_place(live.sync_place());
         let sync_state = if live.sync_place().is_some() {
             SyncState::Syncing
@@ -190,6 +220,8 @@ impl Workspace {
             shown: Shown::All,
             groups: Vec::new(),
             group_editor: None,
+            welcome: None,
+            welcome_decided: false,
             adding: None,
             panel: None,
             settings: None,
@@ -200,6 +232,8 @@ impl Workspace {
             held: None,
             presses: 0,
             listening: false,
+            ear: listening::Ear::default(),
+            window_voice: None,
             last_heard: None,
             usage,
             _bridge: bridge,
@@ -212,11 +246,16 @@ impl Workspace {
             clipboard: None,
             focus: cx.focus_handle(),
             system_light: false,
+            updates: Default::default(),
+            sync_button: Rc::default(),
+            prompted: HashSet::new(),
+            window_handle: None,
         };
         if let Some(p) = problems.into_iter().next() {
             ws.say(Notice::warn(p));
         }
         cx.set_global(crate::hotkeys::Bound(ws.live.keymap()));
+        ws.start_update_checks(cx);
         ws
     }
 
@@ -315,6 +354,8 @@ impl Workspace {
         if !self.loaded && self.vault.ready().is_some() {
             self.reload();
         }
+        // Asked to join while the vault was locked: asked now it is open.
+        self.prompt_requests(cx);
         // Another app's window: authwing's own is where the user looks the
         // codes up, not where they go.
         if let Some(w) = authwing_context::window::active()
@@ -387,45 +428,96 @@ impl Workspace {
             }
             SyncEvent::Failed(e) => self.sync_state = SyncState::Failed(e),
             SyncEvent::Asking(state) => {
-                if let Some(p) = &self.panel {
-                    p.update(cx, |p, cx| p.set_asking(state, cx));
+                if let Some(s) = &self.settings {
+                    s.update(cx, |s, cx| s.set_asking(state, cx));
                 }
             }
             SyncEvent::Requests(requests) => {
-                if self.panel.is_none() && requests.len() > self.requests.len() {
-                    self.say(Notice::warn(tr!(
-                        "A device asks to join: open Sync (the cloud) to approve it."
-                    )));
-                }
-                if let Some(p) = &self.panel {
-                    let r = requests.clone();
-                    p.update(cx, |p, cx| p.set_requests(r, cx));
-                }
                 self.requests = requests;
+                self.prompt_requests(cx);
             }
-            SyncEvent::PairingFailed(e) => match &self.panel {
-                Some(p) => p.update(cx, |p, cx| p.failed(e, cx)),
+            SyncEvent::PairingFailed(e) => match &self.settings {
+                Some(s) => s.update(cx, |s, cx| s.pairing_failed(e, cx)),
                 None => self.say(Notice::bad(e)),
             },
             SyncEvent::PassphraseJoins(joins) => {
                 self.passphrase_joins = joins;
-                if let Some(p) = &self.panel {
-                    p.update(cx, |p, cx| p.set_passphrase_joins(joins, cx));
+                if let Some(s) = &self.settings {
+                    s.update(cx, |s, cx| s.set_passphrase_joins(joins, cx));
                 }
             }
         }
+        self.refresh_sync(cx);
+        cx.notify();
+    }
+
+    /// Settings and the sync panel, while open, shown how sync stands now.
+    fn refresh_sync(&self, cx: &mut Context<Self>) {
+        let snap = self.sync_snap();
         if let Some(s) = &self.settings {
-            let status = self.sync_status();
-            s.update(cx, |s, cx| s.set_sync_status(status, cx));
+            let snap = snap.clone();
+            s.update(cx, |s, cx| s.set_sync_snap(snap, cx));
         }
         if let Some(p) = &self.panel {
-            let (status, synced) = (self.sync_status(), self.synced());
-            p.update(cx, |p, cx| {
-                p.set_status(status, cx);
-                p.set_synced(synced, cx);
-            });
+            p.update(cx, |p, cx| p.set_snap(snap, cx));
         }
-        cx.notify();
+    }
+
+    /// Asks about each device asking to join, once: while the vault is open,
+    /// as nobody lets a device in from under the lock.
+    fn prompt_requests(&mut self, cx: &mut Context<Self>) {
+        if self.vault.ready().is_none() {
+            return;
+        }
+        for r in self.requests.clone() {
+            if self.prompted.insert(r.id.clone()) {
+                self.in_window(cx, move |ws, window, cx| ws.prompt_pairing(r, window, cx));
+            }
+        }
+    }
+
+    /// Runs `f` with the window, once the current update is through.
+    pub(super) fn in_window(
+        &self,
+        cx: &mut Context<Self>,
+        f: impl FnOnce(&mut Self, &mut Window, &mut Context<Self>) + 'static,
+    ) {
+        let Some(handle) = self.window_handle else {
+            return;
+        };
+        let me = cx.entity();
+        cx.defer(move |cx| {
+            let _ = handle.update(cx, |_, window, cx| {
+                me.update(cx, |ws, cx| f(ws, window, cx))
+            });
+        });
+    }
+
+    /// Asks the user whether a new device may join: they check it shows the
+    /// same code.
+    fn prompt_pairing(&mut self, r: Request, window: &mut Window, cx: &mut Context<Self>) {
+        let answer = window.prompt(
+            PromptLevel::Warning,
+            &tr!("Let {device} into this vault?", device = r.device.clone()),
+            Some(&tr!(
+                "It gets every code the vault holds. Approve only if {device} shows the code {code}.",
+                device = r.device.clone(),
+                code = authwing_totp::grouped(&r.code)
+            )),
+            &[
+                gpui::PromptButton::Ok(tr!("Approve").into()),
+                gpui::PromptButton::Cancel(tr!("Refuse").into()),
+            ],
+            cx,
+        );
+        let Some(sync) = self.sync.clone() else {
+            return;
+        };
+        cx.spawn(async move |_, _| match answer.await {
+            Ok(0) => sync.approve(r.id),
+            _ => sync.refuse(r.id),
+        })
+        .detach();
     }
 
     fn browser_event(&mut self, event: authwing_bridge::listener::Event, cx: &mut Context<Self>) {
@@ -453,74 +545,66 @@ impl Workspace {
             .flatten()
     }
 
-    /// The last sync went through: this device syncs the vault there.
-    fn synced(&self) -> bool {
-        matches!(self.sync_state, SyncState::Synced(..))
-    }
-
-    /// How syncing goes, in a line.
-    fn sync_status(&self) -> String {
+    /// How sync stands, as the cloud's color and the panel say it.
+    fn sync_standing(&self) -> Standing {
+        let place = self.sync.as_ref().and_then(|s| s.place());
         match &self.sync_state {
-            SyncState::Off => tr!("Not syncing"),
-            SyncState::Syncing => tr!("Syncing…"),
-            SyncState::Synced(at, pulled, pushed) => {
-                let ago = at.elapsed().as_secs() / 60;
-                let when = if ago == 0 {
-                    tr!("Synced just now")
-                } else {
-                    tr_n!(
-                        ago as usize,
-                        "Synced {n} minute ago",
-                        "Synced {n} minutes ago"
-                    )
-                };
-                if pulled + pushed == 0 {
-                    when
-                } else {
-                    tr!(
-                        "{when}: {pulled} in, {pushed} out",
-                        when = when,
-                        pulled = pulled.to_string(),
-                        pushed = pushed.to_string()
-                    )
-                }
-            }
-            SyncState::Failed(e) => tr!("Sync failed: {e}", e = e.clone()),
+            _ if place.is_none() => Standing::Off,
+            _ if self.vault.ready().is_none() => Standing::Paused,
+            SyncState::Off => Standing::Off,
+            SyncState::Syncing => Standing::Syncing,
+            SyncState::Synced(at, ..) => Standing::Synced(Some(SystemTime::now() - at.elapsed())),
+            SyncState::Failed(e) => Standing::Failed(e.clone()),
         }
     }
 
-    fn open_sync(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(sync) = self.sync.clone() else {
-            return;
-        };
-        let panel = cx.new(|cx| SyncPanel::new(sync, self.vault.clone(), cx));
-        let (status, requests, joins, synced) = (
-            self.sync_status(),
-            self.requests.clone(),
-            self.passphrase_joins,
-            self.synced(),
-        );
-        panel.update(cx, |p, cx| {
-            p.set_status(status, cx);
-            p.set_synced(synced, cx);
-            p.set_requests(requests, cx);
-            p.set_passphrase_joins(joins, cx);
-        });
-        cx.subscribe_in(&panel, window, |ws, _, event: &PanelEvent, window, cx| {
-            if let PanelEvent::Joined = event {
-                ws.reload();
-                ws.say(Notice::good(tr!(
-                    "Joined: this device syncs the vault now."
-                )));
-            }
-            ws.panel = None;
-            window.focus(&ws.focus, cx);
-            cx.notify();
-        })
+    fn sync_snap(&self) -> SyncSnap {
+        let other = authwing_vault::Error::OtherVault.to_string();
+        SyncSnap {
+            standing: self.sync_standing(),
+            place: self
+                .sync
+                .as_ref()
+                .and_then(|s| s.place())
+                .map(|p| crate::syncing::describe(&p)),
+            codes: self.vault.ready().map(|_| self.codes.len()),
+            other_vault: matches!(&self.sync_state, SyncState::Failed(e) if e.contains(&other)),
+        }
+    }
+
+    /// Shows how sync stands, hanging from the cloud, or hides it.
+    fn toggle_sync_panel(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.panel.is_some() {
+            return self.close_sync_panel(window, cx);
+        }
+        let panel = cx.new(|cx| SyncPanel::new(self.sync_snap(), cx));
+        cx.subscribe_in(
+            &panel,
+            window,
+            |ws, _, event: &SyncPanelEvent, window, cx| match event {
+                SyncPanelEvent::Dismiss => ws.close_sync_panel(window, cx),
+                SyncPanelEvent::SyncNow => ws.sync_now(),
+                SyncPanelEvent::OpenSettings => {
+                    ws.close_sync_panel(window, cx);
+                    ws.open_settings(Some(crate::settings::Page::Sync), window, cx);
+                }
+                SyncPanelEvent::Unlock => {
+                    ws.close_sync_panel(window, cx);
+                    window.focus(&ws.unlock.focus_handle(cx), cx);
+                }
+            },
+        )
         .detach();
         window.focus(&panel.focus_handle(cx), cx);
         self.panel = Some(panel);
         cx.notify();
+    }
+
+    fn close_sync_panel(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.panel.take().is_some() {
+            window.focus(&self.focus, cx);
+            cx.notify();
+        }
     }
 
     /// The codes shown: those the sidebar chose, matching what is typed.
@@ -533,6 +617,16 @@ impl Workspace {
             .split_whitespace()
             .map(str::to_string)
             .collect();
+        // Said, not typed: the codes it names, best first, whatever the
+        // sidebar shows.
+        if let Some(VoiceLine::Heard { codes, .. }) = &self.window_voice
+            && words.is_empty()
+        {
+            return codes
+                .iter()
+                .filter_map(|id| self.codes.iter().find(|e| &e.id == id))
+                .collect();
+        }
         let last = |c: &Entry| self.usage.codes.get(&c.id).map_or(0, |u| u.last);
         let mut shown: Vec<&Entry> = self
             .codes
@@ -553,8 +647,10 @@ impl Workspace {
         shown
     }
 
+    /// What the sidebar shows; what voice heard gives way to it.
     fn show(&mut self, shown: Shown, cx: &mut Context<Self>) {
         self.shown = shown;
+        self.clear_window_voice(cx);
         cx.notify();
     }
 
@@ -883,6 +979,57 @@ impl Workspace {
         self.show_adding(add, window, cx);
     }
 
+    /// Shows the welcome, in place of the codes.
+    fn show_welcome(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let (codes, settings) = (self.codes.len(), self.live.settings().clone());
+        let vault = self.vault.clone();
+        let welcome = cx.new(|_| Welcome::new(codes, settings, vault));
+        cx.subscribe_in(
+            &welcome,
+            window,
+            |ws, _, event: &WelcomeEvent, window, cx| {
+                match event {
+                    WelcomeEvent::Add => ws.open_adding(window, cx),
+                    WelcomeEvent::Scan => ws.open_scanning(window, cx),
+                    WelcomeEvent::Camera => {
+                        ws.open_adding(window, cx);
+                        if let Some(add) = &ws.adding {
+                            add.update(cx, |add, cx| add.use_camera(cx));
+                        }
+                    }
+                    WelcomeEvent::Settings(page) => ws.open_settings_at(*page, window, cx),
+                    WelcomeEvent::Done => {
+                        ws.welcome = None;
+                        if let Some(store) = ws.live.store()
+                            && let Err(e) = store.save_welcome_seen(true)
+                        {
+                            eprintln!("authwing: the welcome's end not saved: {e}");
+                        }
+                    }
+                }
+                cx.notify();
+            },
+        )
+        .detach();
+        self.welcome = Some(welcome);
+        cx.notify();
+    }
+
+    /// Settings, at `page`.
+    fn open_settings_at(
+        &mut self,
+        page: crate::settings::Page,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.settings.is_none() {
+            self.toggle_settings(window, cx);
+        }
+        if let Some(settings) = &self.settings {
+            settings.update(cx, |view, cx| view.set_page(page, cx));
+        }
+    }
+
     /// Adding, then reading the screen at once: the sidebar's scan button.
     fn open_scanning(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.open_adding(window, cx);
@@ -1068,13 +1215,36 @@ impl Workspace {
             cx.notify();
             return;
         }
+        self.open_settings(None, window, cx);
+    }
+
+    /// Opens Settings over the window, at `page` if one is said.
+    fn open_settings(
+        &mut self,
+        page: Option<crate::settings::Page>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if let Some(view) = &self.settings {
+            if let Some(page) = page {
+                view.update(cx, |v, cx| v.set_page(page, cx));
+            }
+            return;
+        }
         let Some(sync) = self.sync.clone() else {
             return;
         };
         let store = self.live.store().cloned();
         let view = cx.new(|cx| SettingsView::new(store, self.vault.clone(), sync, cx));
-        let status = self.sync_status();
-        view.update(cx, |v, cx| v.set_sync_status(status, cx));
+        let (snap, joins, update) = (self.sync_snap(), self.passphrase_joins, self.update_snap());
+        view.update(cx, |v, cx| {
+            if let Some(page) = page {
+                v.set_page(page, cx);
+            }
+            v.set_sync_snap(snap, cx);
+            v.set_passphrase_joins(joins, cx);
+            v.set_update(update, cx);
+        });
         cx.subscribe_in(&view, window, |ws, _, event: &SettingsEvent, window, cx| {
             match event {
                 SettingsEvent::Close => {
@@ -1092,6 +1262,21 @@ impl Workspace {
                     if ws.vault.ready().is_none() {
                         ws.settings = None;
                     }
+                }
+                SettingsEvent::Welcome => {
+                    ws.settings = None;
+                    ws.show_welcome(window, cx);
+                }
+                SettingsEvent::CheckUpdates => ws.check_updates(cx),
+                SettingsEvent::GetUpdate => ws.get_update(cx),
+                SettingsEvent::SkipUpdate => ws.skip_update(cx),
+                SettingsEvent::RestartToUpdate => ws.restart_to_update(cx),
+                SettingsEvent::SyncNow => ws.sync_now(),
+                SettingsEvent::Joined => {
+                    ws.reload();
+                    ws.say(Notice::good(tr!(
+                        "Joined: this device syncs the vault now."
+                    )));
                 }
             }
             cx.notify();
@@ -1154,7 +1339,10 @@ impl Workspace {
                     self.copy(&id, cx);
                 }
             }
-            "escape" => self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx)),
+            "escape" => {
+                self.clear_window_voice(cx);
+                self.filter.update(cx, |f, cx| f.set_text("", 0..0, cx));
+            }
             _ => return,
         }
         cx.stop_propagation();
@@ -1163,13 +1351,8 @@ impl Workspace {
     /// `scale`: the window's device pixels a point.
     fn title_bar(&self, scale: f32, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
-        let cloud = match &self.sync_state {
-            SyncState::Off => c.sync_off,
-            SyncState::Syncing | SyncState::Synced(..) => c.sync_ok,
-            SyncState::Failed(_) => c.sync_bad,
-        };
-        let cloud_tip = self.sync_status();
         let open = self.vault.ready().is_some();
+        let update = self.update_waiting();
         // A dialog covers the bar: a tooltip left from the click that opened
         // it would show over the dialog's shade.
         let tips = self.adding.is_none() && self.panel.is_none();
@@ -1221,7 +1404,9 @@ impl Workspace {
                                 .text_size(ui(11.))
                                 .text_color(rgb(c.faint))
                                 .child(crate::hotkeys::hint(cx, Hotkey::Find)),
-                        ),
+                        )
+                        .child(div().w(px(1.)).h(px(16.)).bg(rgb(c.field_edge)))
+                        .child(self.find_mic(tips, cx)),
                 )
             })
             .child(
@@ -1230,62 +1415,251 @@ impl Workspace {
                     .h_full()
                     .window_control_area(WindowControlArea::Drag),
             )
-            .child(
-                icon_button("sync", "icons/cloud.svg", cloud)
-                    .when(tips, |b| b.tooltip(move |_, cx| tip(cloud_tip.clone(), cx)))
-                    .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx))),
-            )
+            // Adding a code is the sidebar's (and its shortcut's).
             .when(open, |d| {
                 d.child(
-                    icon_button("add", "icons/plus.svg", c.soft)
-                        .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Add a code"), cx)))
-                        .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
-                )
-                .child(
                     icon_button("lock", "icons/lock.svg", c.soft)
                         .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Lock"), cx)))
                         .on_click(cx.listener(|ws, _, _, cx| ws.lock(cx))),
                 )
             })
             .child(
-                icon_button("settings", "icons/settings.svg", c.soft)
-                    .when(tips, |b| b.tooltip(|_, cx| tip(tr!("Settings"), cx)))
-                    .on_click(cx.listener(|ws, _, window, cx| ws.toggle_settings(window, cx))),
+                div()
+                    .relative()
+                    .child(
+                        icon_button("settings", "icons/settings.svg", c.soft)
+                            .when(tips, |b| {
+                                b.tooltip(move |_, cx| {
+                                    tip(
+                                        if update {
+                                            tr!("Settings: an update is out")
+                                        } else {
+                                            tr!("Settings")
+                                        },
+                                        cx,
+                                    )
+                                })
+                            })
+                            .on_click(
+                                cx.listener(|ws, _, window, cx| ws.toggle_settings(window, cx)),
+                            ),
+                    )
+                    // A newer release, offered or ready: told, never pressed on.
+                    .when(update, |d| {
+                        d.child(
+                            div()
+                                .absolute()
+                                .top(px(4.))
+                                .right(px(4.))
+                                .size(px(7.))
+                                .rounded_full()
+                                .bg(rgb(c.accent)),
+                        )
+                    }),
             )
+            .child(self.sync_button(tips, cx))
+    }
+
+    /// The microphone at the end of the find field: find a code by saying
+    /// its name; lit while it listens.
+    fn find_mic(&self, tips: bool, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let c = colors();
+        let on = self.listening && self.ear == listening::Ear::Window;
+        div()
+            .id("find-voice")
+            .flex_shrink_0()
+            .size(px(22.))
+            .mr(px(-4.))
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded_full()
+            .cursor_pointer()
+            .when(on, |d| d.bg(rgb(c.accent)))
+            .when(!on, |d| d.hover(|s| s.bg(rgb(c.hover))))
+            .when(tips, |b| {
+                b.tooltip(move |_, cx| {
+                    tip(
+                        if on {
+                            tr!("Stop, and find what you said")
+                        } else {
+                            tr!("Find a code by its name, said")
+                        },
+                        cx,
+                    )
+                })
+            })
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_click(cx.listener(|ws, _, _, cx| ws.toggle_window_listening(cx)))
+            .child(
+                svg()
+                    .path("icons/mic.svg")
+                    .size(px(14.))
+                    .text_color(rgb(if on { c.on_accent } else { c.accent })),
+            )
+    }
+
+    /// What voice says in the window, above the list it chose.
+    fn voice_strip(&self, cx: &mut Context<Self>) -> Option<gpui::Div> {
+        let c = colors();
+        let line = self.window_voice.as_ref()?;
+        let (text, tone) = match line {
+            VoiceLine::Listening => (
+                tr!("Listening… say a code's name, then click the microphone."),
+                c.accent,
+            ),
+            VoiceLine::Finding => (tr!("Finding what you said…"), c.soft),
+            VoiceLine::Heard { said, codes, .. } if codes.is_empty() => (
+                tr!(
+                    "You said “{said}”: no code is called that.",
+                    said = said.clone()
+                ),
+                c.warn,
+            ),
+            VoiceLine::Heard { said, .. } => {
+                (tr!("You said “{said}”", said = said.clone()), c.soft)
+            }
+            VoiceLine::Note(note) => (note.clone(), c.warn),
+        };
+        let done = match line {
+            VoiceLine::Listening | VoiceLine::Finding => tr!("Cancel"),
+            VoiceLine::Heard { .. } => tr!("Show every code"),
+            VoiceLine::Note(_) => tr!("Dismiss"),
+        };
+        Some(
+            div()
+                .flex()
+                .items_center()
+                .gap(px(8.))
+                .mb(px(14.))
+                .px(px(12.))
+                .py(px(8.))
+                .rounded(px(8.))
+                .border_1()
+                .border_color(rgb(c.line))
+                .bg(rgb(c.surface))
+                .child(
+                    svg()
+                        .path("icons/mic.svg")
+                        .size(px(14.))
+                        .text_color(rgb(tone)),
+                )
+                .child(div().flex_1().min_w_0().text_color(rgb(tone)).child(text))
+                .child(
+                    text_button("voice-clear", &done, c.muted)
+                        .h(px(24.))
+                        .on_click(cx.listener(|ws, _, _, cx| ws.clear_window_voice(cx))),
+                ),
+        )
+    }
+
+    /// The cloud, last in the bar as shellwing's: its color says how sync
+    /// stands, a problem has a dot too; it opens the sync panel.
+    fn sync_button(&self, tips: bool, cx: &mut Context<Self>) -> gpui::Stateful<gpui::Div> {
+        let c = colors();
+        let standing = self.sync_standing();
+        let said = standing.said();
+        let bounds = self.sync_button.clone();
+        div()
+            .id("sync-button")
+            .relative()
+            .flex_shrink_0()
+            .size(px(28.))
+            .flex()
+            .items_center()
+            .justify_center()
+            .rounded(px(6.))
+            .cursor_pointer()
+            .when(self.panel.is_some(), |d| d.bg(rgb(c.selected)))
+            .hover(|s| s.bg(rgb(c.hover)))
+            .when(tips && self.panel.is_none(), |b| {
+                b.tooltip(move |_, cx| tip(said.clone(), cx))
+            })
+            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+            .on_click(cx.listener(|ws, _, window, cx| ws.toggle_sync_panel(window, cx)))
+            .child(
+                gpui::canvas(|_, _, _| {}, move |b, _, _, _| bounds.set(b))
+                    .absolute()
+                    .size_full()
+                    .top_0()
+                    .left_0(),
+            )
+            .child(
+                svg()
+                    .path("icons/cloud.svg")
+                    .size(px(17.))
+                    .text_color(rgb(standing.color())),
+            )
+            .when(standing.dotted(), |d| {
+                d.child(
+                    div()
+                        .absolute()
+                        .right(px(3.))
+                        .bottom(px(4.))
+                        .size(px(8.))
+                        .rounded_full()
+                        .border_1()
+                        .border_color(rgb(c.chrome))
+                        .bg(rgb(standing.color())),
+                )
+            })
     }
 
     fn sidebar(&self, cx: &mut Context<Self>) -> gpui::Div {
         let c = colors();
         // A row of the list: its mark (an icon, a group's color), its name,
         // how many codes it has.
-        let row =
-            |id: SharedString, mark: AnyElement, label: String, count: Option<usize>, on: bool| {
-                div()
-                    .id(id)
-                    .group("side-row")
-                    .h(px(30.))
-                    .px(px(10.))
-                    .flex()
-                    .items_center()
-                    .gap(px(9.))
-                    .rounded(px(6.))
-                    .cursor_pointer()
-                    .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
-                    .when(!on, |d| {
-                        d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
-                    })
-                    .child(mark)
-                    .child(div().flex_1().min_w_0().truncate().child(label))
-                    .when_some(count, |d, n| {
-                        d.child(
-                            div()
-                                .flex_shrink_0()
-                                .text_size(ui(11.))
-                                .text_color(rgb(c.muted))
-                                .child(n.to_string()),
-                        )
-                    })
-            };
+        // The count, and a group's pencil in its place while the row is
+        // hovered: one slot, centered as the Groups heading's +, so the
+        // counts, the pencils and the + make one column.
+        let row = |id: SharedString,
+                   mark: AnyElement,
+                   label: String,
+                   count: Option<usize>,
+                   on: bool,
+                   edit: Option<gpui::Stateful<gpui::Div>>| {
+            let editable = edit.is_some();
+            div()
+                .id(id)
+                .group("side-row")
+                .h(px(30.))
+                .px(px(10.))
+                .flex()
+                .items_center()
+                .gap(px(9.))
+                .rounded(px(6.))
+                .cursor_pointer()
+                .when(on, |d| d.bg(rgb(c.selected)).text_color(rgb(c.text)))
+                .when(!on, |d| {
+                    d.text_color(rgb(c.soft)).hover(|s| s.bg(rgb(c.hover)))
+                })
+                .child(mark)
+                .child(div().flex_1().min_w_0().truncate().child(label))
+                .when(count.is_some() || editable, |d| {
+                    d.child(
+                        div()
+                            .relative()
+                            .flex_shrink_0()
+                            .min_w(px(20.))
+                            .h(px(20.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .when_some(count, |d, n| {
+                                d.child(
+                                    div()
+                                        .text_size(ui(11.))
+                                        .text_color(rgb(c.muted))
+                                        .when(editable, |d| {
+                                            d.group_hover("side-row", |s| s.invisible())
+                                        })
+                                        .child(n.to_string()),
+                                )
+                            })
+                            .children(edit.map(|e| e.absolute().top_0().right_0())),
+                    )
+                })
+        };
         let icon = |path: &'static str| {
             svg()
                 .path(path)
@@ -1294,14 +1668,19 @@ impl Workspace {
                 .text_color(rgb(c.muted))
                 .into_any_element()
         };
-        let dot = |color: u32| {
+        // A mark as wide as the icons above it, so every label starts at
+        // the same place.
+        let slot = |mark: gpui::Div| {
             div()
-                .size(px(8.))
+                .size(px(14.))
                 .flex_shrink_0()
-                .rounded(px(2.))
-                .bg(rgb(color))
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(mark)
                 .into_any_element()
         };
+        let dot = |color: u32| slot(div().size(px(8.)).rounded(px(2.)).bg(rgb(color)));
         let section = |title: String| {
             div()
                 .pt(px(14.))
@@ -1331,6 +1710,7 @@ impl Workspace {
                     tr!("All codes"),
                     Some(self.codes.len()),
                     self.shown == Shown::All,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::All, cx))),
             )
@@ -1341,6 +1721,7 @@ impl Workspace {
                     tr!("Favorites"),
                     (favorites > 0).then_some(favorites),
                     self.shown == Shown::Favorites,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Favorites, cx))),
             )
@@ -1351,6 +1732,7 @@ impl Workspace {
                     tr!("Recently used"),
                     None,
                     self.shown == Shown::Recent,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::Recent, cx))),
             )
@@ -1396,32 +1778,31 @@ impl Workspace {
                     group.name.clone(),
                     Some(group.count),
                     on,
+                    Some(
+                        div()
+                            .id(SharedString::from(format!("edit-group-{n}")))
+                            .invisible()
+                            .group_hover("side-row", |s| s.visible())
+                            .size(px(20.))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .rounded(px(5.))
+                            .hover(|s| s.bg(rgb(c.hover)))
+                            .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
+                            .on_click(cx.listener(move |ws, _, window, cx| {
+                                cx.stop_propagation();
+                                ws.open_group_editor(Some(edit.clone()), window, cx);
+                            }))
+                            .child(
+                                svg()
+                                    .path("icons/pencil.svg")
+                                    .size(px(12.))
+                                    .text_color(rgb(c.muted)),
+                            ),
+                    ),
                 )
-                .on_click(cx.listener(move |ws, _, _, cx| ws.show(Shown::Group(pick.clone()), cx)))
-                .child(
-                    div()
-                        .id(SharedString::from(format!("edit-group-{n}")))
-                        .invisible()
-                        .group_hover("side-row", |s| s.visible())
-                        .size(px(20.))
-                        .flex_shrink_0()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .rounded(px(5.))
-                        .hover(|s| s.bg(rgb(c.hover)))
-                        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                        .on_click(cx.listener(move |ws, _, window, cx| {
-                            cx.stop_propagation();
-                            ws.open_group_editor(Some(edit.clone()), window, cx);
-                        }))
-                        .child(
-                            svg()
-                                .path("icons/pencil.svg")
-                                .size(px(12.))
-                                .text_color(rgb(c.muted)),
-                        ),
-                ),
+                .on_click(cx.listener(move |ws, _, _, cx| ws.show(Shown::Group(pick.clone()), cx))),
             );
         }
         let ungrouped = self
@@ -1433,24 +1814,21 @@ impl Workspace {
             list = list.child(
                 row(
                     "show-no-group".into(),
-                    div()
-                        .size(px(8.))
-                        .flex_shrink_0()
-                        .rounded(px(2.))
-                        .border_1()
-                        .border_color(rgb(c.muted))
-                        .into_any_element(),
+                    slot(
+                        div()
+                            .size(px(8.))
+                            .rounded(px(2.))
+                            .border_1()
+                            .border_color(rgb(c.muted)),
+                    ),
                     tr!("No group"),
                     Some(ungrouped),
                     self.shown == Shown::NoGroup,
+                    None,
                 )
                 .on_click(cx.listener(|ws, _, _, cx| ws.show(Shown::NoGroup, cx))),
             );
         }
-        let status = match &self.sync_state {
-            SyncState::Off => tr!("Not syncing"),
-            _ => self.sync_status(),
-        };
         div()
             .w(px(SIDEBAR_W))
             .flex_shrink_0()
@@ -1462,29 +1840,6 @@ impl Workspace {
             .border_color(rgb(c.line))
             .text_size(ui(13.))
             .child(list)
-            .child(
-                div()
-                    .px(px(12.))
-                    .pt(px(10.))
-                    .border_t_1()
-                    .border_color(rgb(c.line))
-                    .flex()
-                    .items_center()
-                    .gap(px(6.))
-                    .text_size(ui(12.))
-                    .text_color(rgb(c.muted))
-                    .child(div().flex_1().min_w_0().truncate().child(status))
-                    .child(
-                        div()
-                            .id("sync-manage")
-                            .flex_shrink_0()
-                            .text_color(rgb(c.accent))
-                            .cursor_pointer()
-                            .hover(|s| s.text_color(rgb(c.accent_hover)))
-                            .on_click(cx.listener(|ws, _, window, cx| ws.open_sync(window, cx)))
-                            .child(tr!("Manage")),
-                    ),
-            )
             .child(
                 div()
                     .p(px(10.))
@@ -1848,7 +2203,8 @@ impl Workspace {
         let c = colors();
         let now = codes::now();
         let filtering = !self.filter.read(cx).text().trim().is_empty();
-        let strip = (!filtering)
+        let voice = self.voice_strip(cx);
+        let strip = (!filtering && voice.is_none())
             .then(|| self.for_window_view(now, cx))
             .flatten();
         let shown: Vec<String> = self.shown(cx).iter().map(|e| e.id.clone()).collect();
@@ -1869,7 +2225,13 @@ impl Workspace {
                 primary_button("first-code", &tr!("Add your first code"))
                     .on_click(cx.listener(|ws, _, window, cx| ws.open_adding(window, cx))),
             )
+            .child(
+                text_button("show-welcome", &tr!("Show the welcome"), c.muted)
+                    .on_click(cx.listener(|ws, _, window, cx| ws.show_welcome(window, cx))),
+            )
             .into_any_element()
+        } else if cards.is_empty() && voice.is_some() {
+            div().into_any_element()
         } else if cards.is_empty() {
             let typed = !self.filter.read(cx).text().trim().is_empty();
             let (title, detail) = match &self.shown {
@@ -1912,6 +2274,7 @@ impl Workspace {
             .overflow_y_scroll()
             .p(px(20.))
             .bg(rgb(c.page))
+            .children(voice)
             .children(strip)
             .child(body)
     }
@@ -2072,6 +2435,9 @@ impl Focusable for Workspace {
 
 impl Render for Workspace {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.window_handle.is_none() {
+            self.window_handle = Some(window.window_handle());
+        }
         let ui_font = self.live.settings().appearance.ui_font.clone();
         window.set_rem_size(look::rem_for(ui_font.size));
         let family = ui_font.family.clone().map(SharedString::from);
@@ -2086,6 +2452,17 @@ impl Render for Workspace {
             cx.set_global(bottom);
         }
         let c = colors();
+        // The first time on this device with no codes: the welcome.
+        if self.loaded && !self.welcome_decided {
+            self.welcome_decided = true;
+            if self.codes.is_empty() && !crate::welcome::seen(self.live.store()) {
+                self.show_welcome(window, cx);
+            }
+        }
+        if let Some(welcome) = &self.welcome {
+            let (codes, settings) = (self.codes.len(), self.live.settings().clone());
+            welcome.update(cx, |w, cx| w.update_from(codes, &settings, cx));
+        }
         let main: AnyElement = if let Some(settings) = &self.settings {
             bottom
                 .round(div().size_full().child(settings.clone()))
@@ -2095,7 +2472,21 @@ impl Render for Workspace {
                 .size_full()
                 .flex()
                 .child(bottom.left().round(self.sidebar(cx)))
-                .child(bottom.right().round(self.codes_view(cx)))
+                .child(match &self.welcome {
+                    Some(welcome) => bottom
+                        .right()
+                        .round(
+                            div()
+                                .id("welcome")
+                                .flex_1()
+                                .h_full()
+                                .overflow_y_scroll()
+                                .bg(rgb(c.page))
+                                .child(welcome.clone()),
+                        )
+                        .into_any_element(),
+                    None => bottom.right().round(self.codes_view(cx)).into_any_element(),
+                })
                 .into_any_element()
         } else {
             bottom.round(self.locked_view(cx)).into_any_element()
@@ -2144,11 +2535,10 @@ impl Render for Workspace {
                 )
                 .child(body)
         };
-        let dialog: Option<AnyElement> = match (&self.adding, &self.panel, &self.group_editor) {
-            (Some(add), _, _) => Some(add.clone().into_any_element()),
-            (None, Some(panel), _) => Some(panel.clone().into_any_element()),
-            (None, None, Some(editor)) => Some(editor.clone().into_any_element()),
-            (None, None, None) => None,
+        let dialog: Option<AnyElement> = match (&self.adding, &self.group_editor) {
+            (Some(add), _) => Some(add.clone().into_any_element()),
+            (None, Some(editor)) => Some(editor.clone().into_any_element()),
+            (None, None) => None,
         };
         let dialog = dialog.map(|dialog| {
             let (at, shade) = chrome::shade(window);
@@ -2164,7 +2554,6 @@ impl Render for Workspace {
                             MouseButton::Left,
                             cx.listener(|ws, _, window, cx| {
                                 ws.adding = None;
-                                ws.panel = None;
                                 ws.group_editor = None;
                                 window.focus(&ws.focus, cx);
                                 cx.notify();
@@ -2179,11 +2568,31 @@ impl Render for Workspace {
             )
             .with_priority(10)
         });
+        // Hangs from the cloud, as shellwing's.
+        let sync_panel = self.panel.clone().map(|p| {
+            let button = self.sync_button.clone();
+            let b = button.get();
+            deferred(
+                anchored()
+                    .anchor(gpui::Anchor::TopRight)
+                    .position(gpui::point(b.right(), b.bottom() + px(6.)))
+                    .snap_to_window_with_margin(px(8.))
+                    .child(div().child(p).on_mouse_down_out(cx.listener(
+                        move |ws, e: &gpui::MouseDownEvent, window, cx| {
+                            if !button.get().contains(&e.position) {
+                                ws.close_sync_panel(window, cx);
+                            }
+                        },
+                    ))),
+            )
+            .with_priority(1)
+        });
         root.when_some(ui_font.family, |d, f| d.font_family(f))
             .text_size(ui(13.))
             .text_color(rgb(c.text))
             .track_focus(&self.focus)
             .capture_key_down(cx.listener(Self::shortcut))
+            .children(sync_panel)
             .children(dialog)
     }
 }

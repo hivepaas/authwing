@@ -24,6 +24,7 @@ const STATE: &str = "state";
 const WINDOW: &str = "window.json";
 const UPDATES: &str = "updates.json";
 const USAGE: &str = "usage.json";
+const WELCOME: &str = "welcome.json";
 
 /// A file that could not be read or parsed.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
@@ -287,29 +288,6 @@ impl Store {
         self.edit_if(SETTINGS, |doc| set_in(doc, path, value))
     }
 
-    /// The settings of config.toml that sync, as vault fields (see
-    /// [`crate::settings_sync`]).
-    pub fn synced_settings(&self) -> Result<crate::Fields, LoadError> {
-        let path = self.dir.join(SETTINGS);
-        let text = match fs::read_to_string(&path) {
-            Ok(t) => t,
-            Err(e) if e.kind() == io::ErrorKind::NotFound => String::new(),
-            Err(e) => {
-                return Err(LoadError {
-                    file: SETTINGS.into(),
-                    line: None,
-                    message: e.to_string(),
-                });
-            }
-        };
-        crate::settings_sync::fields_of(&text).map_err(|e| LoadError::toml(SETTINGS, &text, &e))
-    }
-
-    /// Writes synced settings into config.toml, keeping everything else.
-    pub fn apply_synced_settings(&self, fields: &crate::Fields) -> Result<(), WriteError> {
-        self.edit_if(SETTINGS, |doc| Ok(crate::settings_sync::apply(doc, fields)))
-    }
-
     fn edit(
         &self,
         file: &str,
@@ -370,6 +348,16 @@ impl Store {
 
     pub fn save_update_state(&self, state: &crate::UpdateState) -> io::Result<()> {
         self.save_state(UPDATES, state)
+    }
+
+    /// Whether the welcome was seen on this device (`state/welcome.json`).
+    pub fn welcome_seen(&self) -> bool {
+        self.load_state::<crate::state::WelcomeState>(WELCOME)
+            .is_some_and(|w| w.seen)
+    }
+
+    pub fn save_welcome_seen(&self, seen: bool) -> io::Result<()> {
+        self.save_state(WELCOME, &crate::state::WelcomeState { seen })
     }
 
     /// How the codes are used on this device (`state/usage.json`).
@@ -568,6 +556,16 @@ mod tests {
         assert_eq!(s.window_state(), Some(w));
         fs::write(s.dir().join(STATE).join(WINDOW), "{ not json").expect("write");
         assert_eq!(s.window_state(), None);
+    }
+
+    #[test]
+    fn the_welcome_is_seen_once_said() {
+        let s = temp("welcome");
+        assert!(!s.welcome_seen());
+        s.save_welcome_seen(true).expect("save");
+        assert!(s.welcome_seen());
+        s.save_welcome_seen(false).expect("save");
+        assert!(!s.welcome_seen());
     }
 
     #[test]

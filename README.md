@@ -45,10 +45,10 @@ from there; the SSH client does not.
 * **Quick panel:** Option+Space (Ctrl+Alt+Space on Windows and Linux) over any
   app shows the codes for that app or page first; Enter types the code into
   it, Cmd/Ctrl+C copies it.
-* **Voice:** hold the quick panel's key and say the name ("GitHub", "mở
-  Vietcombank", "Öffne PayPal"): Whisper on the device, in your language,
-  the name matched however it was written down; it learns the names it
-  mishears.
+* **Voice:** hold the quick panel's key, or click the microphone in the
+  window's find field, and say the name ("Open GitHub", "PayPal"): Whisper
+  on the device, in your language, the name matched however it was written
+  down; it learns the names it mishears.
 * **Browser extension** (Chrome, Edge, Brave, Arc, Vivaldi, Firefox; in
   `extension/`): it tells the app the page's exact address, so a code saved
   with that site comes first and is typed into the page when copied; a page

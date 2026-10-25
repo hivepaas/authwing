@@ -202,6 +202,45 @@ te833da37 = config.toml, [shortcuts]：`{ $key }` 同时分配给了 { $kept } �
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 # t87e7ceec =
 
+# XXXX-XXXX-…, 13 groups
+# tbb504d9f =
+
+# Waiting for a device that syncs: open authwing there.
+# t33ac6aa2 =
+
+# Approve on {device} if it shows the same code:
+# ta89ba4d1 =
+
+# Joined. The vault's codes are coming.
+# t775b89a0 =
+
+# The other device refused.
+# t74419d8e =
+
+# Nobody approved in time: ask again.
+# t5c323bb6 =
+
+# Ask a device that syncs
+# t2dc61136 =
+
+# Stop asking
+# t296beec8 =
+
+# It holds a vault from another device: join it
+# t25a71781 =
+
+# Ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
+# t58c3578d =
+
+# Ask a device that syncs, or type the vault's recovery key.
+# tfa918e42 =
+
+# Joining…
+taa884c51 = 正在加入…
+
+# Join with the key
+# t9f857a57 =
+
 # Hide authwing
 # tc980ec1e =
 
@@ -270,6 +309,192 @@ te833da37 = config.toml, [shortcuts]：`{ $key }` 同时分配给了 { $kept } �
 
 # Allow Accessibility to type codes in
 # t5e806dae =
+
+# From the same author
+# te0bcddcb =
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+# t974bcb65 =
+
+# Updates
+# t483075a5 =
+
+# This build has no release keys, so it cannot tell of updates.
+# t378182cb =
+
+# authwing {version} is ready
+# t2b9b301d =
+
+# It is installed when you quit, or now with Restart.
+# t6fecac86 =
+
+# Restart now
+# t54001a7c =
+
+# authwing {version}
+# t07bd65c2 =
+
+# Looking for a newer version…
+# tf1905fe9 =
+
+# How to update
+# t3603428f =
+
+# Try again
+# t213e90fa =
+
+# Download and install
+# t1a99173f =
+
+# Download
+# t6964bb19 =
+
+# {by} updates it: {command}
+# tdf2cab9c =
+
+# {by} updates it.
+# t84b27295 =
+
+# It is downloaded and checked, then installed when you quit.
+# tb46c0678 =
+
+# Download it, and install it in place of this one.
+# t39312eae =
+
+# authwing {version} is out
+# t44ae3b62 =
+
+# The download failed: {why}
+# t5e96c075 =
+
+# Skip this version
+# t2c33d756 =
+
+# The last look failed: {why}
+# td122a092 =
+
+# Up to date (looked {when}).
+# t4665ef60 =
+
+# Not looked yet.
+# t5a3ba058 =
+
+# This is a beta: you are told of newer betas, and of the release that follows them.
+# t1d6a96bc =
+
+# This is a release: you are told of newer releases, not of betas.
+# t9d2d8250 =
+
+# Check now
+# t4f0e0677 =
+
+# Look for updates once a day
+# tcc27ace1 =
+
+# It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+# t258cdfd9 =
+
+# Two-factor codes that know the window you are in.
+# t76a57f34 =
+
+# Version {version} · {os} {arch}
+# t6bead5ae =
+
+# Copy version info
+# t3d37483c =
+
+# Copied: {info}
+# t183c7f9f =
+
+# Show the welcome again
+# t80b070db =
+
+# Visit authwing.app
+# t82dfc39c =
+
+# Report a problem
+# t7b1728e7 =
+
+# Release notes
+# tc52ab62f =
+
+# Open source
+# ta04619ce =
+
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+# tb206fce9 =
+
+# SSH as OpenSSH does it
+# tf31dc063 =
+
+# Tabs and split panes
+# t27fcaa7f =
+
+# SFTP
+# t62703ae8 =
+
+# Port forwarding
+# tb033f949 =
+
+# Encrypted vault
+# t607bfd2b =
+
+# Sync between devices
+# t39de978d =
+
+# Visit shellwing.app
+# t1d2ed540 =
+
+# Open source · GPL-3.0
+# t86466056 =
+
+# A fast, native SSH client for macOS, Windows and Linux
+# tef1f8d16 =
+
+# Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs between your devices, in a GPU-rendered terminal built in Rust.
+# tbddef507 =
+
+# On your servers
+# te5da903f =
+
+# Deploy from Git or a Docker image, with domains and automatic TLS, logs, metrics and scaling across a cluster.
+# t1671a837 =
+
+# On your own computer
+# t75086b1c =
+
+# Install it on your own computer in place of Docker Desktop or Portainer, and still get full app management on top.
+# te7416212 =
+
+# 300+ one-click apps
+# t6a770b0a =
+
+# Deploy on push
+# tb0bfc3e9 =
+
+# Pull request previews
+# t4e4180fc =
+
+# Automatic TLS
+# t9e9776ed =
+
+# Live logs and metrics
+# tebe3a172 =
+
+# Functions
+# t69d796ee =
+
+# Visit hivepaas.com
+# t0632975a =
+
+# Open source · Apache-2.0
+# tf33a768c =
+
+# A self-hosted platform for your apps, built on Docker Swarm
+# t92f3d8ce =
+
+# An open-source, self-hosted alternative to Heroku, Render and Coolify.
+# t2f8bf400 =
 
 # General
 # t5561fd0b =
@@ -559,8 +784,8 @@ t89a71bba = 同步
 # The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
 # t79692228 =
 
-# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
-# t1342bee3 =
+# In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+# t198626e9 =
 
 # Model
 # t8285e8fa =
@@ -676,6 +901,9 @@ t89a71bba = 同步
 # Install a newer git (git-scm.com), then Connect again.
 # t9a84a209 =
 
+# Or a place of your own
+# t7b88a644 =
+
 # Your place
 # t63cb5f41 =
 
@@ -687,21 +915,6 @@ t89a71bba = 同步
 
 # Stop syncing
 # t59fdbd70 =
-
-# A place of your own
-# t8d5f140b =
-
-# What syncs
-# ta2fbb093 =
-
-# Settings too
-# ta8aa81ba =
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-# te0e876b2 =
-
-# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
-# t674d2276 =
 
 # Hide
 # te10c7bcd =
@@ -844,24 +1057,6 @@ t538b10e9 = 打开
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
 # t49b23b02 =
 
-# Version
-# t5dcdd537 =
-
-# License
-# t38e70ee4 =
-
-# Free software: you may share and change it under the GPL.
-# tef971997 =
-
-# Source
-# t61e2a3f8 =
-
-# Updates
-# t483075a5 =
-
-# Not looked for: this build has no release keys to check them with.
-# t208f65bc =
-
 # Settings
 # t4b058728 =
 
@@ -883,80 +1078,248 @@ t538b10e9 = 打开
 # This {app} file is encrypted: enter its password.
 # t1aa6da9b =
 
-# XXXX-XXXX-…, 13 groups
-# tbb504d9f =
+# Not syncing
+# t0f346f03 =
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-# t82f98ccc =
+# Synced · {when}
+# ta250b3ba =
 
-# Waiting for a device that syncs: open authwing there.
-# t33ac6aa2 =
+# Set up
+# t43c06abc =
 
-# Approve on {device} if it shows the same code:
-# ta89ba4d1 =
+# Syncing…
+t8ad2ae06 = 正在同步…
 
-# Joined. The vault's codes are coming.
-# t775b89a0 =
+# Not synced: {why}
+# t26991b72 =
 
-# The other device refused.
-# t74419d8e =
+# Paused: the vault is locked
+# tfff0fb2a =
 
-# Nobody approved in time: ask again.
-# t5c323bb6 =
+# {n} code | {n} codes
+# ta5ca2740 =
 
-# Ask a device that syncs
-# t2dc61136 =
+# NOT SYNCING
+# t7c7f0ba3 =
 
-# Stop asking
-# t296beec8 =
+# Your codes on every device. Just sign in.
+# t64f52192 =
 
-# Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
-# tc75c83a8 =
+# Your codes, their groups and sites stay on this computer for now.
+# tcc5add1d =
 
-# Close
-tcd86acc3 = 关闭
+# See authwing cloud
+# t37219794 =
 
-# Only encrypted records are stored there: not even the services' names can be read.
-# td7b59080 =
+# A folder, WebDAV, S3 or Git of your own:
+# t42ad626a =
 
-# Devices asking to join
-# tff44c4a4 =
+# Settings › Sync
+# t6790eaeb =
 
-# Approve only if it shows this code.
-# t8f54c79f =
+# SYNC
+# t476c685a =
 
-# Approve
-te6edf55a = 批准
+# Open Settings › Sync
+# tbef0fba1 =
 
-# Refuse
-t9bcada35 = 拒绝
+# Not synced
+# t4d1a6724 =
 
-# Join from this device
-# t54904649 =
+# With {place}, once it is open
+# tf75bc464 =
 
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
-# te7a28cec =
-
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key.
-# t2d6ea251 =
-
-# Joining…
-taa884c51 = 正在加入…
-
-# Join with the key
-# t9f857a57 =
+# Unlock…
+# tc671ed6b =
 
 # Sync now
 ta34dd8fe = 立即同步
 
+# Your codes, their groups and sites follow you to every computer.
+# ta5f11048 =
+
+# Nothing to set up: no folder, no server, no key to type on a new device.
+# tde7b1d58 =
+
+# Encrypted on your devices: authwing never sees your codes.
+# ta3c7045e =
+
+# Create an account
+# td7f6c093 =
+
+# Sign in
+# t744be623 =
+
+# or continue with
+# t2f60c9bf =
+
+# Rather not keep it yourself?
+# t616f184a =
+
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+# t69b9a0b0 =
+
+# authwing cloud is coming: signing in opens with it.
+# t6f15019c =
+
+# up to {n} code | up to {n} codes
+# td320882c =
+
+# unlimited · $15/year
+# te176f9c3 =
+
+# just now
+# ta715ef0f =
+
+# a minute ago
+# t85ac693d =
+
+# {n} minute ago | {n} minutes ago
+# t6c7302d6 =
+
+# an hour ago
+# t84377069 =
+
+# {n} hour ago | {n} hours ago
+# t137b052e =
+
+# {n} day ago | {n} days ago
+# tb9fa7744 =
+
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = 此设备上未保存其密码：请在“设置 › 同步”中重新连接
 
-# settings not synced: {e}
-tf8592ea2 = 设置未同步：{ $e }
+# The code for the window you are in
+# teaa20509 =
 
-# settings not written: {e}
-t60f438b7 = 设置未写入：{ $e }
+# The codes for the app or site in front come first: by its sites, its window's title, or the browser extension.
+# tc9769cd3 =
+
+# From any app
+# t01695c14 =
+
+# From any app, with {key}
+# tf17862df =
+
+# A small panel over the app you are in, and Enter types the code into it.
+# tdc1e0fe0 =
+
+# Say its name
+# t4602e0ed =
+
+# “Open GitHub”, “PayPal”: Whisper hears it on this device, in your language.
+# t4a9de42e =
+
+# Yours alone
+# t032b8418 =
+
+# The codes are encrypted on this device, and synced, if you choose to, only as ciphertext.
+# t3e60b7b0 =
+
+# From your phone
+# tbf9a6fd0 =
+
+# Google Authenticator: Transfer accounts › Export accounts, then hold each QR code it shows up to the camera.
+# tac46df50 =
+
+# From a site's QR code
+# t789c56e3 =
+
+# Turning on two-factor sign-in, a site shows one: authwing reads it on the screen.
+# t49c60415 =
+
+# From another app
+# t3ac48a69 =
+
+# An export from Aegis, 2FAS, Ente Auth or Bitwarden, or an authwing backup.
+# t54b5fe53 =
+
+# Import a file…
+# t0eb7677d =
+
+# By hand
+# td748cd1d =
+
+# The link or the key a site shows beside its QR code.
+# ta1285d09 =
+
+# {n} code here so far. | {n} codes here so far.
+# t6dc115ee =
+
+# The quick panel's shortcut is off
+# td256725c =
+
+# Press {key} in any app
+# t9e729c1b =
+
+# A panel opens over it with its codes first; Enter types the code where you were. Its key is in Settings › General.
+# ta5e01546 =
+
+# Typing codes into other apps is allowed.
+# t99adf5e2 =
+
+# To type codes into other apps, and to see their windows' titles, macOS asks first (Accessibility).
+# t5697eba0 =
+
+# In a browser, the extension tells authwing the page exactly, and fills the code in.
+# tff15f0a2 =
+
+# Link the browsers…
+# t7f6fe971 =
+
+# Ready: hold the quick panel's key and say a name.
+# tff1730f2 =
+
+# Whisper, the model that hears you, is downloaded once ({mb} MB) and runs on this device: nothing you say leaves it. You can do it later in Settings › Voice.
+# t25a77ecc =
+
+# The recovery key opens the vault when nothing else can: a lost keychain, a new computer. Write it down, or keep it in a password manager, away from this computer.
+# ta576d2c1 =
+
+# On your other computers too: the vault syncs through a folder, WebDAV, S3 or Git, encrypted.
+# t64f9348a =
+
+# Set up sync…
+# t712df601 =
+
+# Welcome to authwing
+# t1c4b12d5 =
+
+# Bring your codes
+# t852a71f4 =
+
+# However many you have: they can all come at once.
+# te372c4fe =
+
+# Codes where you sign in
+# tb45ac069 =
+
+# Without opening this window.
+# t4bfebcf3 =
+
+# If you like: it can wait.
+# t8b154ee4 =
+
+# Keep the recovery key
+# t72fa11c5 =
+
+# The one thing to keep safe.
+# te23e90eb =
+
+# Skip
+# tc197c7e2 =
+
+# Back
+# tc2954bc2 =
+
+# Done
+# t8dd31791 =
+
+# Get started
+# te83ca5ee =
+
+# Next
+# tdce2da08 =
 
 # Voice's model is still downloading (Settings › Voice).
 # t294c50cc =
@@ -976,6 +1339,33 @@ t60f438b7 = 设置未写入：{ $e }
 # Nothing was heard: is the microphone on?
 # t5de1c09c =
 
+# the system's package manager
+# t11465c20 =
+
+# the App Store
+# ta8cbd72e =
+
+# the Microsoft Store
+# t1df799a1 =
+
+# Downloading… {got} of {total}
+# taee668c2 =
+
+# Downloading… {got}
+# t4873b921 =
+
+# authwing {version} is out: {by} updates it ({command}).
+# taf85c804 =
+
+# authwing {version} is out: {by} updates it.
+# ta087df4c =
+
+# No folder to download to.
+# t2bfc1370 =
+
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+# td9ae9d7c =
+
 # Find a code
 # t8b2733e6 =
 
@@ -985,35 +1375,23 @@ t60f438b7 = 设置未写入：{ $e }
 # The quick panel's shortcut {key} cannot be used: {e}
 # td4cbf886 =
 
-# A device asks to join: open Sync (the cloud) to approve it.
-# tf1bf552a =
+# Let {device} into this vault?
+# tfab743ab =
+
+# It gets every code the vault holds. Approve only if {device} shows the code {code}.
+# ta4cf95fb =
+
+# Approve
+te6edf55a = 批准
+
+# Refuse
+t9bcada35 = 拒绝
 
 # Typed into the page.
 # t97706593 =
 
 # Not typed into the page: {why}
 # t709fb554 =
-
-# Not syncing
-# t0f346f03 =
-
-# Syncing…
-t8ad2ae06 = 正在同步…
-
-# Synced just now
-# t4df6f903 =
-
-# Synced {n} minute ago | Synced {n} minutes ago
-# tc7922c74 =
-
-# {when}: {pulled} in, {pushed} out
-# t9dc23f47 =
-
-# Sync failed: {e}
-# tcc341778 =
-
-# Joined: this device syncs the vault now.
-# t6b25e007 =
 
 # Not saved: {e}
 # ta9354472 =
@@ -1048,6 +1426,30 @@ t12e9b880 = 未删除：{ $e }
 # Not opened: {e}
 # t2e0269c8 =
 
+# Joined: this device syncs the vault now.
+# t6b25e007 =
+
+# Settings: an update is out
+# t5742fd7e =
+
+# Stop, and find what you said
+# t748d5a27 =
+
+# Find a code by its name, said
+# tc6b6d315 =
+
+# Listening… say a code's name, then click the microphone.
+# t828235c2 =
+
+# You said “{said}”: no code is called that.
+# t29ba88f1 =
+
+# Show every code
+# tb7bd67b4 =
+
+# Dismiss
+# t265915f3 =
+
 # All codes
 # t113331ee =
 
@@ -1065,9 +1467,6 @@ t12e9b880 = 未删除：{ $e }
 
 # No group
 # t2721e1c1 =
-
-# Manage
-# td7aff116 =
 
 # Add code
 # t081cfe79 =
@@ -1101,6 +1500,9 @@ t12e9b880 = 未删除：{ $e }
 
 # Add your first code
 # t4a8c2b9a =
+
+# Show the welcome
+# teb7693b3 =
 
 # Nothing matches
 # tda76133f =

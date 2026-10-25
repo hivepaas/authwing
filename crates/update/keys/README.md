@@ -15,14 +15,15 @@ On the offline signing machine, with the tool built as `scripts/release_sign.sh`
 builds it (from `tools/releasesign/main.go` at a reviewed commit):
 
 ```sh
-releasesign keygen -alg ed25519   -key-id 2026-ed -dir /offline
-releasesign keygen -alg ml-dsa-65 -key-id 2026-ml -dir /offline
+releasesign keygen -alg ed25519   -key-id 2026-ed -dir /offline/authwing
+releasesign keygen -alg ml-dsa-65 -key-id 2026-ml -dir /offline/authwing
 ```
 
-Copy only the two `.pub.pem` files here. The `.key` files never leave that
-machine; back them up as you would any secret that cannot be made again: an app
-trusts the keys it was built with, and a lost key is replaced only by shipping
-apps that trust another.
+These are authwing's own, in a folder apart from shellwing's (see
+docs/updates.md › Signing). Copy only the two `.pub.pem` files here. The `.key`
+files never leave that machine; back them up as you would any secret that
+cannot be made again: an app trusts the keys it was built with, and a lost key
+is replaced only by shipping apps that trust another.
 
 ## Rotating a key
 

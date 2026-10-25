@@ -6,17 +6,13 @@
 //! `authwing_vault::Ask`), and the answers of a device that syncs. While one
 //! is open the place is looked at every two seconds.
 //!
-//! The settings of config.toml that are not this device's own ride along
-//! (with `[sync] settings`, on by default), as one record with a field per
-//! setting: before each sync, edits in the file are recorded (only the fields
-//! that changed get new stamps); after it, the merged result is written back
-//! into the file.
+//! Only the vault syncs: config.toml is each device's own.
 
 use std::sync::mpsc::{self, RecvTimeoutError};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use authwing_config::{Store, SyncPlace};
+use authwing_config::SyncPlace;
 use authwing_i18n::tr;
 use authwing_remote::Place;
 use authwing_vault::{
@@ -26,9 +22,6 @@ use authwing_vault::{
 use crate::vault_slot::VaultSlot;
 
 const EVERY: Duration = Duration::from_secs(60);
-/// The settings' record: the same on every device, so they merge into one.
-/// Hex, as synced files' names must start with.
-const SETTINGS_ID: &str = "5e771a65000000000000000000000000";
 /// How often the place is looked at while pairing.
 const PAIRING: Duration = Duration::from_secs(2);
 /// The same over Git, where each look is a fetch.
@@ -176,15 +169,10 @@ pub fn device_name() -> String {
 }
 
 impl SyncWorker {
-    pub fn start(
-        vault: VaultSlot,
-        store: Option<Store>,
-        events: async_channel::Sender<SyncEvent>,
-    ) -> SyncWorker {
+    pub fn start(vault: VaultSlot, events: async_channel::Sender<SyncEvent>) -> SyncWorker {
         let (wake, woken) = mpsc::channel::<Cmd>();
         let place: Arc<Mutex<Option<SyncPlace>>> = Arc::default();
         let watched = place.clone();
-        let config = store;
         let spawned = std::thread::Builder::new()
             .name("authwing-sync".into())
             .spawn(move || {
@@ -325,7 +313,7 @@ impl SyncWorker {
                     if events.send_blocking(SyncEvent::Started).is_err() {
                         return;
                     }
-                    let event = sync_once(&vault, store, config.as_ref());
+                    let event = sync_once(&vault, store);
                     if events.send_blocking(event).is_err() {
                         return;
                     }
@@ -474,90 +462,18 @@ impl SyncWorker {
     }
 }
 
-/// One round: records the edits made in config.toml, syncs, and writes the
-/// merged result back into it.
-fn sync_once(vault: &Vault, store: &dyn Backend, config: Option<&Store>) -> SyncEvent {
+/// One round: the vault started there if the place is empty, then synced.
+fn sync_once(vault: &Vault, store: &dyn Backend) -> SyncEvent {
     // A folder set by hand in config.toml starts empty: begin
     // there (the recovery key can be shown from the palette).
     let started = transact(store, |b| match vault.folder_state(b)? {
         FolderState::Empty => vault.start_sync(b).map(|_| ()),
         _ => Ok(()),
     });
-    let settings = config.filter(|c| c.settings().is_ok_and(|s| s.sync.settings));
-    // A device whose settings have never synced takes the
-    // others' first: recording its own now would stamp them
-    // newer than the ones it has not seen yet.
-    let settings_known = settings.is_some_and(|_| has_settings(vault));
-    let settings_problem = settings
-        .filter(|_| settings_known)
-        .and_then(|c| record_settings(c, vault).err());
-    let synced = started.and_then(|()| vault.sync(store));
-    let settings_written = match (&synced, settings) {
-        (Ok(_), Some(c)) if settings_problem.is_none() => {
-            let joined = write_settings(c, vault, !settings_known);
-            // Its own settings go out now, merged with the others'.
-            if joined.as_ref().is_ok_and(|&new| new) {
-                let _ = vault.sync(store);
-            }
-            joined.err()
-        }
-        _ => None,
-    };
-    match (synced, settings_problem.or(settings_written)) {
-        (Ok(_), Some(p)) => SyncEvent::Failed(p),
-        (Ok(r), None) => SyncEvent::Done(r),
-        (Err(e), _) => SyncEvent::Failed(e.to_string()),
+    match started.and_then(|()| vault.sync(store)) {
+        Ok(r) => SyncEvent::Done(r),
+        Err(e) => SyncEvent::Failed(e.to_string()),
     }
-}
-
-fn has_settings(vault: &Vault) -> bool {
-    vault
-        .entries("settings")
-        .is_ok_and(|e| e.iter().any(|(id, _)| id == SETTINGS_ID))
-}
-
-/// Records the synced settings config.toml has now.
-fn record_settings(store: &Store, vault: &Vault) -> Result<(), String> {
-    let fields = store
-        .synced_settings()
-        .map_err(|e| tr!("settings not synced: {e}", e = e.to_string()))?;
-    vault
-        .update(SETTINGS_ID, "settings", "Settings", &fields)
-        .map_err(|e| tr!("settings not synced: {e}", e = e.to_string()))?;
-    Ok(())
-}
-
-/// Writes the merged settings into config.toml. The first time (`first`),
-/// the others' are taken where they set a value and this device's kept
-/// where they set none, then recorded, to go out: whether that happened.
-fn write_settings(store: &Store, vault: &Vault, first: bool) -> Result<bool, String> {
-    let err = |e: String| tr!("settings not written: {e}", e = e);
-    let theirs = vault
-        .entries("settings")
-        .map_err(|e| err(e.to_string()))?
-        .into_iter()
-        .find(|(id, _)| id == SETTINGS_ID)
-        .map(|(_, f)| f);
-    let fields = match (theirs, first) {
-        (Some(theirs), false) => theirs,
-        (Some(theirs), true) => {
-            let mut mine = store.synced_settings().map_err(|e| err(e.to_string()))?;
-            mine.extend(theirs);
-            mine
-        }
-        // Nobody's yet: this device's are the first.
-        (None, _) => {
-            record_settings(store, vault)?;
-            return Ok(true);
-        }
-    };
-    store
-        .apply_synced_settings(&fields)
-        .map_err(|e| err(e.to_string()))?;
-    if first {
-        record_settings(store, vault)?;
-    }
-    Ok(first)
 }
 
 #[cfg(test)]
@@ -567,7 +483,6 @@ mod tests {
     use std::collections::BTreeMap;
 
     struct Device {
-        store: Store,
         vault: Vault,
         _keys: MemoryKeys,
     }
@@ -578,121 +493,17 @@ mod tests {
             std::fs::create_dir_all(&dir).expect("dir");
             let keys = MemoryKeys::default();
             let vault = Vault::open(&dir.join("vault.db"), &keys).expect("vault");
-            Device {
-                store: Store::new(dir),
-                vault,
-                _keys: keys,
-            }
+            Device { vault, _keys: keys }
         }
 
         /// One round, as the worker does it.
         fn sync(&self, folder: &Folder) {
-            match sync_once(&self.vault, folder, Some(&self.store)) {
+            match sync_once(&self.vault, folder) {
                 SyncEvent::Done(_) => {}
                 SyncEvent::Failed(e) => panic!("sync: {e}"),
                 _ => panic!("not a sync"),
             }
         }
-
-        fn config(&self) -> String {
-            std::fs::read_to_string(self.store.dir().join("config.toml")).unwrap_or_default()
-        }
-
-        fn set_config(&self, text: &str) {
-            std::fs::write(self.store.dir().join("config.toml"), text).expect("config");
-        }
-    }
-
-    #[test]
-    fn settings_travel_but_each_device_keeps_its_own() {
-        use authwing_config::ColorMode;
-        let root =
-            std::env::temp_dir().join(format!("authwing-settings-sync-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        let folder = Folder::new(&root.join("sync"));
-        let a = Device::new(&root, "a");
-        a.set_config("[appearance]\nmode = \"dark\"\n\n[codes]\nclear_clipboard = 45\n");
-        a.sync(&folder);
-        let rk = a.vault.recovery_key().expect("rk").expect("started");
-
-        // The second device had its own mode, a UI font, and a language of its own.
-        let b = Device::new(&root, "b");
-        b.set_config("# b's\n[appearance]\nmode = \"light\"\nui_font = { size = 15 }\n\n[general]\nlanguage = \"vi\"\n");
-        b.vault.join(&folder, &rk.to_string()).expect("join");
-        b.sync(&folder);
-        let bs = b.store.settings().expect("b");
-        assert_eq!(
-            bs.appearance.mode,
-            ColorMode::Dark,
-            "the synced ones win, the first time"
-        );
-        assert_eq!(bs.codes.clear_clipboard, 45);
-        assert_eq!(bs.appearance.ui_font.size, 15.0, "what only it set stays");
-        assert_eq!(bs.general.language.as_deref(), Some("vi"));
-        assert!(
-            b.config().starts_with("# b's"),
-            "its file keeps its comments"
-        );
-
-        // And goes the other way; edits then travel both ways.
-        a.sync(&folder);
-        assert_eq!(a.store.settings().expect("a").appearance.ui_font.size, 15.0);
-        assert!(
-            a.store.settings().expect("a").general.language.is_none(),
-            "b's own language stays on b"
-        );
-        a.set_config(&a.config().replace("\"dark\"", "\"system\""));
-        a.sync(&folder);
-        b.sync(&folder);
-        assert_eq!(
-            b.store.settings().expect("b").appearance.mode,
-            ColorMode::System
-        );
-
-        // Turned off on a device, nothing more comes in.
-        b.set_config(&format!("{}\n[sync]\nsettings = false\n", b.config()));
-        a.set_config(&a.config().replace("\"system\"", "\"light\""));
-        a.sync(&folder);
-        b.sync(&folder);
-        assert_eq!(
-            b.store.settings().expect("b").appearance.mode,
-            ColorMode::System
-        );
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn settings_stay_as_set_through_a_passphrase_and_a_lock() {
-        let root =
-            std::env::temp_dir().join(format!("authwing-settings-lock-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        let folder = Folder::new(&root.join("sync"));
-        let mut a = Device::new(&root, "a");
-        // Changed back before syncing ever started: the last one counts.
-        a.set_config("[appearance]\nmode = \"light\"\n");
-        a.set_config("[appearance]\nmode = \"dark\"\n");
-        a.sync(&folder);
-        // As Settings does it: a passphrase, the key out of the keychain,
-        // the vault locked and opened again.
-        let pass = "harbor lantern seven moss quietly";
-        a.vault
-            .set_vault_passphrase(Some(pass))
-            .expect("passphrase");
-        a.vault
-            .leave_keychain(&a._keys)
-            .expect("out of the keychain");
-        let path = a.store.dir().join("vault.db");
-        a.vault = Vault::unlock(
-            &path,
-            &MemoryKeys::default(),
-            authwing_vault::Unlock::Passphrase(pass),
-        )
-        .expect("opened");
-        for _ in 0..3 {
-            a.sync(&folder);
-            assert!(a.config().contains("mode = \"dark\""), "{}", a.config());
-        }
-        let _ = std::fs::remove_dir_all(&root);
     }
 
     #[test]

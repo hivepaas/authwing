@@ -109,7 +109,7 @@ fn expand_home(f: &str) -> Option<std::path::PathBuf> {
 }
 
 /// Syncing the vault through a folder (docs/design/sync.md).
-#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
 #[serde(default)]
 pub struct Sync {
     /// The folder, `~/` allowed; None: no sync.
@@ -123,21 +123,6 @@ pub struct Sync {
     /// A Git repository instead, through the system's git. A token, if one
     /// is used, is in the vault, this device's own.
     pub git: Option<GitSync>,
-    /// The settings that are not this device's own sync too
-    /// ([`crate::settings_sync::SYNCED`]).
-    pub settings: bool,
-}
-
-impl Default for Sync {
-    fn default() -> Self {
-        Sync {
-            folder: None,
-            webdav: None,
-            s3: None,
-            git: None,
-            settings: true,
-        }
-    }
 }
 
 impl Sync {

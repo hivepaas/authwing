@@ -48,10 +48,16 @@ language = "auto"            # the language you name codes in ("vi", "de"…); "
 
 [sync]                       # see Syncing between devices; one place at a time
 folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"
-settings = true              # the settings that are not this device's own sync too
 ```
 
 ## Codes
+
+The first time authwing opens on a device with no codes, a few steps
+welcome it: bringing codes in (from a phone through the camera, a QR code on
+the screen, another app's export, by hand), the quick panel and typing codes
+in, voice, and the recovery key. Each can be skipped; *Show the welcome
+again* in *Settings › About* shows it again. Seen, it is noted in
+`state/welcome.json`, on this device.
 
 - **Adding:** the **+** in the title bar (or Cmd/Ctrl+N).
   - *Scan the screen* reads the QR code a site shows, wherever it is on the
@@ -116,9 +122,14 @@ Linux (*Settings › General*, or `key` under `[panel]`; `""` turns it off).
 
 ## Finding a code by voice
 
-In the quick panel, hold its shortcut and say a code's name: "GitHub",
-"mở Vietcombank", "Öffne PayPal". Let go, and the codes it names come first,
-the one named clearly selected: Enter types it.
+In the quick panel, hold its shortcut and say a code's name: "Open GitHub",
+"PayPal". Let go, and the codes it names come first, the one named clearly
+selected: Enter types it.
+
+In the window, the microphone at the end of the find field does the same:
+click it, say the name, click it again. The list shows the codes it names,
+best first, and Enter copies the first; *Show every code* (or typing, or
+Escape) brings the list back.
 
 - **The model** is Whisper's, downloaded once from *Settings › Voice*
   (from Hugging Face, where whisper.cpp publishes it, and checked against
@@ -308,27 +319,24 @@ folder = "~/Library/Mobile Documents/com~apple~CloudDocs/authwing"   # any synce
   in Settings and kept sealed in the vault, as this device's own; it never
   syncs, and each device types its own.
 
-The cloud in the title bar says how it stands (green synced, orange failed, a
-light orange not set up) and opens the Sync panel:
+The cloud at the end of the title bar says how it stands (green synced,
+orange with a dot failed, gray paused while the vault is locked, a light
+orange not set up). It opens a panel with how the last sync went and *Sync
+now*; *Settings › Sync* has the rest: authwing cloud (coming: Free up to 50
+codes, Pro unlimited at $15 a year), and a place of your own.
 
 - **The first device** creates the vault there and a **recovery key** (13
   groups of 4 characters). Keep it: it is the way in if every device is lost.
-- **Another device** with the same place joins from the panel:
-  - **Ask a device that syncs**: on a device that syncs (with authwing open),
-    the request shows up in its panel. Both show six digits: approve only if
-    they are the same. A request left 10 minutes is dropped.
+- **Another device** with the same place finds a vault it is not in, and
+  joins it in *Settings › Sync*:
+  - **Ask a device that syncs**: a device that syncs (with authwing open)
+    asks whether to let it in. Both show six digits: approve only if they
+    are the same. A request left 10 minutes is dropped.
   - **Join with the key**: type the recovery key.
 - Syncing runs every minute, right after a code is added, changed or deleted,
   and on *Sync now*; quitting with Cmd/Ctrl+Q waits a moment for the last
   edits to go out. Edits merge field by field, so two devices offline never
   lose each other's changes; a deleted code is deleted everywhere.
 
-Settings in `config.toml` sync too, unless `settings = false` under `[sync]`:
-
-- **What syncs:** `[appearance]` (`mode`, `ui_font`) and `[codes]
-  clear_clipboard`.
-- **What each device keeps:** `[general] language`, `[sync]`, `[shortcuts]`,
-  `[panel]` and `[voice]`, which differ between computers.
-- **Merging** is per setting; the file keeps its comments and layout. A
-  device whose settings sync for the first time takes the others' where they
-  set one, and keeps its own where they set none.
+Only the vault syncs (the codes, their groups and sites): `config.toml` and
+what is under `state/` are each device's own.

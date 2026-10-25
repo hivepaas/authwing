@@ -17,17 +17,22 @@ use authwing_config::{
     ColorMode, GitSync, S3Sync, SettingValue, Settings, Store, SyncPlaceText, WebDavSync,
 };
 use authwing_i18n::{tr, tr_n};
-use authwing_vault::Presence as _;
+use authwing_vault::{AskState, Presence as _};
+
+mod about;
 
 use crate::colors::colors;
 use crate::input::{TextInput, said};
+use crate::join::{JoinEvent, JoinView};
 use crate::look::ui;
 use crate::notice::Notice;
+use crate::sync_panel::SyncSnap;
 use crate::syncing::{PLACE_SECRET, SyncWorker};
 use crate::vault_slot::VaultSlot;
 use crate::widgets::{
     choice, input_box, labeled, outline_button, primary_button, switch, text_button,
 };
+use crate::workspace::UpdateSnap;
 
 pub enum SettingsEvent {
     Close,
@@ -38,6 +43,20 @@ pub enum SettingsEvent {
     Lock,
     /// Codes came in from a backup or another app's export.
     CodesChanged,
+    /// Show the welcome again.
+    Welcome,
+    /// Settings › About: look for a newer release now.
+    CheckUpdates,
+    /// Download the release offered, or say what updates this copy.
+    GetUpdate,
+    /// Not offered again until a newer one comes.
+    SkipUpdate,
+    /// Quit, install the release downloaded, and start it.
+    RestartToUpdate,
+    /// Settings › Sync's status card: sync now, or try again.
+    SyncNow,
+    /// This device joined the vault its place holds.
+    Joined,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -117,7 +136,13 @@ pub struct SettingsView {
     settings: Settings,
     vault: VaultSlot,
     sync: SyncWorker,
-    sync_status: String,
+    /// How sync stands, as the window last said.
+    sync_snap: SyncSnap,
+    /// Joining the vault the place holds, while this device does not sync
+    /// there.
+    join: Entity<JoinView>,
+    /// How looking for updates stands, as the window last said.
+    update: Option<UpdateSnap>,
     place: PlaceForm,
     pass: Entity<TextInput>,
     pass_again: Entity<TextInput>,
@@ -200,13 +225,20 @@ impl SettingsView {
             no_git: None,
             installing: false,
         };
+        let join = cx.new(|cx| JoinView::new(sync.clone(), vault.clone(), cx));
+        cx.subscribe(&join, |_, _, event: &JoinEvent, cx| match event {
+            JoinEvent::Joined => cx.emit(SettingsEvent::Joined),
+        })
+        .detach();
         let mut view = SettingsView {
             page: Page::General,
             store,
             settings,
             vault,
             sync,
-            sync_status: String::new(),
+            sync_snap: SyncSnap::off(),
+            join,
+            update: None,
             place,
             pass: masked(cx, || tr!("At least 10 characters, hard to guess")),
             pass_again: masked(cx, || tr!("The same again")),
@@ -234,8 +266,29 @@ impl SettingsView {
         cx.notify();
     }
 
-    pub fn set_sync_status(&mut self, status: String, cx: &mut Context<Self>) {
-        self.sync_status = status;
+    pub fn set_sync_snap(&mut self, snap: SyncSnap, cx: &mut Context<Self>) {
+        if snap != self.sync_snap {
+            self.sync_snap = snap;
+            cx.notify();
+        }
+    }
+
+    /// Where a request to join from this device stands.
+    pub fn set_asking(&mut self, state: AskState, cx: &mut Context<Self>) {
+        self.join.update(cx, |j, cx| j.set_asking(state, cx));
+    }
+
+    pub fn pairing_failed(&mut self, why: String, cx: &mut Context<Self>) {
+        self.join.update(cx, |j, cx| j.failed(why, cx));
+    }
+
+    pub fn set_passphrase_joins(&mut self, joins: bool, cx: &mut Context<Self>) {
+        self.join
+            .update(cx, |j, cx| j.set_passphrase_joins(joins, cx));
+    }
+
+    pub fn set_update(&mut self, update: UpdateSnap, cx: &mut Context<Self>) {
+        self.update = Some(update);
         cx.notify();
     }
 
@@ -1332,7 +1385,7 @@ impl SettingsView {
                         )
                     } else {
                         tr!(
-                            "In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
+                            "In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.",
                             key = crate::panel_key::label(&s.panel.key)
                         )
                     }))
@@ -1591,22 +1644,63 @@ impl SettingsView {
         }
     }
 
+    /// Settings › Sync, as shellwing's. Not syncing: authwing cloud, then a
+    /// place of one's own to set up. Syncing: how it goes, the place (and
+    /// joining the vault it holds), and authwing cloud beside it. Only the
+    /// vault syncs: the settings are each device's own.
     fn sync_page(&self, cx: &mut Context<Self>) -> gpui::Div {
-        let settings_too = self.settings.sync.settings;
+        let c = colors();
         let page = div().flex().flex_col().gap(px(12.));
-        let page = match self.settings.sync.place() {
-            Some(place) => page.child(heading(tr!("Your place"))).child(
+        let Some(place) = self.settings.sync.place() else {
+            return page
+                .child(
+                    div()
+                        .p(px(22.))
+                        .rounded(px(12.))
+                        .border_1()
+                        .border_color(rgb(c.line))
+                        .bg(rgb(c.surface))
+                        .child(crate::sync_panel::invitation()),
+                )
+                .child(heading(tr!("Or a place of your own")))
+                .child(card().child(self.sync_choice(cx)));
+        };
+        let snap = &self.sync_snap;
+        let shown = crate::syncing::describe(&place);
+        let status = crate::sync_panel::status_card(
+            &snap.standing,
+            snap.place.as_deref().unwrap_or(&shown),
+            Box::new(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::SyncNow))),
+            Box::new(cx.listener(|_, _, _, cx| cx.emit(SettingsEvent::Close))),
+        );
+        // A place that holds a vault this device is not in yet: join it.
+        let joining = snap.other_vault;
+        page.child(status)
+            .when_some(snap.codes, |d, n| {
+                d.child(
+                    div()
+                        .mt(px(-6.))
+                        .px(px(4.))
+                        .text_size(ui(12.5))
+                        .text_color(rgb(c.soft))
+                        .child(crate::sync_panel::codes_said(n)),
+                )
+            })
+            .child(heading(tr!("Your place")))
+            .child(
                 card()
-                    .child(row(
-                        tr!("With {place}", place = crate::syncing::describe(&place)),
-                        self.sync_status.clone(),
-                        div(),
-                    ))
                     .child(
                         div()
                             .flex()
                             .flex_wrap()
-                            .gap(px(8.))
+                            .items_center()
+                            .gap(px(12.))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w(px(240.))
+                                    .child(tr!("With {place}", place = shown)),
+                            )
                             .child(
                                 outline_button("sync-key", &tr!("Show the recovery key")).on_click(
                                     cx.listener(|view, _, _, cx| view.set_page(Page::Security, cx)),
@@ -1614,31 +1708,17 @@ impl SettingsView {
                             )
                             .child(
                                 outline_button("sync-stop", &tr!("Stop syncing"))
-                                    .text_color(rgb(colors().bad))
+                                    .border_color(rgb(c.bad_edge))
+                                    .text_color(rgb(c.bad_text))
                                     .on_click(cx.listener(|view, _, _, cx| view.stop_sync(cx))),
                             ),
-                    ),
-            ),
-            None => page
-                .child(heading(tr!("A place of your own")))
-                .child(card().child(self.sync_choice(cx))),
-        };
-        page
-            .child(heading(tr!("What syncs")))
-            .child(card().child(row(
-                tr!("Settings too"),
-                tr!("Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own."),
-                switch("sync-settings", settings_too).on_click(cx.listener(move |view, _, _, cx| {
-                    view.set(
-                        &["sync", "settings"],
-                        Some(SettingValue::Bool(!settings_too)),
-                        cx,
                     )
-                })),
-            )))
-            .child(hint(tr!(
-                "Devices joining, and the recovery key, are in the cloud's panel in the title bar."
-            )))
+                    .when(joining, |d| {
+                        d.child(div().h(px(1.)).bg(rgb(c.line)))
+                            .child(self.join.clone())
+                    }),
+            )
+            .child(div().pt(px(8.)).child(crate::sync_panel::aside()))
     }
 
     fn security(&self, cx: &mut Context<Self>) -> gpui::Div {
@@ -1943,41 +2023,10 @@ impl SettingsView {
                 "The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked."
             )))
     }
-
-    fn about(&self) -> gpui::Div {
-        div()
-            .flex()
-            .flex_col()
-            .gap(px(12.))
-            .child(heading("authwing".to_string()))
-            .child(
-                card()
-                    .child(row(
-                        tr!("Version"),
-                        String::new(),
-                        div().child(env!("CARGO_PKG_VERSION")),
-                    ))
-                    .child(row(
-                        tr!("License"),
-                        tr!("Free software: you may share and change it under the GPL."),
-                        div().child("GPL-3.0-or-later"),
-                    ))
-                    .child(row(
-                        tr!("Source"),
-                        String::new(),
-                        div().child("github.com/hivepaas/authwing"),
-                    ))
-                    .child(row(
-                        tr!("Updates"),
-                        tr!("Not looked for: this build has no release keys to check them with."),
-                        div(),
-                    )),
-            )
-    }
 }
 
 impl Render for SettingsView {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = colors();
         let header = div()
             .h(px(40.))
@@ -1990,12 +2039,8 @@ impl Render for SettingsView {
             .bg(rgb(c.surface))
             .border_b_1()
             .border_color(rgb(c.line))
-            .child(
-                gpui::svg()
-                    .path("icons/logo.svg")
-                    .size(px(16.))
-                    .text_color(rgb(c.accent)),
-            )
+            // The app icon's mark, as the title bar has it.
+            .child(crate::mark::mark(px(16.), window.scale_factor(), cx))
             .child(
                 div()
                     .font_weight(FontWeight::SEMIBOLD)
@@ -2063,7 +2108,7 @@ impl Render for SettingsView {
             Page::Security => self.security(cx),
             Page::Backup => self.backup_page(cx),
             Page::Browsers => self.browsers_page(cx),
-            Page::About => self.about(),
+            Page::About => self.about(window.scale_factor(), cx),
         };
         let page = div().flex_1().min_h_0().flex().child(nav).child(
             div()

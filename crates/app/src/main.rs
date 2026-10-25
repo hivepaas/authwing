@@ -20,6 +20,7 @@ mod group_editor;
 mod groups;
 mod hotkeys;
 mod input;
+mod join;
 mod look;
 mod mark;
 mod menu;
@@ -34,6 +35,7 @@ mod syncing;
 mod typing;
 mod vault_slot;
 mod voice;
+mod welcome;
 mod widgets;
 mod workspace;
 
@@ -46,7 +48,6 @@ use gpui::{App, AppContext as _, Focusable as _, WindowDecorations, WindowOption
 struct Assets;
 
 const ICONS: &[(&str, &[u8])] = &[
-    ("icons/logo.svg", include_bytes!("../assets/icons/logo.svg")),
     // The app icon's mark, without its tile: the title bar's (see mark.rs).
     (
         "icons/app-mark.svg",
@@ -67,6 +68,14 @@ const ICONS: &[(&str, &[u8])] = &[
         include_bytes!("../assets/icons/eye-off.svg"),
     ),
     ("icons/info.svg", include_bytes!("../assets/icons/info.svg")),
+    (
+        "icons/laptop.svg",
+        include_bytes!("../assets/icons/laptop.svg"),
+    ),
+    (
+        "icons/server.svg",
+        include_bytes!("../assets/icons/server.svg"),
+    ),
     ("icons/lock.svg", include_bytes!("../assets/icons/lock.svg")),
     ("icons/mic.svg", include_bytes!("../assets/icons/mic.svg")),
     ("icons/grid.svg", include_bytes!("../assets/icons/grid.svg")),

@@ -217,6 +217,45 @@ te833da37 = config.toml, [shortcuts]: `{ $key }` được gán cho cả { $kept 
 # config.toml, [shortcuts] {name}: `{key}` does not fit; only copy_code takes `digit` (1 to 9), and it takes nothing else.
 t87e7ceec = config.toml, [shortcuts] { $name }: `{ $key }` không hợp; chỉ copy_code nhận `digit` (1 đến 9), và nó không nhận gì khác.
 
+# XXXX-XXXX-…, 13 groups
+tbb504d9f = XXXX-XXXX-…, 13 nhóm
+
+# Waiting for a device that syncs: open authwing there.
+t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
+
+# Approve on {device} if it shows the same code:
+ta89ba4d1 = Duyệt trên { $device } nếu nó hiện cùng mã này:
+
+# Joined. The vault's codes are coming.
+t775b89a0 = Đã tham gia. Các mã của vault đang được tải về.
+
+# The other device refused.
+t74419d8e = Thiết bị kia đã từ chối.
+
+# Nobody approved in time: ask again.
+t5c323bb6 = Không ai duyệt kịp: hãy xin lại.
+
+# Ask a device that syncs
+t2dc61136 = Xin một thiết bị đang đồng bộ
+
+# Stop asking
+t296beec8 = Thôi xin
+
+# It holds a vault from another device: join it
+t25a71781 = Nơi này đang chứa kho của thiết bị khác: hãy tham gia
+
+# Ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
+t58c3578d = Nhờ một thiết bị đang đồng bộ duyệt, hoặc nhập khoá khôi phục của kho. Passphrase đồng bộ của kho cũng dùng được.
+
+# Ask a device that syncs, or type the vault's recovery key.
+tfa918e42 = Nhờ một thiết bị đang đồng bộ duyệt, hoặc nhập khoá khôi phục của kho.
+
+# Joining…
+taa884c51 = Đang tham gia…
+
+# Join with the key
+t9f857a57 = Tham gia bằng khoá
+
 # Hide authwing
 tc980ec1e = Ẩn authwing
 
@@ -285,6 +324,192 @@ t27cb3b23 = đóng
 
 # Allow Accessibility to type codes in
 t5e806dae = Cho phép Trợ năng để gõ mã vào
+
+# From the same author
+te0bcddcb = Cùng tác giả
+
+# © {year} HivePaaS. The authwing name and logo are trademarks of HivePaaS.
+t974bcb65 = © { $year } HivePaaS. Tên và logo authwing là nhãn hiệu của HivePaaS.
+
+# Updates
+t483075a5 = Cập nhật
+
+# This build has no release keys, so it cannot tell of updates.
+t378182cb = Bản build này không có khoá phát hành, nên không thể báo khi có bản cập nhật.
+
+# authwing {version} is ready
+t2b9b301d = authwing { $version } đã sẵn sàng
+
+# It is installed when you quit, or now with Restart.
+t6fecac86 = Bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+
+# Restart now
+t54001a7c = Khởi động lại ngay
+
+# authwing {version}
+t07bd65c2 = authwing { $version }
+
+# Looking for a newer version…
+tf1905fe9 = Đang tìm phiên bản mới hơn…
+
+# How to update
+t3603428f = Cách cập nhật
+
+# Try again
+t213e90fa = Thử lại
+
+# Download and install
+t1a99173f = Tải xuống và cài đặt
+
+# Download
+t6964bb19 = Tải xuống
+
+# {by} updates it: {command}
+tdf2cab9c = { $by } sẽ cập nhật nó: { $command }
+
+# {by} updates it.
+t84b27295 = { $by } sẽ cập nhật nó.
+
+# It is downloaded and checked, then installed when you quit.
+tb46c0678 = Bản mới được tải xuống và kiểm tra, rồi cài khi bạn thoát app.
+
+# Download it, and install it in place of this one.
+t39312eae = Tải về và cài đè lên bản này.
+
+# authwing {version} is out
+t44ae3b62 = Đã có authwing { $version }
+
+# The download failed: {why}
+t5e96c075 = Tải xuống thất bại: { $why }
+
+# Skip this version
+t2c33d756 = Bỏ qua phiên bản này
+
+# The last look failed: {why}
+td122a092 = Lần kiểm tra trước bị lỗi: { $why }
+
+# Up to date (looked {when}).
+t4665ef60 = Đang là bản mới nhất (kiểm tra { $when }).
+
+# Not looked yet.
+t5a3ba058 = Chưa kiểm tra lần nào.
+
+# This is a beta: you are told of newer betas, and of the release that follows them.
+t1d6a96bc = Đây là bản beta: bạn sẽ được báo khi có beta mới hơn, và khi có bản chính thức tiếp theo.
+
+# This is a release: you are told of newer releases, not of betas.
+t9d2d8250 = Đây là bản chính thức: bạn chỉ được báo khi có bản chính thức mới hơn, không báo bản beta.
+
+# Check now
+t4f0e0677 = Kiểm tra ngay
+
+# Look for updates once a day
+tcc27ace1 = Kiểm tra cập nhật mỗi ngày một lần
+
+# It reads the list of releases from GitHub, and believes it only when its signatures verify. Nothing is downloaded or installed without you.
+t258cdfd9 = App đọc danh sách bản phát hành từ GitHub, và chỉ tin khi chữ ký của nó hợp lệ. Không có gì được tải xuống hay cài đặt nếu bạn không đồng ý.
+
+# Two-factor codes that know the window you are in.
+t76a57f34 = Mã hai yếu tố biết bạn đang ở cửa sổ nào.
+
+# Version {version} · {os} {arch}
+t6bead5ae = Phiên bản { $version } · { $os } { $arch }
+
+# Copy version info
+t3d37483c = Sao chép thông tin phiên bản
+
+# Copied: {info}
+t183c7f9f = Đã sao chép: { $info }
+
+# Show the welcome again
+t80b070db = Xem lại màn hình chào
+
+# Visit authwing.app
+t82dfc39c = Xem authwing.app
+
+# Report a problem
+t7b1728e7 = Báo lỗi
+
+# Release notes
+tc52ab62f = Ghi chú phát hành
+
+# Open source
+ta04619ce = Mã nguồn mở
+
+# authwing is free and open source, under the GPL-3.0-or-later license. Read the code, build it yourself, report a problem or send a fix.
+tb206fce9 = authwing là phần mềm miễn phí, mã nguồn mở theo giấy phép GPL-3.0-or-later. Bạn có thể đọc mã, tự build, báo lỗi hoặc gửi bản sửa.
+
+# SSH as OpenSSH does it
+tf31dc063 = SSH đúng như OpenSSH
+
+# Tabs and split panes
+t27fcaa7f = Tab và chia khung
+
+# SFTP
+t62703ae8 = SFTP
+
+# Port forwarding
+tb033f949 = Chuyển tiếp cổng
+
+# Encrypted vault
+t607bfd2b = Kho bí mật mã hoá
+
+# Sync between devices
+t39de978d = Đồng bộ giữa các thiết bị
+
+# Visit shellwing.app
+t1d2ed540 = Xem shellwing.app
+
+# Open source · GPL-3.0
+t86466056 = Mã nguồn mở · GPL-3.0
+
+# A fast, native SSH client for macOS, Windows and Linux
+tef1f8d16 = Ứng dụng SSH gốc, nhanh, cho macOS, Windows và Linux
+
+# Tabs, split panes, SFTP, port forwarding and an encrypted vault that syncs between your devices, in a GPU-rendered terminal built in Rust.
+tbddef507 = Tab, chia khung, SFTP, chuyển tiếp cổng và kho bí mật mã hoá đồng bộ giữa các thiết bị, trong terminal vẽ bằng GPU, viết bằng Rust.
+
+# On your servers
+te5da903f = Trên máy chủ của bạn
+
+# Deploy from Git or a Docker image, with domains and automatic TLS, logs, metrics and scaling across a cluster.
+t1671a837 = Triển khai từ Git hoặc Docker image, kèm tên miền và TLS tự động, log, metrics và mở rộng trên cả cụm máy chủ.
+
+# On your own computer
+t75086b1c = Ngay trên máy của bạn
+
+# Install it on your own computer in place of Docker Desktop or Portainer, and still get full app management on top.
+te7416212 = Cài ngay trên máy local thay cho Docker Desktop hay Portainer, mà vẫn có nhiều tính năng quản lý ứng dụng cao cấp.
+
+# 300+ one-click apps
+t6a770b0a = 300+ ứng dụng cài một chạm
+
+# Deploy on push
+tb0bfc3e9 = Deploy khi push
+
+# Pull request previews
+t4e4180fc = Bản xem trước cho pull request
+
+# Automatic TLS
+t9e9776ed = TLS tự động
+
+# Live logs and metrics
+tebe3a172 = Log và metrics trực tiếp
+
+# Functions
+t69d796ee = Functions
+
+# Visit hivepaas.com
+t0632975a = Xem hivepaas.com
+
+# Open source · Apache-2.0
+tf33a768c = Mã nguồn mở · Apache-2.0
+
+# A self-hosted platform for your apps, built on Docker Swarm
+t92f3d8ce = Nền tảng self-hosted cho ứng dụng của bạn, chạy trên Docker Swarm
+
+# An open-source, self-hosted alternative to Heroku, Render and Coolify.
+t2f8bf400 = Một giải pháp self-hosted, mã nguồn mở thay thế cho Heroku, Render và Coolify.
 
 # General
 t5561fd0b = Chung
@@ -583,8 +808,8 @@ t027c8145 = Tìm mã bằng giọng nói
 # The quick panel's shortcut is off (General › Quick panel): with one, hold it and say a code's name. Whisper listens on this device: nothing you say leaves it.
 t79692228 = Phím tắt bảng tra nhanh đang tắt (Chung › Bảng tra nhanh): có phím tắt thì giữ nó và nói tên mã. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy.
 
-# In the quick panel, hold {key} and say a code's name: “GitHub”, “open Vietcombank”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
-t1342bee3 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “GitHub”, “mở Vietcombank”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
+# In the quick panel, hold {key} and say a code's name: “Open GitHub”, “PayPal”. Whisper listens on this device: nothing you say leaves it, and the microphone is on only while the key is held.
+t198626e9 = Trong bảng tra nhanh, giữ { $key } và nói tên mã: “Open GitHub”, “PayPal”. Whisper nghe ngay trên thiết bị này: không gì bạn nói rời khỏi máy, và micro chỉ bật khi đang giữ phím.
 
 # Model
 t8285e8fa = Model
@@ -700,6 +925,9 @@ t6e62c13a = Cài nó trong terminal, rồi Kết nối lại:
 # Install a newer git (git-scm.com), then Connect again.
 t9a84a209 = Cài git mới hơn (git-scm.com), rồi Kết nối lại.
 
+# Or a place of your own
+t7b88a644 = Hoặc một chỗ của riêng bạn
+
 # Your place
 t63cb5f41 = Nơi đồng bộ của bạn
 
@@ -711,21 +939,6 @@ t16f62979 = Hiện khoá khôi phục
 
 # Stop syncing
 t59fdbd70 = Dừng đồng bộ
-
-# A place of your own
-t8d5f140b = Một nơi của riêng bạn
-
-# What syncs
-ta2fbb093 = Những gì được đồng bộ
-
-# Settings too
-ta8aa81ba = Cả cài đặt
-
-# Colors, text size and the clipboard's time. The language, shortcuts and the place stay this device's own.
-te0e876b2 = Màu, cỡ chữ và thời gian giữ clipboard. Ngôn ngữ, phím tắt và nơi đồng bộ là riêng của từng thiết bị.
-
-# Devices joining, and the recovery key, are in the cloud's panel in the title bar.
-t674d2276 = Thiết bị xin tham gia và khoá khôi phục nằm trong bảng của biểu tượng đám mây trên thanh tiêu đề.
 
 # Hide
 te10c7bcd = Ẩn
@@ -868,24 +1081,6 @@ td2a9db60 = Trình duyệt trên máy này
 # The extension is not in the stores yet: build it from the repository's extension folder and load it unpacked.
 t49b23b02 = Tiện ích chưa có trên các store: hãy build từ thư mục extension của repository và nạp dạng unpacked.
 
-# Version
-t5dcdd537 = Phiên bản
-
-# License
-t38e70ee4 = Giấy phép
-
-# Free software: you may share and change it under the GPL.
-tef971997 = Phần mềm tự do: bạn có thể chia sẻ và sửa đổi theo giấy phép GPL.
-
-# Source
-t61e2a3f8 = Mã nguồn
-
-# Updates
-t483075a5 = Cập nhật
-
-# Not looked for: this build has no release keys to check them with.
-t208f65bc = Không tìm cập nhật: bản build này chưa có khoá release để kiểm tra.
-
 # Settings
 t4b058728 = Cài đặt
 
@@ -907,80 +1102,266 @@ t3bd1216e = File này đã được mã hoá: hãy nhập mật khẩu của nó
 # This {app} file is encrypted: enter its password.
 t1aa6da9b = File { $app } này đã được mã hoá: hãy nhập mật khẩu.
 
-# XXXX-XXXX-…, 13 groups
-tbb504d9f = XXXX-XXXX-…, 13 nhóm
+# Not syncing
+t0f346f03 = Chưa đồng bộ
 
-# Keep it where you keep important papers: it opens the vault from a new device, and it is the way back if every device is lost.
-t82f98ccc = Hãy cất nó cùng chỗ với giấy tờ quan trọng: nó mở vault từ một thiết bị mới, và là cách lấy lại khi mất hết mọi thiết bị.
+# Synced · {when}
+ta250b3ba = Đã đồng bộ · { $when }
 
-# Waiting for a device that syncs: open authwing there.
-t33ac6aa2 = Đang chờ một thiết bị đang đồng bộ: hãy mở authwing ở đó.
+# Set up
+t43c06abc = Đã thiết lập
 
-# Approve on {device} if it shows the same code:
-ta89ba4d1 = Duyệt trên { $device } nếu nó hiện cùng mã này:
+# Syncing…
+t8ad2ae06 = Đang đồng bộ…
 
-# Joined. The vault's codes are coming.
-t775b89a0 = Đã tham gia. Các mã của vault đang được tải về.
+# Not synced: {why}
+t26991b72 = Chưa đồng bộ: { $why }
 
-# The other device refused.
-t74419d8e = Thiết bị kia đã từ chối.
+# Paused: the vault is locked
+tfff0fb2a = Tạm dừng: kho đang khoá
 
-# Nobody approved in time: ask again.
-t5c323bb6 = Không ai duyệt kịp: hãy xin lại.
+# {n} code | {n} codes
+ta5ca2740 =
+    { $n ->
+       *[other] { $n } mã
+    }
 
-# Ask a device that syncs
-t2dc61136 = Xin một thiết bị đang đồng bộ
+# NOT SYNCING
+t7c7f0ba3 = CHƯA ĐỒNG BỘ
 
-# Stop asking
-t296beec8 = Thôi xin
+# Your codes on every device. Just sign in.
+t64f52192 = Mã của bạn trên mọi thiết bị. Chỉ cần đăng nhập.
 
-# Not syncing. Say where in config.toml, then come back here: a folder that syncs (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 or Git.
-tc75c83a8 = Chưa đồng bộ. Khai báo nơi đồng bộ trong config.toml rồi quay lại đây: một thư mục được đồng bộ (iCloud Drive, Dropbox, Syncthing), WebDAV, S3 hoặc Git.
+# Your codes, their groups and sites stay on this computer for now.
+tcc5add1d = Mã, nhóm và site của bạn hiện chỉ nằm trên máy này.
 
-# Close
-tcd86acc3 = Đóng
+# See authwing cloud
+t37219794 = Xem authwing cloud
 
-# Only encrypted records are stored there: not even the services' names can be read.
-td7b59080 = Ở đó chỉ lưu các bản ghi đã mã hoá: ngay cả tên dịch vụ cũng không đọc được.
+# A folder, WebDAV, S3 or Git of your own:
+t42ad626a = Thư mục, WebDAV, S3 hoặc Git của riêng bạn:
 
-# Devices asking to join
-tff44c4a4 = Thiết bị đang xin tham gia
+# Settings › Sync
+t6790eaeb = Cài đặt › Đồng bộ
 
-# Approve only if it shows this code.
-t8f54c79f = Chỉ duyệt nếu nó hiện đúng mã này.
+# SYNC
+t476c685a = ĐỒNG BỘ
 
-# Approve
-te6edf55a = Đồng ý
+# Open Settings › Sync
+tbef0fba1 = Mở Cài đặt › Đồng bộ
 
-# Refuse
-t9bcada35 = Từ chối
+# Not synced
+t4d1a6724 = Chưa đồng bộ
 
-# Join from this device
-t54904649 = Tham gia từ thiết bị này
+# With {place}, once it is open
+tf75bc464 = Với { $place }, khi kho được mở
 
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key. Its sync passphrase works too.
-te7a28cec = Khi ở đó đã có một vault khác đồng bộ: xin một thiết bị đang đồng bộ, hoặc gõ khoá khôi phục của vault. Mật khẩu đồng bộ của nó cũng dùng được.
-
-# When another vault syncs there already: ask a device that syncs, or type the vault's recovery key.
-t2d6ea251 = Khi ở đó đã có một vault khác đồng bộ: xin một thiết bị đang đồng bộ, hoặc gõ khoá khôi phục của vault.
-
-# Joining…
-taa884c51 = Đang tham gia…
-
-# Join with the key
-t9f857a57 = Tham gia bằng khoá
+# Unlock…
+tc671ed6b = Mở khoá…
 
 # Sync now
 ta34dd8fe = Đồng bộ ngay
 
+# Your codes, their groups and sites follow you to every computer.
+ta5f11048 = Mã, nhóm và site của bạn theo bạn sang mọi máy tính.
+
+# Nothing to set up: no folder, no server, no key to type on a new device.
+tde7b1d58 = Không phải cài đặt gì: không thư mục, không máy chủ, không khoá nào phải nhập trên thiết bị mới.
+
+# Encrypted on your devices: authwing never sees your codes.
+ta3c7045e = Được mã hoá trên thiết bị của bạn: authwing không bao giờ thấy mã của bạn.
+
+# Create an account
+td7f6c093 = Tạo tài khoản
+
+# Sign in
+t744be623 = Đăng nhập
+
+# or continue with
+t2f60c9bf = hoặc tiếp tục với
+
+# Rather not keep it yourself?
+t616f184a = Không muốn tự giữ?
+
+# authwing cloud keeps it for you: sign in on each device, and that is all. Still end-to-end encrypted.
+t69b9a0b0 = authwing cloud giữ giúp bạn: đăng nhập trên mỗi thiết bị, vậy là xong. Vẫn mã hoá đầu-cuối.
+
+# authwing cloud is coming: signing in opens with it.
+t6f15019c = authwing cloud sắp ra mắt: đăng nhập sẽ mở cùng lúc.
+
+# up to {n} code | up to {n} codes
+td320882c =
+    { $n ->
+       *[other] tối đa { $n } mã
+    }
+
+# unlimited · $15/year
+te176f9c3 = không giới hạn · $15/năm
+
+# just now
+ta715ef0f = vừa xong
+
+# a minute ago
+t85ac693d = một phút trước
+
+# {n} minute ago | {n} minutes ago
+t6c7302d6 =
+    { $n ->
+       *[other] { $n } phút trước
+    }
+
+# an hour ago
+t84377069 = một giờ trước
+
+# {n} hour ago | {n} hours ago
+t137b052e =
+    { $n ->
+       *[other] { $n } giờ trước
+    }
+
+# {n} day ago | {n} days ago
+tb9fa7744 =
+    { $n ->
+       *[other] { $n } ngày trước
+    }
+
 # its password is not saved on this device: connect again in Settings › Sync
 td2fdfc60 = mật khẩu của nó chưa được lưu trên thiết bị này: hãy kết nối lại trong Cài đặt › Đồng bộ
 
-# settings not synced: {e}
-tf8592ea2 = chưa đồng bộ được cài đặt: { $e }
+# The code for the window you are in
+teaa20509 = Mã cho cửa sổ bạn đang dùng
 
-# settings not written: {e}
-t60f438b7 = chưa ghi được cài đặt: { $e }
+# The codes for the app or site in front come first: by its sites, its window's title, or the browser extension.
+tc9769cd3 = Mã của ứng dụng hay trang web đang ở trước được đưa lên đầu: theo site đã lưu, tiêu đề cửa sổ, hoặc extension trình duyệt.
+
+# From any app
+t01695c14 = Từ bất kỳ ứng dụng nào
+
+# From any app, with {key}
+tf17862df = Từ bất kỳ ứng dụng nào, với { $key }
+
+# A small panel over the app you are in, and Enter types the code into it.
+tdc1e0fe0 = Một bảng nhỏ trên ứng dụng bạn đang dùng, và Enter gõ mã vào đó.
+
+# Say its name
+t4602e0ed = Nói tên của nó
+
+# “Open GitHub”, “PayPal”: Whisper hears it on this device, in your language.
+t4a9de42e = “Open GitHub”, “PayPal”: Whisper nghe ngay trên thiết bị này, bằng ngôn ngữ của bạn.
+
+# Yours alone
+t032b8418 = Chỉ của riêng bạn
+
+# The codes are encrypted on this device, and synced, if you choose to, only as ciphertext.
+t3e60b7b0 = Các mã được mã hoá trên thiết bị này, và nếu bạn muốn đồng bộ, chỉ bản mã hoá được gửi đi.
+
+# From your phone
+tbf9a6fd0 = Từ điện thoại
+
+# Google Authenticator: Transfer accounts › Export accounts, then hold each QR code it shows up to the camera.
+tac46df50 = Google Authenticator: Chuyển tài khoản › Xuất tài khoản, rồi đưa từng mã QR nó hiện ra trước camera.
+
+# From a site's QR code
+t789c56e3 = Từ mã QR của một site
+
+# Turning on two-factor sign-in, a site shows one: authwing reads it on the screen.
+t49c60415 = Khi bật đăng nhập hai yếu tố, site hiện một mã QR: authwing đọc nó ngay trên màn hình.
+
+# From another app
+t3ac48a69 = Từ ứng dụng khác
+
+# An export from Aegis, 2FAS, Ente Auth or Bitwarden, or an authwing backup.
+t54b5fe53 = File xuất từ Aegis, 2FAS, Ente Auth hay Bitwarden, hoặc một bản sao lưu authwing.
+
+# Import a file…
+t0eb7677d = Nhập một file…
+
+# By hand
+td748cd1d = Nhập tay
+
+# The link or the key a site shows beside its QR code.
+ta1285d09 = Link hoặc khoá mà site hiện cạnh mã QR.
+
+# {n} code here so far. | {n} codes here so far.
+t6dc115ee =
+    { $n ->
+       *[other] Đã có { $n } mã.
+    }
+
+# The quick panel's shortcut is off
+td256725c = Phím tắt bảng tra nhanh đang tắt
+
+# Press {key} in any app
+t9e729c1b = Nhấn { $key } trong bất kỳ ứng dụng nào
+
+# A panel opens over it with its codes first; Enter types the code where you were. Its key is in Settings › General.
+ta5e01546 = Một bảng mở ra trên đó với mã của ứng dụng ấy ở đầu; Enter gõ mã vào chỗ bạn vừa ở. Phím tắt ở Cài đặt › Chung.
+
+# Typing codes into other apps is allowed.
+t99adf5e2 = Đã cho phép gõ mã vào ứng dụng khác.
+
+# To type codes into other apps, and to see their windows' titles, macOS asks first (Accessibility).
+t5697eba0 = Để gõ mã vào ứng dụng khác và đọc tiêu đề cửa sổ của chúng, macOS hỏi trước (Trợ năng).
+
+# In a browser, the extension tells authwing the page exactly, and fills the code in.
+tff15f0a2 = Trong trình duyệt, extension cho authwing biết chính xác trang đang mở, và điền mã vào.
+
+# Link the browsers…
+t7f6fe971 = Liên kết trình duyệt…
+
+# Ready: hold the quick panel's key and say a name.
+tff1730f2 = Sẵn sàng: giữ phím của bảng tra nhanh và nói tên mã.
+
+# Whisper, the model that hears you, is downloaded once ({mb} MB) and runs on this device: nothing you say leaves it. You can do it later in Settings › Voice.
+t25a77ecc = Whisper, model nghe bạn nói, được tải một lần ({ $mb } MB) và chạy trên thiết bị này: không gì bạn nói rời khỏi máy. Có thể để sau, trong Cài đặt › Giọng nói.
+
+# The recovery key opens the vault when nothing else can: a lost keychain, a new computer. Write it down, or keep it in a password manager, away from this computer.
+ta576d2c1 = Khoá khôi phục mở được vault khi không còn cách nào khác: mất keychain, máy tính mới. Hãy chép lại, hoặc giữ trong trình quản lý mật khẩu, ở ngoài máy tính này.
+
+# On your other computers too: the vault syncs through a folder, WebDAV, S3 or Git, encrypted.
+t64f9348a = Cả trên các máy khác của bạn: vault đồng bộ qua một thư mục, WebDAV, S3 hay Git, đã mã hoá.
+
+# Set up sync…
+t712df601 = Thiết lập đồng bộ…
+
+# Welcome to authwing
+t1c4b12d5 = Chào mừng đến với authwing
+
+# Bring your codes
+t852a71f4 = Mang mã của bạn vào
+
+# However many you have: they can all come at once.
+te372c4fe = Bao nhiêu mã cũng được: tất cả có thể vào cùng lúc.
+
+# Codes where you sign in
+tb45ac069 = Mã ngay nơi bạn đăng nhập
+
+# Without opening this window.
+t4bfebcf3 = Không cần mở cửa sổ này.
+
+# If you like: it can wait.
+t8b154ee4 = Nếu bạn thích: có thể để sau.
+
+# Keep the recovery key
+t72fa11c5 = Giữ khoá khôi phục
+
+# The one thing to keep safe.
+te23e90eb = Thứ duy nhất cần giữ cẩn thận.
+
+# Skip
+tc197c7e2 = Bỏ qua
+
+# Back
+tc2954bc2 = Quay lại
+
+# Done
+t8dd31791 = Xong
+
+# Get started
+te83ca5ee = Bắt đầu
+
+# Next
+tdce2da08 = Tiếp
 
 # Voice's model is still downloading (Settings › Voice).
 t294c50cc = Model giọng nói vẫn đang tải (Cài đặt › Giọng nói).
@@ -1000,6 +1381,33 @@ tc421facd = Không nghe thấy gì. Micro đã được cho phép chưa? Cài đ
 # Nothing was heard: is the microphone on?
 t5de1c09c = Không nghe thấy gì: micro có đang bật không?
 
+# the system's package manager
+t11465c20 = trình quản lý gói của hệ thống
+
+# the App Store
+ta8cbd72e = App Store
+
+# the Microsoft Store
+t1df799a1 = Microsoft Store
+
+# Downloading… {got} of {total}
+taee668c2 = Đang tải xuống… { $got } / { $total }
+
+# Downloading… {got}
+t4873b921 = Đang tải xuống… { $got }
+
+# authwing {version} is out: {by} updates it ({command}).
+taf85c804 = Đã có authwing { $version }: { $by } sẽ cập nhật nó ({ $command }).
+
+# authwing {version} is out: {by} updates it.
+ta087df4c = Đã có authwing { $version }: { $by } sẽ cập nhật nó.
+
+# No folder to download to.
+t2bfc1370 = Không có thư mục để tải xuống.
+
+# authwing {version} is ready: it is installed when you quit, or now with Restart.
+td9ae9d7c = authwing { $version } đã sẵn sàng: bản mới được cài khi bạn thoát app, hoặc ngay bây giờ bằng Khởi động lại.
+
 # Find a code
 t8b2733e6 = Tìm mã
 
@@ -1009,38 +1417,23 @@ t4774284e = Mật khẩu hoặc khoá khôi phục
 # The quick panel's shortcut {key} cannot be used: {e}
 td4cbf886 = Không dùng được phím tắt { $key } cho bảng tra nhanh: { $e }
 
-# A device asks to join: open Sync (the cloud) to approve it.
-tf1bf552a = Có thiết bị xin tham gia: mở Đồng bộ (biểu tượng đám mây) để duyệt.
+# Let {device} into this vault?
+tfab743ab = Cho { $device } vào kho này?
+
+# It gets every code the vault holds. Approve only if {device} shows the code {code}.
+ta4cf95fb = Thiết bị đó sẽ có mọi mã trong kho. Chỉ duyệt nếu { $device } hiện mã { $code }.
+
+# Approve
+te6edf55a = Đồng ý
+
+# Refuse
+t9bcada35 = Từ chối
 
 # Typed into the page.
 t97706593 = Đã gõ vào trang.
 
 # Not typed into the page: {why}
 t709fb554 = Chưa gõ được vào trang: { $why }
-
-# Not syncing
-t0f346f03 = Chưa đồng bộ
-
-# Syncing…
-t8ad2ae06 = Đang đồng bộ…
-
-# Synced just now
-t4df6f903 = Vừa đồng bộ xong
-
-# Synced {n} minute ago | Synced {n} minutes ago
-tc7922c74 =
-    { $n ->
-       *[other] Đã đồng bộ { $n } phút trước
-    }
-
-# {when}: {pulled} in, {pushed} out
-t9dc23f47 = { $when }: nhận { $pulled }, gửi { $pushed }
-
-# Sync failed: {e}
-tcc341778 = Đồng bộ thất bại: { $e }
-
-# Joined: this device syncs the vault now.
-t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
 
 # Not saved: {e}
 ta9354472 = Chưa lưu được: { $e }
@@ -1075,6 +1468,30 @@ ta55f9fc6 = Khoá của vault đang nằm trong keychain của máy này nên kh
 # Not opened: {e}
 t2e0269c8 = Chưa mở được: { $e }
 
+# Joined: this device syncs the vault now.
+t6b25e007 = Đã tham gia: thiết bị này giờ đồng bộ vault.
+
+# Settings: an update is out
+t5742fd7e = Cài đặt: đã có bản cập nhật
+
+# Stop, and find what you said
+t748d5a27 = Dừng, rồi tìm điều bạn vừa nói
+
+# Find a code by its name, said
+tc6b6d315 = Tìm mã bằng cách nói tên
+
+# Listening… say a code's name, then click the microphone.
+t828235c2 = Đang nghe… hãy nói tên mã, rồi bấm vào micro.
+
+# You said “{said}”: no code is called that.
+t29ba88f1 = Bạn nói “{ $said }”: không có mã nào tên như vậy.
+
+# Show every code
+tb7bd67b4 = Hiện mọi mã
+
+# Dismiss
+t265915f3 = Đóng
+
 # All codes
 t113331ee = Tất cả mã
 
@@ -1092,9 +1509,6 @@ t0965a624 = Nhóm để xếp mã: Công việc, Tiền, Gia đình…
 
 # No group
 t2721e1c1 = Không thuộc nhóm
-
-# Manage
-td7aff116 = Quản lý
 
 # Add code
 t081cfe79 = Thêm mã
@@ -1128,6 +1542,9 @@ t34aa395e = Bật đăng nhập hai yếu tố ở một site, rồi đọc mã 
 
 # Add your first code
 t4a8c2b9a = Thêm mã đầu tiên
+
+# Show the welcome
+teb7693b3 = Xem màn hình chào
 
 # Nothing matches
 tda76133f = Không có kết quả

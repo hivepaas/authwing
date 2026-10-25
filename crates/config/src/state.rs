@@ -26,6 +26,13 @@ pub struct Used {
     pub last: u64,
 }
 
+/// Whether the welcome was seen on this device (`state/welcome.json`).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct WelcomeState {
+    #[serde(default)]
+    pub seen: bool,
+}
+
 /// What the last look for a newer authwing found (`state/updates.json`).
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct UpdateState {
