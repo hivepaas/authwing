@@ -1908,15 +1908,51 @@ impl Workspace {
         let hint = (place < 9)
             .then(|| keymap_hint(cx, place))
             .filter(|h| !h.is_empty());
+        // The time left, as a rail down the card's left: full when a code
+        // begins, empty as it ends; amber in its last seconds.
+        let rail = div()
+            .w(px(4.))
+            .flex_shrink_0()
+            .rounded_full()
+            .bg(rgb(c.line))
+            .flex()
+            .flex_col()
+            .justify_end()
+            .when_some(left, |d, l| {
+                d.child(
+                    div()
+                        .w_full()
+                        .h(relative(l as f32 / period as f32))
+                        .rounded_full()
+                        .bg(rgb(if ending { c.amber } else { c.accent })),
+                )
+            });
+        // The account, and the site it is shown first on (and how many
+        // more): one line, so every card is as thin as the next.
+        let detail = match entry.sites.split_first() {
+            Some((site, rest)) => {
+                let more = if rest.is_empty() {
+                    String::new()
+                } else {
+                    format!(" +{}", rest.len())
+                };
+                match entry.detail().trim() {
+                    "" => format!("{site}{more}"),
+                    account => format!("{account} · {site}{more}"),
+                }
+            }
+            None => entry.detail().to_string(),
+        };
         div()
             .id(SharedString::from(format!("card-{}", entry.id)))
             .group("card")
             .w(px(CARD_W))
             .relative()
             .flex()
-            .flex_col()
-            .gap(px(10.))
-            .p(px(14.))
+            .gap(px(12.))
+            .py(px(12.))
+            .pl(px(12.))
+            .pr(px(14.))
             .rounded(px(10.))
             .bg(rgb(c.surface))
             .border_1()
@@ -1924,111 +1960,109 @@ impl Workspace {
             .cursor_pointer()
             .hover(|s| s.border_color(rgb(c.edge)))
             .on_click(cx.listener(move |ws, _, _, cx| ws.copy(&id, cx)))
+            .child(rail)
             .child(
                 div()
+                    .flex_1()
+                    .min_w_0()
                     .flex()
-                    .items_center()
-                    .gap(px(10.))
-                    .child(crate::brands::tile(
-                        entry.brand,
-                        &entry.title(),
-                        &entry.initials(),
-                        30.,
-                    ))
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .flex()
-                            .flex_col()
-                            .child(
-                                div()
-                                    .flex()
-                                    .items_center()
-                                    .gap(px(5.))
-                                    .child(
-                                        div()
-                                            .min_w_0()
-                                            .font_weight(FontWeight::SEMIBOLD)
-                                            .truncate()
-                                            .child(entry.title()),
-                                    )
-                                    .when(entry.favorite, |d| {
-                                        d.child(
-                                            svg()
-                                                .path("icons/star-fill.svg")
-                                                .size(px(11.))
-                                                .flex_shrink_0()
-                                                .text_color(rgb(c.amber)),
-                                        )
-                                    }),
-                            )
-                            .child(
-                                div()
-                                    .text_size(ui(12.))
-                                    .text_color(rgb(c.muted))
-                                    .truncate()
-                                    .child(entry.detail().to_string()),
-                            ),
-                    ),
-            )
-            .child(
-                div()
-                    .flex()
-                    .items_baseline()
-                    .gap(px(10.))
-                    .child(
-                        div()
-                            .text_size(ui(26.))
-                            .font_weight(FontWeight::MEDIUM)
-                            .text_color(rgb(if ending { c.warn } else { c.text }))
-                            .child(code),
-                    )
-                    .when_some(next, |d, n| {
-                        d.child(
-                            div()
-                                .text_size(ui(12.))
-                                .text_color(rgb(c.muted))
-                                .child(tr!("next {code}", code = n)),
-                        )
-                    }),
-            )
-            .child(
-                div()
-                    .flex()
-                    .items_center()
+                    .flex_col()
                     .gap(px(8.))
                     .child(
                         div()
-                            .flex_1()
-                            .h(px(3.))
-                            .rounded(px(2.))
-                            .bg(rgb(c.line))
-                            .when_some(left, |d, l| {
+                            .flex()
+                            .items_center()
+                            .gap(px(10.))
+                            .child(crate::brands::tile(
+                                entry.brand,
+                                &entry.title(),
+                                &entry.initials(),
+                                30.,
+                            ))
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .min_w_0()
+                                    .flex()
+                                    .flex_col()
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .gap(px(5.))
+                                            .child(
+                                                div()
+                                                    .min_w_0()
+                                                    .font_weight(FontWeight::SEMIBOLD)
+                                                    .truncate()
+                                                    .child(entry.title()),
+                                            )
+                                            .when(entry.favorite, |d| {
+                                                d.child(
+                                                    svg()
+                                                        .path("icons/star-fill.svg")
+                                                        .size(px(11.))
+                                                        .flex_shrink_0()
+                                                        .text_color(rgb(c.amber)),
+                                                )
+                                            }),
+                                    )
+                                    .child(
+                                        div()
+                                            .text_size(ui(12.))
+                                            .text_color(rgb(c.muted))
+                                            .truncate()
+                                            .child(detail),
+                                    ),
+                            )
+                            .when_some(hint, |d, h| {
                                 d.child(
                                     div()
-                                        .h_full()
-                                        .rounded(px(2.))
-                                        .w(relative(l as f32 / period as f32))
-                                        .bg(rgb(if ending { c.amber } else { c.accent })),
+                                        .flex_shrink_0()
+                                        .text_size(ui(11.))
+                                        .text_color(rgb(c.faint))
+                                        .child(h),
                                 )
                             }),
                     )
                     .child(
                         div()
-                            .text_size(ui(11.))
-                            .text_color(rgb(if copied { c.good } else { c.faint }))
-                            .child(if copied {
-                                tr!("Copied")
-                            } else if let Some(l) = left {
-                                format!("{l} s")
-                            } else {
-                                tr!("Counter")
-                            }),
-                    )
-                    .when_some(hint, |d, h| {
-                        d.child(div().text_size(ui(11.)).text_color(rgb(c.faint)).child(h))
-                    }),
+                            .flex()
+                            .items_baseline()
+                            .gap(px(10.))
+                            .child(
+                                div()
+                                    .font_family(crate::look::mono_font(cx))
+                                    .text_size(ui(26.))
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .text_color(rgb(if ending { c.warn } else { c.text }))
+                                    .child(code),
+                            )
+                            .child(div().flex_1())
+                            // The seconds left; in the last ones the code
+                            // that follows, as the rail turns amber.
+                            .child(
+                                div()
+                                    .flex_shrink_0()
+                                    .text_size(ui(11.))
+                                    .text_color(rgb(if copied {
+                                        c.good
+                                    } else if next.is_some() {
+                                        c.warn
+                                    } else {
+                                        c.faint
+                                    }))
+                                    .child(if copied {
+                                        tr!("Copied")
+                                    } else if let Some(n) = next {
+                                        tr!("next {code}", code = n)
+                                    } else if let Some(l) = left {
+                                        format!("{l} s")
+                                    } else {
+                                        tr!("Counter")
+                                    }),
+                            ),
+                    ),
             )
             .child(
                 div()

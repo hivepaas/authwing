@@ -1471,11 +1471,11 @@ t12e9b880 = No se eliminó: { $e }
 # Add code
 # t081cfe79 =
 
-# next {code}
-# tb1be48b7 =
-
 # Copied
 # t8dc21305 =
+
+# next {code}
+# tb1be48b7 =
 
 # Counter
 # tfc0f33c3 =

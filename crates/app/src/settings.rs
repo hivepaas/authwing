@@ -1623,7 +1623,7 @@ impl SettingsView {
                                     .py(px(4.))
                                     .rounded(px(5.))
                                     .bg(rgb(c.field))
-                                    .font_family("monospace")
+                                    .font_family(crate::look::mono_font(cx))
                                     .child(cmd),
                             )
                             .child(
