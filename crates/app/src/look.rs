@@ -5,6 +5,35 @@ use std::sync::Arc;
 
 use authwing_config::{ColorMode, Keymap, LoadError, Os, Settings, Stamp, Store, SyncPlace};
 
+/// Monospace families for codes and keys, best first: the first one this
+/// system has is used, as shellwing picks its terminal's.
+#[cfg(target_os = "macos")]
+const MONO: &[&str] = &["JetBrains Mono", "SF Mono", "Menlo"];
+#[cfg(target_os = "windows")]
+const MONO: &[&str] = &["JetBrains Mono", "Cascadia Mono", "Consolas"];
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+const MONO: &[&str] = &[
+    "JetBrains Mono",
+    "DejaVu Sans Mono",
+    "Noto Sans Mono",
+    "Liberation Mono",
+];
+
+/// The monospace family codes are written in, looked up once.
+pub fn mono_font(cx: &gpui::App) -> gpui::SharedString {
+    static CHOSEN: std::sync::OnceLock<gpui::SharedString> = std::sync::OnceLock::new();
+    CHOSEN
+        .get_or_init(|| {
+            let installed = cx.text_system().all_font_names();
+            MONO.iter()
+                .find(|f| installed.iter().any(|i| i == *f))
+                .unwrap_or(&MONO[MONO.len() - 1])
+                .to_string()
+                .into()
+        })
+        .clone()
+}
+
 /// A text size as drawn at the default UI font size; it grows and shrinks with
 /// the chosen one (the window's rem follows it, see the workspace).
 pub fn ui(px: f32) -> gpui::Rems {

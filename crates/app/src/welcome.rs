@@ -416,7 +416,7 @@ impl Welcome {
                                 .bg(rgb(c.field))
                                 .border_1()
                                 .border_color(rgb(c.field_edge))
-                                .font_family("monospace")
+                                .font_family(crate::look::mono_font(cx))
                                 .child(key.clone()),
                         )
                         .child(outline_button("welcome-copy-key", &tr!("Copy")).on_click(

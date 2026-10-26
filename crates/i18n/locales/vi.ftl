@@ -1513,11 +1513,11 @@ t2721e1c1 = Không thuộc nhóm
 # Add code
 t081cfe79 = Thêm mã
 
-# next {code}
-tb1be48b7 = tiếp { $code }
-
 # Copied
 t8dc21305 = Đã copy
+
+# next {code}
+tb1be48b7 = tiếp { $code }
 
 # Counter
 tfc0f33c3 = Bộ đếm
