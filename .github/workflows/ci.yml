@@ -53,9 +53,9 @@ jobs:
             libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev \
             cmake libasound2-dev
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
+      # The version and its components: rust-toolchain.toml.
+      - name: Rust
+        run: rustup toolchain install
 
       - uses: Swatinem/rust-cache@v2
         with:

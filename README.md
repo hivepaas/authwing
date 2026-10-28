@@ -9,7 +9,7 @@
 A native authenticator for macOS, Windows and Linux: your TOTP codes in an encrypted vault that syncs between your devices, the right one offered for the app or site you are signing in to, and found by name, by key or by voice.
 
 [![CI](https://github.com/hivepaas/authwing/actions/workflows/ci.yml/badge.svg)](https://github.com/hivepaas/authwing/actions/workflows/ci.yml)
-[![Rust](https://img.shields.io/badge/Rust-1.95+-DEA584?style=flat&logo=rust)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/Rust-1.99+-DEA584?style=flat&logo=rust)](https://www.rust-lang.org)
 [![GPUI](https://img.shields.io/badge/UI-GPUI-7B61FF?style=flat)](https://github.com/zed-industries/zed/tree/main/crates/gpui)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
@@ -77,7 +77,7 @@ from there; the SSH client does not.
 
 ## 🚀 Getting Started
 
-Build it from source. It needs Rust 1.95+, CMake and each platform's tools
+Build it from source. It needs Rust (rustup installs the version in `rust-toolchain.toml`), CMake and each platform's tools
 ([docs/platforms.md](docs/platforms.md)):
 
 ```sh
