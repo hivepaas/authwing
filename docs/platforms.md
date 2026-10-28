@@ -17,6 +17,8 @@ All platforms need Rust (via [rustup](https://rustup.rs)) and CMake: voice
 builds whisper.cpp with it. A CMake that does not run on this computer (an
 Intel build on Apple silicon without Rosetta, say) fails the build of
 `whisper-rs-sys` with "Bad CPU type"; `CMAKE=/path/to/cmake` picks another.
+rustup installs the Rust version in `rust-toolchain.toml` by itself, the first
+time cargo runs in the repository.
 
 | Platform | Also install |
 | --- | --- |
@@ -39,6 +41,19 @@ Downloaded macOS binaries are quarantined by Gatekeeper; clear the flag once:
 ```sh
 xattr -d com.apple.quarantine ./authwing && chmod +x ./authwing
 ```
+
+## The Rust version
+
+`rust-toolchain.toml` pins the Rust that local builds, CI and releases use, and
+`rust-version` in `Cargo.toml` follows it, so a new Rust never turns CI red on
+its own. Rust ships every six weeks; take every second release (about every
+twelve weeks), or one sooner when a fix or a feature in it is needed, once it
+is two weeks old (its point release, if any, is out by then). In a pull request
+of its own:
+
+1. Set `channel` in `rust-toolchain.toml` and `rust-version` in `Cargo.toml`.
+2. Fix what the new clippy finds: `make check`.
+3. Run CI on every platform: `gh workflow run ci.yml --ref <branch> -f platforms=all`.
 
 ## Windows in a virtual machine
 
