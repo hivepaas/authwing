@@ -1,6 +1,6 @@
 //! Buttons, drawn alike everywhere in the window.
 
-use gpui::{FontWeight, SharedString, div, prelude::*, px, rgb};
+use gpui::{FontWeight, MouseButton, SharedString, div, prelude::*, px, rgb};
 
 use crate::colors::colors;
 
@@ -57,6 +57,10 @@ pub fn icon_button(id: &str, icon: &'static str, color: u32) -> gpui::Stateful<g
         .rounded(px(6.))
         .cursor_pointer()
         .hover(|s| s.bg(rgb(colors().hover)))
+        // The title bar starts a window move on a press that reaches it, and
+        // the compositor's grab then swallows the release: the click would
+        // never land (see chrome::window_chrome).
+        .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
         .child(gpui::svg().path(icon).size(px(16.)).text_color(rgb(color)))
 }
 
