@@ -20,9 +20,14 @@ const WAIT: Duration = Duration::from_secs(10);
 fn endpoint(name: &str) -> (Option<tempfile::TempDir>, Endpoint) {
     #[cfg(unix)]
     {
+        use std::os::unix::fs::PermissionsExt;
         // Short: a socket's path may have at most 104 bytes on macOS.
         let dir = tempfile::Builder::new()
             .prefix("aw")
+            // The listener asks that the socket's folder be the user's alone.
+            // tempfile makes it as the umask says, which leaves it writable by
+            // the group under a 0002 umask, so it is named here instead.
+            .permissions(std::fs::Permissions::from_mode(0o700))
             .tempdir()
             .expect("temporary folder");
         let endpoint = Endpoint::socket(dir.path().join(format!("{name}.sock")));
