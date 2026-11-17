@@ -33,6 +33,7 @@ mod settings;
 mod sync_panel;
 mod syncing;
 mod typing;
+mod ui_font;
 mod vault_slot;
 mod voice;
 mod welcome;
@@ -247,6 +248,9 @@ fn main() -> anyhow::Result<()> {
         .run(move |cx: &mut App| {
             // Questions are drawn in the app's look on every system.
             cx.set_prompt_builder(prompt::render);
+            // Linux's UI font, where the settings name none.
+            let ui_family = ui_font::find(cx);
+            cx.set_global(ui_font::SystemUiFont(ui_family));
             // The quick panel's shortcut, over any app.
             match panel_key::PanelKey::new() {
                 Ok(keys) => cx.set_global(keys),

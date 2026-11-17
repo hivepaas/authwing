@@ -34,7 +34,11 @@ language = "auto"            # "auto" (the system's) or a language, see Language
 
 [appearance]
 mode = "system"              # "system" (as the desktop is), "dark" or "light"
-ui_font = { family = "Inter", size = 14 }   # no family: the system's; size 10 to 20
+ui_font = { family = "Inter", size = 14 }   # no family: the system's (on Linux the
+                             # desktop's, GNOME's or KDE's, when it has every Vietnamese
+                             # letter; else the first of Noto Sans, Adwaita Sans, Cantarell,
+                             # Ubuntu Sans, DejaVu Sans, Liberation Sans that does);
+                             # size 10 to 20
 
 [codes]
 clear_clipboard = 20         # seconds a copied code stays on the clipboard; 0: it stays
