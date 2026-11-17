@@ -401,9 +401,16 @@ impl Render for QuickPanel {
             (Some(app), true) => tr!("type into {app}", app = app.clone()),
             _ => tr!("copy"),
         };
+        // A window of its own: it takes the family the workspace settled on
+        // (the settings', else the one found at start), as questions do.
+        let ui_font = cx
+            .try_global::<crate::prompt::PromptFont>()
+            .and_then(|f| f.0.clone())
+            .or_else(|| crate::ui_font::family(None, cx));
         div()
             .track_focus(&self.focus)
             .on_key_down(cx.listener(Self::on_key))
+            .when_some(ui_font, |d, f| d.font_family(f))
             .size_full()
             .flex()
             .flex_col()

@@ -2474,7 +2474,7 @@ impl Render for Workspace {
         }
         let ui_font = self.live.settings().appearance.ui_font.clone();
         window.set_rem_size(look::rem_for(ui_font.size));
-        let family = ui_font.family.clone().map(SharedString::from);
+        let family = crate::ui_font::family(ui_font.family.as_deref(), cx);
         if cx
             .try_global::<crate::prompt::PromptFont>()
             .is_none_or(|f| f.0 != family)
@@ -2621,13 +2621,16 @@ impl Render for Workspace {
             )
             .with_priority(1)
         });
-        root.when_some(ui_font.family, |d, f| d.font_family(f))
-            .text_size(ui(13.))
-            .text_color(rgb(c.text))
-            .track_focus(&self.focus)
-            .capture_key_down(cx.listener(Self::shortcut))
-            .children(sync_panel)
-            .children(dialog)
+        root.when_some(
+            crate::ui_font::family(ui_font.family.as_deref(), cx),
+            |d, f| d.font_family(f),
+        )
+        .text_size(ui(13.))
+        .text_color(rgb(c.text))
+        .track_focus(&self.focus)
+        .capture_key_down(cx.listener(Self::shortcut))
+        .children(sync_panel)
+        .children(dialog)
     }
 }
 
