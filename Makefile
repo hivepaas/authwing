@@ -104,9 +104,12 @@ check: lint test ## lint, then test
 
 ## Housekeeping
 
-doctor: ## Which tools are here, and which are missing
-	@printf "%-12s " cargo; $(CARGO) --version 2>/dev/null || echo "missing: https://rustup.rs"
-	@printf "%-12s " cmake; $${CMAKE:-cmake} --version 2>/dev/null | head -1 | grep . || echo "missing, or does not run here (voice builds whisper.cpp with it): see docs/platforms.md"
+doctor: ## Which tools and libraries are here, and which are missing
+	@printf "  %-16s " cargo; $(CARGO) --version 2>/dev/null || echo "missing: https://rustup.rs"
+	@printf "  %-16s " cmake; $${CMAKE:-cmake} --version 2>/dev/null | head -1 | grep . || echo "missing, or does not run here (voice builds whisper.cpp with it): see docs/platforms.md"
+ifeq ($(HOST),Linux)
+	@scripts/doctor_linux.sh
+endif
 
 clean: ## Remove build output
 	$(CARGO) clean
