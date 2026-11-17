@@ -26,6 +26,11 @@ time cargo runs in the repository.
 | Windows | Visual Studio Build Tools with the "Desktop development with C++" workload (MSVC, the Windows SDK, and its CMake) |
 | Debian/Ubuntu | `sudo apt-get install build-essential pkg-config libfontconfig-dev libfreetype-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libxcb-xkb-dev libxcb-shape0-dev libxcb-xfixes0-dev libvulkan-dev libdbus-1-dev libzstd-dev libpam0g-dev cmake libasound2-dev` |
 
+`make doctor` says which of these are here and which are missing, and on Linux
+names what is missing as the `apt-get` line that installs it. A missing library
+otherwise shows as a build script failing part way through `cargo build`
+(`alsa-sys`, `whisper-rs-sys`), which says less.
+
 `make build` builds a release for this computer into `dist/` (on macOS
 `authwing.app`, to open as any app: the bare binary, opened from the Finder,
 runs in Terminal); `make` alone lists
